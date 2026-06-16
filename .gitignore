@@ -1,0 +1,64 @@
+# ==========================================
+# PrestaShop 1.7 / 8.x .gitignore
+# ==========================================
+
+# 1. Local Database Credentials & Configs
+# NEVER commit your database passwords or environment files!
+/app/config/parameters.php
+/app/config/parameters.yml
+/.env
+/.env.local
+
+# 2. Caches, Logs, and Sessions
+# This ignores that annoying var/cache folder we kept having to delete
+/var/cache/*
+!/var/cache/index.php
+/var/logs/*
+!/var/logs/index.php
+/var/sessions/*
+!/var/sessions/index.php
+/var/export/*
+!/var/export/index.php
+
+# 3. User Uploads & Store Images
+# Do not track product images, module images, or customer uploads
+/img/*
+!/img/index.php
+!/img/logo.jpg
+!/img/favicon.ico
+!/img/os/*
+!/img/c/index.php
+!/img/p/index.php
+!/img/cms/index.php
+/upload/*
+!/upload/index.php
+/download/*
+!/download/index.php
+
+# 4. Composer & Node Dependencies
+# These should be installed via 'composer install' or 'npm install'
+/vendor/
+/node_modules/
+/modules/*/vendor/
+/modules/*/node_modules/
+/themes/*/node_modules/
+
+# 5. PrestaShop Auto-Upgrade Backups
+# Prevents committing massive zip files of your database and files during an update
+/admin-dev/autoupgrade/backup/*
+/admin-dev/autoupgrade/download/*
+/admin-dev/autoupgrade/latest/*
+/admin-dev/autoupgrade/tmp/*
+
+# 6. IDEs & OS specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# 7. Translations and Mails (Optional but recommended)
+# Uncomment these if you don't want to track translations
+# /app/Resources/translations/*
+# /mails/*
