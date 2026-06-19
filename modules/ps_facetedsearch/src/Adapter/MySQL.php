@@ -52,7 +52,6 @@ class MySQL extends AbstractAdapter
         $mysqlAdapter = $this->getFilteredSearchAdapter();
         $mysqlAdapter->copyFilters($this);
         $mysqlAdapter->setSelectFields(['price_min', 'MIN(price_min) as min, MAX(price_max) as max']);
-        $mysqlAdapter->setLimit(null);
         $mysqlAdapter->setOrderField('');
 
         $result = $mysqlAdapter->execute();
@@ -93,24 +92,29 @@ class MySQL extends AbstractAdapter
      */
     public function getQuery()
     {
+        // Prepare mapping for joined tables
         $filterToTableMapping = $this->getFieldMapping();
+
+        // Process and generate all fields for the SQL query below
         $orderField = $this->computeOrderByField($filterToTableMapping);
-
-        if ($this->getInitialPopulation() === null) {
-            $referenceTable = _DB_PREFIX_ . 'product';
-        } else {
-            $referenceTable = '(' . $this->getInitialPopulation()->getQuery() . ')';
-        }
-
-        $query = 'SELECT ';
-
         $selectFields = $this->computeSelectFields($filterToTableMapping);
         $whereConditions = $this->computeWhereConditions($filterToTableMapping);
         $joinConditions = $this->computeJoinConditions($filterToTableMapping);
         $groupFields = $this->computeGroupByFields($filterToTableMapping);
 
-        $query .= implode(', ', $selectFields) . ' FROM ' . $referenceTable . ' p';
+        // Now, let's build the query...
+        // If this query IS the initial population (the base table), we are selecting from product table
+        if ($this->getInitialPopulation() === null) {
+            $referenceTable = _DB_PREFIX_ . 'product';
+        // If not, we will call this function again but for the initial population
+        } else {
+            $referenceTable = '(' . $this->getInitialPopulation()->getQuery() . ')';
+        }
 
+        // Construct the base query
+        $query = 'SELECT ' . implode(', ', $selectFields) . ' FROM ' . $referenceTable . ' p';
+
+        // Add join conditions if any
         foreach ($joinConditions as $joinAliasInfos) {
             foreach ($joinAliasInfos as $tableAlias => $joinInfos) {
                 $query .= ' ' . $joinInfos['joinType'] . ' ' . _DB_PREFIX_ . $joinInfos['tableName'] . ' ' .
@@ -118,23 +122,27 @@ class MySQL extends AbstractAdapter
             }
         }
 
+        // Add where conditions if any
         if (!empty($whereConditions)) {
             $query .= ' WHERE ' . implode(' AND ', $whereConditions);
         }
 
-        if ($groupFields) {
+        // Add groupping
+        if (!empty($groupFields)) {
             $query .= ' GROUP BY ' . implode(', ', $groupFields);
         }
 
-        if ($orderField) {
-            $query .= ' ORDER BY ' . $orderField . ' ' . strtoupper($this->getOrderDirection());
-            if ($orderField !== 'p.id_product') {
+        // Add ordering
+        if (!empty($orderField)) {
+            $query .= ' ORDER BY ' . $orderField;
+
+            /*
+             * If the result is not ordered by id_product, we add it as a fallback order,
+             * to avoid SQL returning it in random order.
+             */
+            if (strpos($orderField, 'p.id_product') === false) {
                 $query .= ', p.id_product DESC';
             }
-        }
-
-        if ($this->limit !== null) {
-            $query .= ' LIMIT ' . $this->offset . ', ' . $this->limit;
         }
 
         return $query;
@@ -185,6 +193,13 @@ class MySQL extends AbstractAdapter
                 'tableAlias' => 'ps',
                 'joinCondition' => '(p.id_product = ps.id_product AND ps.id_shop = ' .
                 $this->getContext()->shop->id . ' AND ps.active = TRUE)',
+                'joinType' => self::INNER_JOIN,
+            ],
+            'visibility' => [
+                'tableName' => 'product_shop',
+                'tableAlias' => 'ps',
+                'joinCondition' => '(p.id_product = ps.id_product AND ps.id_shop = ' .
+                    $this->getContext()->shop->id . ' AND ps.active = TRUE)',
                 'joinType' => self::INNER_JOIN,
             ],
             'id_feature_value' => [
@@ -317,7 +332,7 @@ class MySQL extends AbstractAdapter
                     (sp.from = \'0000-00-00 00:00:00\' OR \'' . date('Y-m-d H:i:s') . '\' >= sp.from) AND 
                     (sp.to = \'0000-00-00 00:00:00\' OR \'' . date('Y-m-d H:i:s') . '\' <= sp.to) 
                 )',
-                'joinType' => self::INNER_JOIN,
+                'joinType' => self::LEFT_JOIN,
             ],
         ];
 
@@ -356,27 +371,50 @@ class MySQL extends AbstractAdapter
      */
     protected function computeOrderByField(array $filterToTableMapping)
     {
+        // First, we get the order field from the current instance. That can be strings like 'price', 'name', 'position', etc.
         $orderField = $this->getOrderField();
 
+        // If it's empty, we just return it as is, nothing to do. This is usually a case when getting products
+        // for available filters, they reset the order field so we save performance
+        if (empty($orderField)) {
+            return $orderField;
+        }
+
+        // If we have an initial population, add the field into initial population selects, so we can use it in the outer query for sorting
         if ($this->getInitialPopulation() !== null && !empty($orderField)) {
             $this->getInitialPopulation()->addSelectField($orderField);
         }
 
-        // do not try to process the orderField if it already has an alias, or if it's a group function
-        if (empty($orderField) || strpos($orderField, '.') !== false
-            || strpos($orderField, '(') !== false) {
-            return $orderField;
-        }
-
+        // Alter order by field if it's a price column
         if ($orderField === 'price') {
             $orderField = $this->getOrderDirection() === 'asc' ? 'price_min' : 'price_max';
         }
 
+        // Do not try to process the orderField if it already has an alias, or if it's a group function
+        // We just append the order direction and return it
+        if (strpos($orderField, '.') !== false || strpos($orderField, '(') !== false) {
+            return $orderField . ' ' . strtoupper($this->getOrderDirection());
+        }
+
+        // In all other cases, add table mapping or p. prefix depending on field type
         $orderField = $this->computeFieldName($orderField, $filterToTableMapping, true);
 
-        // put some products at the end of the list
+        /*
+         * Do not try to process the orderField if it's a search page. We will use manually constructed list
+         * to order products by their position in the search results we got from the core, with inverted order
+         */
+        if ($orderField == 'p.position' && !empty($this->getInitialPopulation()->getFilters()['id_product']['='][0])) {
+            return 'FIELD(p.id_product,' . implode(',', $this->getInitialPopulation()->getFilters()['id_product']['='][0]) . ') ' .
+            ($this->getOrderDirection() === 'asc' ? 'DESC' : 'ASC');
+        }
+
+        // Alter order by field and add some products to the end of the list, if required
         $orderField = $this->computeShowLast($orderField, $filterToTableMapping);
 
+        // Add sort order
+        $orderField .= ' ' . strtoupper($this->getOrderDirection());
+
+        // And return it
         return $orderField;
     }
 
@@ -478,6 +516,7 @@ class MySQL extends AbstractAdapter
      */
     protected function computeSelectFields(array $filterToTableMapping)
     {
+        // Add already added select fields to current query
         $selectFields = [];
         foreach ($this->getSelectFields() as $key => $selectField) {
             $selectFields[] = $this->computeFieldName($selectField, $filterToTableMapping);
@@ -574,7 +613,6 @@ class MySQL extends AbstractAdapter
                 $idTmpFilteredProducts = [];
                 $mysqlAdapter = $this->getFilteredSearchAdapter();
                 $mysqlAdapter->addSelectField('id_product');
-                $mysqlAdapter->setLimit(null);
                 $mysqlAdapter->setOrderField('');
                 $mysqlAdapter->addFilter($filterName, $filterValues, $operator);
                 $idProducts = $mysqlAdapter->execute();
@@ -731,7 +769,6 @@ class MySQL extends AbstractAdapter
         $mysqlAdapter = $this->getFilteredSearchAdapter();
         $mysqlAdapter->copyFilters($this);
         $mysqlAdapter->setSelectFields(['MIN(' . $fieldName . ') as min, MAX(' . $fieldName . ') as max']);
-        $mysqlAdapter->setLimit(null);
         $mysqlAdapter->setOrderField('');
 
         $result = $mysqlAdapter->execute();
@@ -764,7 +801,6 @@ class MySQL extends AbstractAdapter
         }
 
         $this->addSelectField('COUNT(DISTINCT p.id_product) c');
-        $this->setLimit(null);
         $this->setOrderField('');
 
         $this->copyOperationsFilters();
@@ -777,8 +813,10 @@ class MySQL extends AbstractAdapter
      */
     public function useFiltersAsInitialPopulation()
     {
-        $this->setLimit(null);
+        // Initial population has no ORDER BY
         $this->setOrderField('');
+
+        // We add basic select fields we will need to matter what
         $this->setSelectFields(
             [
                 'id_product',
@@ -788,9 +826,15 @@ class MySQL extends AbstractAdapter
                 'weight',
                 'price',
                 'sales',
+                'on_sale',
+                'date_add',
             ]
         );
+
+        // Clone it, add it to initial population
         $this->initialPopulation = clone $this;
+
+        // Reset all filters so we start clean and add only the base select, we don't need anything else
         $this->resetAll();
         $this->addSelectField('id_product');
     }
