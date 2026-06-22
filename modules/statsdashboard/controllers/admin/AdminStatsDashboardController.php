@@ -23,9 +23,12 @@ class AdminStatsDashboardController extends ModuleAdminController
         $selectedBrand = (int) Tools::getValue('filter_brand', 0);
         $selectedSupplier = (int) Tools::getValue('filter_supplier', 0);
 
+        // NEW: Capture dynamic limit, default to 20 if empty
+        $selectedLimit = (int) Tools::getValue('filter_limit', 20);
+        if ($selectedLimit < 1) $selectedLimit = 20;
+
         $page = (int) Tools::getValue('page', 1);
         if ($page < 1) $page = 1;
-        $limit = 20;
 
         // 2. Fetch drop-down data
         $brands = Manufacturer::getManufacturers(false, $this->context->language->id);
@@ -34,10 +37,12 @@ class AdminStatsDashboardController extends ModuleAdminController
 
         // 3. Pagination Logic (Count total products matching filters)
         $totalProducts = $this->getProductCount($selectedBrand, $selectedSupplier);
-        $totalPages = ceil($totalProducts / $limit);
+        // Use the dynamic $selectedLimit here
+        $totalPages = ceil($totalProducts / $selectedLimit);
 
         // 4. Fetch the pivoted product list
-        $productsList = $this->getProductSalesList($selectedYear, $selectedBrand, $selectedSupplier, $page, $limit);
+        // Pass $selectedLimit instead of $limit
+        $productsList = $this->getProductSalesList($selectedYear, $selectedBrand, $selectedSupplier, $page, $selectedLimit);
 
         if (Tools::isSubmit('export_csv')) {
             // We pass the list to our new export function and kill the script so HTML doesn't render
@@ -53,10 +58,12 @@ class AdminStatsDashboardController extends ModuleAdminController
             'selectedYear' => $selectedYear,
             'selectedBrand' => $selectedBrand,
             'selectedSupplier' => $selectedSupplier,
+            'selectedLimit' => $selectedLimit, // NEW: Send limit to the view
             'page' => $page,
             'totalPages' => $totalPages,
             'form_url' => $this->context->link->getAdminLink('AdminStatsDashboard')
         ]);
+        
         $this->setTemplate('dashboard.tpl');
     }
 

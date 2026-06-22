@@ -22,7 +22,7 @@
         </div>
 
         <div class="statsdashboard__hero-actions" aria-label="Dashboard actions">
-            <a class="statsdashboard__action statsdashboard__action--ghost" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}">
+        <a class="statsdashboard__action statsdashboard__action--ghost" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}">
                 {l s='Refresh view' mod='statsdashboard'}
             </a>
             <span class="statsdashboard__status">
@@ -98,6 +98,17 @@
                     {foreach from=$suppliers item=supplier}
                         <option value="{$supplier.id_supplier}" {if $selectedSupplier == $supplier.id_supplier}selected{/if}>{$supplier.name|escape:'html':'UTF-8'}</option>
                     {/foreach}
+                </select>
+            </div>
+
+            <div class="statsdashboard-field">
+                <label class="statsdashboard-field__label" for="filter_limit">{l s='Rows per page' mod='statsdashboard'}</label>
+                <select name="filter_limit" id="filter_limit" class="statsdashboard-field__control">
+                    <option value="10" {if $selectedLimit == 10}selected{/if}>10</option>
+                    <option value="20" {if $selectedLimit == 20}selected{/if}>20</option>
+                    <option value="50" {if $selectedLimit == 50}selected{/if}>50</option>
+                    <option value="100" {if $selectedLimit == 100}selected{/if}>100</option>
+                    <option value="500" {if $selectedLimit == 500}selected{/if}>500</option>
                 </select>
             </div>
 
@@ -191,33 +202,24 @@
     {if isset($totalPages) && $totalPages > 1}
         <nav class="statsdashboard-pagination" aria-label="{l s='Pagination' mod='statsdashboard'}">
             {if $page > 1}
-                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--prev" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$page-1}">
+                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--prev" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&page={$page-1}">
                     &laquo; {l s='Prev' mod='statsdashboard'}
                 </a>
             {/if}
 
             <div class="statsdashboard-pagination__pages" role="list">
                 {for $p=1 to $totalPages}
-                    <a class="statsdashboard-pagination__link {if $p == $page}is-active{/if}" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$p}" {if $p == $page}aria-current="page" {/if}>
+                    <a class="statsdashboard-pagination__link {if $p == $page}is-active{/if}" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&page={$p}" {if $p == $page}aria-current="page" {/if}>
                         {$p}
                     </a>
                 {/for}
             </div>
 
             {if $page < $totalPages}
-                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--next" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$page+1}">
+                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--next" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&page={$page+1}">
                     {l s='Next' mod='statsdashboard'} &raquo;
                 </a>
             {/if}
         </nav>
     {/if}
-
-    <footer class="statsdashboard-footer">
-        <p class="statsdashboard-footer__text">
-            {l s='Designed for fast review, clean exports, and high-density catalog analysis.' mod='statsdashboard'}
-        </p>
-        <p class="statsdashboard-footer__meta">
-            {l s='Current page totals update with your selected filters.' mod='statsdashboard'}
-        </p>
-    </footer>
 </main>
