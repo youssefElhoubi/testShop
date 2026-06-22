@@ -117,8 +117,12 @@
                     {l s='Apply filters' mod='statsdashboard'}
                 </button>
 
-                <button type="submit" name="export_csv" value="1" class="statsdashboard-button statsdashboard-button--secondary">
-                    {l s='Export to Excel' mod='statsdashboard'}
+                <button type="submit" name="export_csv" value="filtered" class="statsdashboard-button statsdashboard-button--secondary">
+                    <i class="icon-file-text"></i> {l s='Export Filtered' mod='statsdashboard'}
+                </button>
+
+                <button type="submit" name="export_csv" value="all" class="statsdashboard-button statsdashboard-button--secondary">
+                    <i class="icon-globe"></i> {l s='Export Global (All)' mod='statsdashboard'}
                 </button>
             </div>
         </form>

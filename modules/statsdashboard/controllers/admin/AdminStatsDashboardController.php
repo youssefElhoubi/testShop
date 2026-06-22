@@ -23,31 +23,38 @@ class AdminStatsDashboardController extends ModuleAdminController
         $selectedBrand = (int) Tools::getValue('filter_brand', 0);
         $selectedSupplier = (int) Tools::getValue('filter_supplier', 0);
 
-        // NEW: Capture dynamic limit, default to 20 if empty
         $selectedLimit = (int) Tools::getValue('filter_limit', 20);
         if ($selectedLimit < 1) $selectedLimit = 20;
 
         $page = (int) Tools::getValue('page', 1);
         if ($page < 1) $page = 1;
 
+        // --- NEW: Export Logic ---
+        // We do this BEFORE the pagination logic to save server memory if an export is triggered
+        $exportAction = Tools::getValue('export_csv');
+        if ($exportAction) {
+            if ($exportAction === 'all') {
+                // Ignore all filters (0), get Page 1, but with an unlimited row count
+                $exportData = $this->getProductSalesList(0, 0, 0, 1, 999999);
+            } else {
+                // Keep the current filters, get Page 1, but with an unlimited row count
+                $exportData = $this->getProductSalesList($selectedYear, $selectedBrand, $selectedSupplier, 1, 999999);
+            }
+            $this->exportToCsv($exportData);
+        }
+        // -------------------------
+
         // 2. Fetch drop-down data
         $brands = Manufacturer::getManufacturers(false, $this->context->language->id);
         $suppliers = Supplier::getSuppliers(false, $this->context->language->id);
         $years = $this->getAvailableYears();
 
-        // 3. Pagination Logic (Count total products matching filters)
+        // 3. Pagination Logic
         $totalProducts = $this->getProductCount($selectedBrand, $selectedSupplier);
-        // Use the dynamic $selectedLimit here
         $totalPages = ceil($totalProducts / $selectedLimit);
 
-        // 4. Fetch the pivoted product list
-        // Pass $selectedLimit instead of $limit
+        // 4. Fetch the pivoted product list for the HTML view
         $productsList = $this->getProductSalesList($selectedYear, $selectedBrand, $selectedSupplier, $page, $selectedLimit);
-
-        if (Tools::isSubmit('export_csv')) {
-            // We pass the list to our new export function and kill the script so HTML doesn't render
-            $this->exportToCsv($productsList);
-        }
 
         // 5. Assign to Smarty
         $this->context->smarty->assign([
@@ -58,7 +65,7 @@ class AdminStatsDashboardController extends ModuleAdminController
             'selectedYear' => $selectedYear,
             'selectedBrand' => $selectedBrand,
             'selectedSupplier' => $selectedSupplier,
-            'selectedLimit' => $selectedLimit, // NEW: Send limit to the view
+            'selectedLimit' => $selectedLimit,
             'page' => $page,
             'totalPages' => $totalPages,
             'form_url' => $this->context->link->getAdminLink('AdminStatsDashboard')
