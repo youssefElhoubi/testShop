@@ -75,7 +75,12 @@
                     {if isset($productsList) && $productsList|@count > 0}
                         {foreach from=$productsList item=product}
                             <tr>
-                                <td><strong>{$product.product_name}</strong></td>
+                                <td>
+                                    <a href="{$product.product_link|escape:'html':'UTF-8'}" target="_blank" style="text-decoration: none; color: #2563eb; display: flex; align-items: center; gap: 5px;">
+                                        <strong>{$product.product_name}</strong>
+                                        <i class="icon-external-link" style="font-size: 11px; color: #9ca3af;"></i>
+                                    </a>
+                                </td>
                                 <td class="text-center">{$product.jan}</td>
                                 <td class="text-center">{$product.feb}</td>
                                 <td class="text-center">{$product.mar}</td>
