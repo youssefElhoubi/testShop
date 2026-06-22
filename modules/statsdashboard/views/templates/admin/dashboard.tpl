@@ -43,39 +43,98 @@
     </form>
 
     <hr>
+    <div class="panel statsdashboard-wrap">
+        <div class="panel-heading">
+            <i class="icon-bar-chart"></i> {l s='Product Sales Breakdown' mod='statsdashboard'}
+        </div>
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>{l s='ID' mod='statsdashboard'}</th>
-                    <th>{l s='Reference' mod='statsdashboard'}</th>
-                    <th>{l s='Product Name' mod='statsdashboard'}</th>
-                    <th>{l s='Year' mod='statsdashboard'}</th>
-                    <th class="text-center">{l s='Quantity Sold' mod='statsdashboard'}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {if isset($productsList) && $productsList|@count > 0}
-                    {foreach from=$productsList item=product}
+        <hr>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>{l s='Product Name' mod='statsdashboard'}</th>
+                        <th class="text-center">Jan</th>
+                        <th class="text-center">Feb</th>
+                        <th class="text-center">Mar</th>
+                        <th class="text-center">Apr</th>
+                        <th class="text-center">May</th>
+                        <th class="text-center">Jun</th>
+                        <th class="text-center">Jul</th>
+                        <th class="text-center">Aug</th>
+                        <th class="text-center">Sep</th>
+                        <th class="text-center">Oct</th>
+                        <th class="text-center">Nov</th>
+                        <th class="text-center">Dec</th>
+                        <th class="text-center bg-totals">{l s='Total Qty' mod='statsdashboard'}</th>
+                        <th class="text-right bg-profit">{l s='Total Profit' mod='statsdashboard'}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {if isset($productsList) && $productsList|@count > 0}
+                        {foreach from=$productsList item=product}
+                            <tr>
+                                <td><strong>{$product.product_name}</strong></td>
+                                <td class="text-center">{$product.jan}</td>
+                                <td class="text-center">{$product.feb}</td>
+                                <td class="text-center">{$product.mar}</td>
+                                <td class="text-center">{$product.apr}</td>
+                                <td class="text-center">{$product.may}</td>
+                                <td class="text-center">{$product.jun}</td>
+                                <td class="text-center">{$product.jul}</td>
+                                <td class="text-center">{$product.aug}</td>
+                                <td class="text-center">{$product.sep}</td>
+                                <td class="text-center">{$product.oct}</td>
+                                <td class="text-center">{$product.nov}</td>
+                                <td class="text-center">{$product.decem}</td>
+                                <td class="text-center col-total">
+                                    {$product.total_sold}
+                                </td>
+                                <td class="text-right col-profit">
+                                    {displayPrice price=$product.total_profit}
+                                </td>
+                            </tr>
+                        {/foreach}
+                    {else}
                         <tr>
-                            <td>{$product.id_product}</td>
-                            <td>{if $product.reference}{$product.reference}{else}--{/if}</td>
-                            <td>{$product.product_name}</td>
-                            <td>{$product.sales_year}</td>
-                            <td class="text-center" style="font-weight: bold; font-size: 1.1em;">
-                                {$product.total_sold}
+                            <td colspan="15" class="text-center" style="padding: 40px; color: #9ca3af;">
+                                <i class="icon-inbox" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                                {l s='No sales data found for these filters.' mod='statsdashboard'}
                             </td>
                         </tr>
-                    {/foreach}
-                {else}
-                    <tr>
-                        <td colspan="5" class="text-center">
-                            {l s='No sales data found for these filters.' mod='statsdashboard'}
-                        </td>
-                    </tr>
-                {/if}
-            </tbody>
-        </table>
+                    {/if}
+                </tbody>
+            </table>
+        </div>
+
     </div>
+
+    {if isset($totalPages) && $totalPages > 1}
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <ul class="pagination">
+                    {if $page > 1}
+                        <li>
+                            <a href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$page-1}">&laquo; {l s='Prev' mod='statsdashboard'}</a>
+                        </li>
+                    {/if}
+
+                    {for $p=1 to $totalPages}
+                        <li {if $p == $page}class="active" {/if}>
+                            <a href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$p}">{$p}</a>
+                        </li>
+                    {/for}
+
+                    {if $page < $totalPages}
+                        <li>
+                            <a href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$page+1}">{l s='Next' mod='statsdashboard'} &raquo;</a>
+                        </li>
+                    {/if}
+                </ul>
+            </div>
+        </div>
+    {/if}
+</div>
+
 </div>
