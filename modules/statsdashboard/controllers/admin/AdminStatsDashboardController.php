@@ -22,6 +22,9 @@ class AdminStatsDashboardController extends ModuleAdminController
         $selectedYear = (int) Tools::getValue('filter_year', 0);
         $selectedBrand = (int) Tools::getValue('filter_brand', 0);
         $selectedSupplier = (int) Tools::getValue('filter_supplier', 0);
+        
+        // NEW: Capture the selected Shop
+        $selectedShop = (int) Tools::getValue('filter_shop', 0);
 
         $selectedLimit = (int) Tools::getValue('filter_limit', 20);
         if ($selectedLimit < 1) $selectedLimit = 20;
@@ -29,16 +32,15 @@ class AdminStatsDashboardController extends ModuleAdminController
         $page = (int) Tools::getValue('page', 1);
         if ($page < 1) $page = 1;
 
-        // --- NEW: Export Logic ---
-        // We do this BEFORE the pagination logic to save server memory if an export is triggered
+        // --- EXPORT LOGIC ---
         $exportAction = Tools::getValue('export_csv');
         if ($exportAction) {
             if ($exportAction === 'all') {
-                // Ignore all filters (0), get Page 1, but with an unlimited row count
-                $exportData = $this->getProductSalesList(0, 0, 0, 1, 999999);
+                // Ignore year, brand, supplier (0), but KEEP the selected shop
+                $exportData = $this->getProductSalesList(0, 0, 0, $selectedShop, 1, 999999);
             } else {
-                // Keep the current filters, get Page 1, but with an unlimited row count
-                $exportData = $this->getProductSalesList($selectedYear, $selectedBrand, $selectedSupplier, 1, 999999);
+                // Keep all filters exactly as the user set them
+                $exportData = $this->getProductSalesList($selectedYear, $selectedBrand, $selectedSupplier, $selectedShop, 1, 999999);
             }
             $this->exportToCsv($exportData);
         }
@@ -48,13 +50,15 @@ class AdminStatsDashboardController extends ModuleAdminController
         $brands = Manufacturer::getManufacturers(false, $this->context->language->id);
         $suppliers = Supplier::getSuppliers(false, $this->context->language->id);
         $years = $this->getAvailableYears();
+        // NEW: Fetch all active stores for the dropdown
+        $shops = Shop::getShops(true);
 
         // 3. Pagination Logic
         $totalProducts = $this->getProductCount($selectedBrand, $selectedSupplier);
         $totalPages = ceil($totalProducts / $selectedLimit);
 
         // 4. Fetch the pivoted product list for the HTML view
-        $productsList = $this->getProductSalesList($selectedYear, $selectedBrand, $selectedSupplier, $page, $selectedLimit);
+        $productsList = $this->getProductSalesList($selectedYear, $selectedBrand, $selectedSupplier, $selectedShop, $page, $selectedLimit);
 
         // 5. Assign to Smarty
         $this->context->smarty->assign([
@@ -62,9 +66,11 @@ class AdminStatsDashboardController extends ModuleAdminController
             'brands' => $brands,
             'suppliers' => $suppliers,
             'years' => $years,
+            'shops' => $shops, // Send shops to the view
             'selectedYear' => $selectedYear,
             'selectedBrand' => $selectedBrand,
             'selectedSupplier' => $selectedSupplier,
+            'selectedShop' => $selectedShop, // Send selected shop to the view
             'selectedLimit' => $selectedLimit,
             'page' => $page,
             'totalPages' => $totalPages,
@@ -75,41 +81,45 @@ class AdminStatsDashboardController extends ModuleAdminController
     }
 
     /**
-     * Executes the SQL query with a MONTHLY PIVOT, PAGINATION, and URL GENERATION.
+     * Executes the SQL query with a MONTHLY PIVOT, PAGINATION, URL GENERATION, and MULTISTORE FILTER.
      */
-    private function getProductSalesList($year, $id_brand, $id_supplier, $page, $limit)
+    private function getProductSalesList($year, $id_brand, $id_supplier, $id_shop_filter, $page, $limit)
     {
         $id_lang = (int) $this->context->language->id;
         $id_shop = (int) $this->context->shop->id;
         $offset = ($page - 1) * $limit;
 
         $yearCondition = ($year > 0) ? ' AND YEAR(o.date_add) = ' . (int)$year : '';
+        // NEW: Inject shop filters for orders and stock if a specific store is chosen
+        $shopCondition = ($id_shop_filter > 0) ? ' AND o.id_shop = ' . (int)$id_shop_filter : '';
+        $stockCondition = ($id_shop_filter > 0) ? ' AND id_shop = ' . (int)$id_shop_filter : '';
+        
         $orderCheck = 'o.id_order IS NOT NULL';
 
         $sql = 'SELECT 
                     p.id_product,
                     pl.name as product_name,
                     
-                    /* NEW: Fetch the exact live stock right now from the database */
-                    IFNULL((SELECT SUM(quantity) FROM ' . _DB_PREFIX_ . 'stock_available WHERE id_product = p.id_product), 0) as current_stock,
+                    /* Fetch the exact live stock right now from the database */
+                    IFNULL((SELECT SUM(quantity) FROM ' . _DB_PREFIX_ . 'stock_available WHERE id_product = p.id_product ' . $stockCondition . '), 0) as current_stock,
                     
                     /* Monthly Breakdown */
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 1 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as jan,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 2 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as feb,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 3 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as mar,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 4 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as apr,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 5 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as may,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 6 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as jun,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 7 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as jul,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 8 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as aug,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 9 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as sep,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 10 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as oct,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 11 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as nov,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 12 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as decem,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 1 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as jan,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 2 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as feb,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 3 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as mar,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 4 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as apr,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 5 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as may,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 6 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as jun,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 7 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as jul,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 8 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as aug,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 9 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as sep,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 10 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as oct,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 11 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as nov,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 12 ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as decem,
                     
                     /* Grand Totals */
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as total_sold,
-                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' ' . $yearCondition . ' THEN od.total_price_tax_excl ELSE 0 END), 0) as total_profit
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' ' . $yearCondition . $shopCondition . ' THEN od.product_quantity ELSE 0 END), 0) as total_sold,
+                    IFNULL(SUM(CASE WHEN ' . $orderCheck . ' ' . $yearCondition . $shopCondition . ' THEN od.total_price_tax_excl ELSE 0 END), 0) as total_profit
                     
                 FROM ' . _DB_PREFIX_ . 'product p
                 LEFT JOIN ' . _DB_PREFIX_ . 'product_lang pl 
@@ -144,6 +154,7 @@ class AdminStatsDashboardController extends ModuleAdminController
 
         return $result ? $result : [];
     }
+
     /**
      * Gets the total number of products for the pagination math.
      */
@@ -161,46 +172,36 @@ class AdminStatsDashboardController extends ModuleAdminController
 
     private function getAvailableYears()
     {
-        // Ask the DB for the oldest order year
         $sql = 'SELECT MIN(YEAR(date_add)) FROM ' . _DB_PREFIX_ . 'orders';
         $minYear = (int) Db::getInstance()->getValue($sql);
         $currentYear = (int) date('Y');
 
-        // If the store is brand new and has no orders, default to this year
         if ($minYear === 0 || $minYear > $currentYear) {
             $minYear = $currentYear;
         }
 
         $years = [];
-        // Build the array from today down to the oldest year
         for ($i = $currentYear; $i >= $minYear; $i--) {
             $years[] = $i;
         }
         return $years;
     }
+
     /**
      * Generates a CSV file and forces the browser to download it.
      */
     private function exportToCsv($data)
     {
-        // 1. Clear any random HTML or empty spaces that might corrupt the file
         if (ob_get_level() && ob_get_length() > 0) {
             ob_clean();
         }
 
-        // 2. Set headers to force Excel download
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="Store_Stats_' . date('Y-m-d') . '.csv"');
 
-        // 3. Open output stream
         $output = fopen('php://output', 'w');
-
-        // 4. Add a UTF-8 BOM. This is a magic trick that forces Microsoft Excel to 
-        // properly read special characters (like accents or symbols) instead of showing gibberish.
         fputs($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-        // 5. Write the Column Headers
-        // We use a semicolon (;) because Excel in European/African regions reads it better than a comma.
         fputcsv($output, [
             'Product Name', 
             'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 
@@ -209,7 +210,6 @@ class AdminStatsDashboardController extends ModuleAdminController
             'Total Profit (Tax Excl)'
         ], ';');
 
-        // 6. Loop through the data and write each row
         if (!empty($data)) {
             foreach ($data as $row) {
                 fputcsv($output, [
@@ -219,13 +219,11 @@ class AdminStatsDashboardController extends ModuleAdminController
                     $row['sep'], $row['oct'], $row['nov'], $row['decem'],
                     $row['current_stock'],
                     $row['total_sold'],
-                    // Round the profit to 2 decimals so Excel handles it as a clean number
                     round($row['total_profit'], 2) 
                 ], ';');
             }
         }
 
-        // 7. Close the file and kill the script so PrestaShop doesn't print HTML into our CSV
         fclose($output);
         exit;
     }

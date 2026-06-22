@@ -22,7 +22,7 @@
         </div>
 
         <div class="statsdashboard__hero-actions" aria-label="Dashboard actions">
-        <a class="statsdashboard__action statsdashboard__action--ghost" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}">
+        <a class="statsdashboard__action statsdashboard__action--ghost" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}">
                 {l s='Refresh view' mod='statsdashboard'}
             </a>
             <span class="statsdashboard__status">
@@ -70,6 +70,19 @@
         <form method="get" action="{$form_url|escape:'html':'UTF-8'}" class="statsdashboard-filters" aria-label="Sales filters">
             <input type="hidden" name="controller" value="AdminStatsDashboard">
             <input type="hidden" name="token" value="{$token|escape:'html':'UTF-8'}">
+
+            <!-- NEW: Store Filter Dropdown -->
+            <div class="statsdashboard-field">
+                <label class="statsdashboard-field__label" for="filter_shop">{l s='Store' mod='statsdashboard'}</label>
+                <select name="filter_shop" id="filter_shop" class="statsdashboard-field__control">
+                    <option value="0">{l s='All Stores' mod='statsdashboard'}</option>
+                    {if isset($shops)}
+                        {foreach from=$shops item=shop}
+                            <option value="{$shop.id_shop}" {if $selectedShop == $shop.id_shop}selected{/if}>{$shop.name|escape:'html':'UTF-8'}</option>
+                        {/foreach}
+                    {/if}
+                </select>
+            </div>
 
             <div class="statsdashboard-field">
                 <label class="statsdashboard-field__label" for="filter_year">{l s='Year' mod='statsdashboard'}</label>
@@ -206,21 +219,21 @@
     {if isset($totalPages) && $totalPages > 1}
         <nav class="statsdashboard-pagination" aria-label="{l s='Pagination' mod='statsdashboard'}">
             {if $page > 1}
-                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--prev" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&page={$page-1}">
+                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--prev" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}&page={$page-1}">
                     &laquo; {l s='Prev' mod='statsdashboard'}
                 </a>
             {/if}
 
             <div class="statsdashboard-pagination__pages" role="list">
                 {for $p=1 to $totalPages}
-                    <a class="statsdashboard-pagination__link {if $p == $page}is-active{/if}" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&page={$p}" {if $p == $page}aria-current="page" {/if}>
+                    <a class="statsdashboard-pagination__link {if $p == $page}is-active{/if}" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}&page={$p}" {if $p == $page}aria-current="page" {/if}>
                         {$p}
                     </a>
                 {/for}
             </div>
 
             {if $page < $totalPages}
-                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--next" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&page={$page+1}">
+                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--next" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}&page={$page+1}">
                     {l s='Next' mod='statsdashboard'} &raquo;
                 </a>
             {/if}

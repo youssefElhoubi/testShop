@@ -76,6 +76,26 @@ Disallow: /prestachop/upload/
 Disallow: /prestachop/var/
 Disallow: /prestachop/vendor/
 Disallow: /prestachop/webservice/
+Disallow: /prestachop/app/
+Disallow: /prestachop/cache/
+Disallow: /prestachop/classes/
+Disallow: /prestachop/config/
+Disallow: /prestachop/controllers/
+Disallow: /prestachop/download/
+Disallow: /prestachop/js/
+Disallow: /prestachop/localization/
+Disallow: /prestachop/log/
+Disallow: /prestachop/mails/
+Disallow: /prestachop/modules/
+Disallow: /prestachop/override/
+Disallow: /prestachop/pdf/
+Disallow: /prestachop/src/
+Disallow: /prestachop/tools/
+Disallow: /prestachop/translations/
+Disallow: /prestachop/upload/
+Disallow: /prestachop/var/
+Disallow: /prestachop/vendor/
+Disallow: /prestachop/webservice/
 Disallow: /en/app/
 Disallow: /en/cache/
 Disallow: /en/classes/
@@ -117,33 +137,32 @@ Disallow: /ar/var/
 Disallow: /ar/vendor/
 Disallow: /ar/webservice/
 # Files
-Disallow: /*en/password-recovery
 Disallow: /*en/address
 Disallow: /*en/addresses
 Disallow: /*en/login
 Disallow: /*en/cart
 Disallow: /*en/discount
+Disallow: /*en/guest-tracking
 Disallow: /*en/order-history
 Disallow: /*en/identity
 Disallow: /*en/my-account
+Disallow: /*en/order
+Disallow: /*en/order-confirmation
 Disallow: /*en/order-follow
 Disallow: /*en/credit-slip
-Disallow: /*en/order
+Disallow: /*en/password-recovery
 Disallow: /*en/search
-Disallow: /*en/guest-tracking
-Disallow: /*en/order-confirmation
-Disallow: /*ar/password-recovery
-Disallow: /*ar/address
-Disallow: /*ar/addresses
-Disallow: /*ar/login
-Disallow: /*ar/cart
-Disallow: /*ar/discount
-Disallow: /*ar/order-history
-Disallow: /*ar/identity
-Disallow: /*ar/my-account
-Disallow: /*ar/order-follow
-Disallow: /*ar/credit-slip
-Disallow: /*ar/order
-Disallow: /*ar/search
-Disallow: /*ar/guest-tracking
-Disallow: /*ar/order-confirmation
+Disallow: /*ar/العنوان
+Disallow: /*ar/العناوين
+Disallow: /*ar/تسجيل الدخول
+Disallow: /*ar/عربة التسوق
+Disallow: /*ar/خصم
+Disallow: /*ar/تتبع الطلب
+Disallow: /*ar/سجل طلبات الشراء
+Disallow: /*ar/الهوية
+Disallow: /*ar/الحساب الشخصي
+Disallow: /*ar/طلب شراء
+Disallow: /*ar/تأكيد طلب الشراء
+Disallow: /*ar/ايصال الدفع
+Disallow: /*ar/استعادة كلمة المرور
+Disallow: /*ar/بحث
