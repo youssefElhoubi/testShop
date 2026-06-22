@@ -1,9 +1,8 @@
 <div class="panel">
     <div class="panel-heading">
-        <i class="icon-bar-chart"></i> {l s='Store Performance Dashboard' mod='statsdashboard'}
+        <i class="icon-bar-chart"></i> {l s='Product Sales Breakdown' mod='statsdashboard'}
     </div>
 
-    <!-- Filter Form -->
     <form method="get" action="{$form_url|escape:'html':'UTF-8'}" class="form-inline well">
         <input type="hidden" name="controller" value="AdminStatsDashboard">
         <input type="hidden" name="token" value="{$token|escape:'html':'UTF-8'}">
@@ -11,6 +10,7 @@
         <div class="form-group">
             <label for="filter_year">{l s='Year' mod='statsdashboard'}</label>
             <select name="filter_year" id="filter_year" class="form-control">
+                <option value="0">{l s='All Years' mod='statsdashboard'}</option>
                 {foreach from=$years item=year}
                     <option value="{$year}" {if $selectedYear == $year}selected{/if}>{$year}</option>
                 {/foreach}
@@ -44,25 +44,38 @@
 
     <hr>
 
-    <!-- Stats Display -->
-    <div class="row">
-        <div class="col-md-4">
-            <div class="panel text-center">
-                <h3>{l s='Total Orders' mod='statsdashboard'}</h3>
-                <h2>{$stats.total_orders|intval}</h2>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="panel text-center">
-                <h3>{l s='Items Sold' mod='statsdashboard'}</h3>
-                <h2>{$stats.total_items_sold|intval}</h2>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="panel text-center">
-                <h3>{l s='Total Revenue' mod='statsdashboard'}</h3>
-                <h2>{displayPrice price=$stats.total_revenue}</h2>
-            </div>
-        </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>{l s='ID' mod='statsdashboard'}</th>
+                    <th>{l s='Reference' mod='statsdashboard'}</th>
+                    <th>{l s='Product Name' mod='statsdashboard'}</th>
+                    <th>{l s='Year' mod='statsdashboard'}</th>
+                    <th class="text-center">{l s='Quantity Sold' mod='statsdashboard'}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {if isset($productsList) && $productsList|@count > 0}
+                    {foreach from=$productsList item=product}
+                        <tr>
+                            <td>{$product.id_product}</td>
+                            <td>{if $product.reference}{$product.reference}{else}--{/if}</td>
+                            <td>{$product.product_name}</td>
+                            <td>{$product.sales_year}</td>
+                            <td class="text-center" style="font-weight: bold; font-size: 1.1em;">
+                                {$product.total_sold}
+                            </td>
+                        </tr>
+                    {/foreach}
+                {else}
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            {l s='No sales data found for these filters.' mod='statsdashboard'}
+                        </td>
+                    </tr>
+                {/if}
+            </tbody>
+        </table>
     </div>
 </div>
