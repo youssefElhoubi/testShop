@@ -9,7 +9,7 @@ class AdminStatsDashboardController extends ModuleAdminController
     public function setMedia($isNewTheme = false)
     {
         parent::setMedia($isNewTheme);
-        
+
         // This registers and loads our custom CSS file
         $this->addCSS($this->module->getPathUri() . 'views/css/admin_dashboard.css');
     }
@@ -22,7 +22,7 @@ class AdminStatsDashboardController extends ModuleAdminController
         $selectedYear = (int) Tools::getValue('filter_year', 0);
         $selectedBrand = (int) Tools::getValue('filter_brand', 0);
         $selectedSupplier = (int) Tools::getValue('filter_supplier', 0);
-        
+
         $page = (int) Tools::getValue('page', 1);
         if ($page < 1) $page = 1;
         $limit = 20;
@@ -64,15 +64,15 @@ class AdminStatsDashboardController extends ModuleAdminController
         $id_shop = (int) $this->context->shop->id;
         $offset = ($page - 1) * $limit;
 
-        // 1. If a year is selected, we enforce it. If $year is 0 (All Years), it stays blank and filters nothing.
         $yearCondition = ($year > 0) ? ' AND YEAR(o.date_add) = ' . (int)$year : '';
-
-        // 2. We are checking if ANY order exists, ignoring if the payment was officially accepted yet.
         $orderCheck = 'o.id_order IS NOT NULL';
 
         $sql = 'SELECT 
                     p.id_product,
                     pl.name as product_name,
+                    
+                    /* NEW: Fetch the exact live stock right now from the database */
+                    IFNULL((SELECT SUM(quantity) FROM ' . _DB_PREFIX_ . 'stock_available WHERE id_product = p.id_product), 0) as current_stock,
                     
                     /* Monthly Breakdown */
                     IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 1 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as jan,
@@ -88,7 +88,7 @@ class AdminStatsDashboardController extends ModuleAdminController
                     IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 11 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as nov,
                     IFNULL(SUM(CASE WHEN ' . $orderCheck . ' AND MONTH(o.date_add) = 12 ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as decem,
                     
-                    /* Grand Totals - Will calculate EVERYTHING if yearCondition is blank */
+                    /* Grand Totals */
                     IFNULL(SUM(CASE WHEN ' . $orderCheck . ' ' . $yearCondition . ' THEN od.product_quantity ELSE 0 END), 0) as total_sold,
                     IFNULL(SUM(CASE WHEN ' . $orderCheck . ' ' . $yearCondition . ' THEN od.total_price_tax_excl ELSE 0 END), 0) as total_profit
                     
@@ -99,7 +99,7 @@ class AdminStatsDashboardController extends ModuleAdminController
                     ON p.id_product = od.product_id
                 LEFT JOIN ' . _DB_PREFIX_ . 'orders o 
                     ON od.id_order = o.id_order
-                WHERE 1 '; 
+                WHERE 1 ';
 
         if ($id_brand > 0) {
             $sql .= ' AND p.id_manufacturer = ' . (int)$id_brand;

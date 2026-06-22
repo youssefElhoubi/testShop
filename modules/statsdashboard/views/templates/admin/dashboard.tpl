@@ -67,7 +67,8 @@
                         <th class="text-center">Oct</th>
                         <th class="text-center">Nov</th>
                         <th class="text-center">Dec</th>
-                        <th class="text-center bg-totals">{l s='Total Qty' mod='statsdashboard'}</th>
+                        <th class="text-center" style="background-color: #fff3e0; color: #d84315;">{l s='Live Stock' mod='statsdashboard'}</th>
+                        <th class="text-center bg-totals">{l s='Total sales' mod='statsdashboard'}</th>
                         <th class="text-right bg-profit">{l s='Total Profit' mod='statsdashboard'}</th>
                     </tr>
                 </thead>
@@ -93,6 +94,11 @@
                                 <td class="text-center">{$product.oct}</td>
                                 <td class="text-center">{$product.nov}</td>
                                 <td class="text-center">{$product.decem}</td>
+
+                                <td class="text-center" style="font-weight: bold; color: #d84315; background-color: #fff8e1;">
+                                    {$product.current_stock}
+                                </td>
+
                                 <td class="text-center col-total">
                                     {$product.total_sold}
                                 </td>
@@ -103,7 +109,7 @@
                         {/foreach}
                     {else}
                         <tr>
-                            <td colspan="15" class="text-center" style="padding: 40px; color: #9ca3af;">
+                            <td colspan="16" class="text-center" style="padding: 40px; color: #9ca3af;">
                                 <i class="icon-inbox" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
                                 {l s='No sales data found for these filters.' mod='statsdashboard'}
                             </td>
