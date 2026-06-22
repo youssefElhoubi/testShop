@@ -1,151 +1,223 @@
-<div class="panel">
-    <div class="panel-heading">
-        <i class="icon-bar-chart"></i> {l s='Product Sales Breakdown' mod='statsdashboard'}
-    </div>
+{assign var=pageProductsCount value=0}
+{assign var=pageUnitsSold value=0}
+{assign var=pageProfit value=0}
+{assign var=pageStock value=0}
+{if isset($productsList) && $productsList|@count > 0}
+    {foreach from=$productsList item=product}
+        {assign var=pageProductsCount value=$pageProductsCount+1}
+        {assign var=pageUnitsSold value=$pageUnitsSold+$product.total_sold}
+        {assign var=pageProfit value=$pageProfit+$product.total_profit}
+        {assign var=pageStock value=$pageStock+$product.current_stock}
+    {/foreach}
+{/if}
 
-    <form method="get" action="{$form_url|escape:'html':'UTF-8'}" class="form-inline well">
-        <input type="hidden" name="controller" value="AdminStatsDashboard">
-        <input type="hidden" name="token" value="{$token|escape:'html':'UTF-8'}">
-
-        <div class="form-group">
-            <label for="filter_year">{l s='Year' mod='statsdashboard'}</label>
-            <select name="filter_year" id="filter_year" class="form-control">
-                <option value="0">{l s='All Years' mod='statsdashboard'}</option>
-                {foreach from=$years item=year}
-                    <option value="{$year}" {if $selectedYear == $year}selected{/if}>{$year}</option>
-                {/foreach}
-            </select>
+<main class="statsdashboard" aria-labelledby="statsdashboard-title">
+    <header class="statsdashboard__hero">
+        <div class="statsdashboard__hero-copy">
+            <p class="statsdashboard__eyebrow">{l s='Store intelligence' mod='statsdashboard'}</p>
+            <h1 class="statsdashboard__title" id="statsdashboard-title">{l s='Product Sales Breakdown' mod='statsdashboard'}</h1>
+            <p class="statsdashboard__subtitle">
+                {l s='Compare monthly sales, live stock, and profit across your catalog with a focused, executive-ready dashboard.' mod='statsdashboard'}
+            </p>
         </div>
 
-        <div class="form-group">
-            <label for="filter_brand">{l s='Brand' mod='statsdashboard'}</label>
-            <select name="filter_brand" id="filter_brand" class="form-control">
-                <option value="0">{l s='All Brands' mod='statsdashboard'}</option>
-                {foreach from=$brands item=brand}
-                    <option value="{$brand.id_manufacturer}" {if $selectedBrand == $brand.id_manufacturer}selected{/if}>{$brand.name}</option>
-                {/foreach}
-            </select>
+        <div class="statsdashboard__hero-actions" aria-label="Dashboard actions">
+            <a class="statsdashboard__action statsdashboard__action--ghost" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}">
+                {l s='Refresh view' mod='statsdashboard'}
+            </a>
+            <span class="statsdashboard__status">
+                <span class="statsdashboard__status-dot" aria-hidden="true"></span>
+                {l s='Live data' mod='statsdashboard'}
+            </span>
+        </div>
+    </header>
+
+    <section class="statsdashboard__kpis" aria-label="Current page summary">
+        <article class="statsdashboard-card">
+            <p class="statsdashboard-card__label">{l s='Products shown' mod='statsdashboard'}</p>
+            <p class="statsdashboard-card__value">{$pageProductsCount}</p>
+            <p class="statsdashboard-card__meta">{l s='Rows on the current page' mod='statsdashboard'}</p>
+        </article>
+
+        <article class="statsdashboard-card">
+            <p class="statsdashboard-card__label">{l s='Units sold' mod='statsdashboard'}</p>
+            <p class="statsdashboard-card__value">{$pageUnitsSold}</p>
+            <p class="statsdashboard-card__meta">{l s='Selected filters and period' mod='statsdashboard'}</p>
+        </article>
+
+        <article class="statsdashboard-card">
+            <p class="statsdashboard-card__label">{l s='Live stock' mod='statsdashboard'}</p>
+            <p class="statsdashboard-card__value">{$pageStock}</p>
+            <p class="statsdashboard-card__meta">{l s='Inventory still available' mod='statsdashboard'}</p>
+        </article>
+
+        <article class="statsdashboard-card statsdashboard-card--accent">
+            <p class="statsdashboard-card__label">{l s='Profit' mod='statsdashboard'}</p>
+            <p class="statsdashboard-card__value">{displayPrice price=$pageProfit}</p>
+            <p class="statsdashboard-card__meta">{l s='Tax excluded gross profit' mod='statsdashboard'}</p>
+        </article>
+    </section>
+
+    <section class="statsdashboard-panel" aria-labelledby="filters-heading">
+        <div class="statsdashboard-panel__header">
+            <div>
+                <p class="statsdashboard-panel__eyebrow">{l s='Filters' mod='statsdashboard'}</p>
+                <h2 class="statsdashboard-panel__title" id="filters-heading">{l s='Refine results' mod='statsdashboard'}</h2>
+            </div>
+            <p class="statsdashboard-panel__description">{l s='Filter by year, brand, or supplier, then export the current slice when you need a spreadsheet.' mod='statsdashboard'}</p>
         </div>
 
-        <div class="form-group">
-            <label for="filter_supplier">{l s='Supplier' mod='statsdashboard'}</label>
-            <select name="filter_supplier" id="filter_supplier" class="form-control">
-                <option value="0">{l s='All Suppliers' mod='statsdashboard'}</option>
-                {foreach from=$suppliers item=supplier}
-                    <option value="{$supplier.id_supplier}" {if $selectedSupplier == $supplier.id_supplier}selected{/if}>{$supplier.name}</option>
-                {/foreach}
-            </select>
+        <form method="get" action="{$form_url|escape:'html':'UTF-8'}" class="statsdashboard-filters" aria-label="Sales filters">
+            <input type="hidden" name="controller" value="AdminStatsDashboard">
+            <input type="hidden" name="token" value="{$token|escape:'html':'UTF-8'}">
+
+            <div class="statsdashboard-field">
+                <label class="statsdashboard-field__label" for="filter_year">{l s='Year' mod='statsdashboard'}</label>
+                <select name="filter_year" id="filter_year" class="statsdashboard-field__control">
+                    <option value="0">{l s='All Years' mod='statsdashboard'}</option>
+                    {foreach from=$years item=year}
+                        <option value="{$year}" {if $selectedYear == $year}selected{/if}>{$year}</option>
+                    {/foreach}
+                </select>
+            </div>
+
+            <div class="statsdashboard-field">
+                <label class="statsdashboard-field__label" for="filter_brand">{l s='Brand' mod='statsdashboard'}</label>
+                <select name="filter_brand" id="filter_brand" class="statsdashboard-field__control">
+                    <option value="0">{l s='All Brands' mod='statsdashboard'}</option>
+                    {foreach from=$brands item=brand}
+                        <option value="{$brand.id_manufacturer}" {if $selectedBrand == $brand.id_manufacturer}selected{/if}>{$brand.name|escape:'html':'UTF-8'}</option>
+                    {/foreach}
+                </select>
+            </div>
+
+            <div class="statsdashboard-field">
+                <label class="statsdashboard-field__label" for="filter_supplier">{l s='Supplier' mod='statsdashboard'}</label>
+                <select name="filter_supplier" id="filter_supplier" class="statsdashboard-field__control">
+                    <option value="0">{l s='All Suppliers' mod='statsdashboard'}</option>
+                    {foreach from=$suppliers item=supplier}
+                        <option value="{$supplier.id_supplier}" {if $selectedSupplier == $supplier.id_supplier}selected{/if}>{$supplier.name|escape:'html':'UTF-8'}</option>
+                    {/foreach}
+                </select>
+            </div>
+
+            <div class="statsdashboard-filters__actions">
+                <button type="submit" class="statsdashboard-button statsdashboard-button--primary">
+                    {l s='Apply filters' mod='statsdashboard'}
+                </button>
+
+                <button type="submit" name="export_csv" value="1" class="statsdashboard-button statsdashboard-button--secondary">
+                    {l s='Export to Excel' mod='statsdashboard'}
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="statsdashboard-panel" aria-labelledby="results-heading">
+        <div class="statsdashboard-panel__header">
+            <div>
+                <p class="statsdashboard-panel__eyebrow">{l s='Results' mod='statsdashboard'}</p>
+                <h2 class="statsdashboard-panel__title" id="results-heading">{l s='Monthly sales table' mod='statsdashboard'}</h2>
+            </div>
+            <p class="statsdashboard-panel__description">{l s='Scroll horizontally on smaller screens to inspect each month, then jump through the catalog with pagination below.' mod='statsdashboard'}</p>
         </div>
 
-        <button type="submit" class="btn btn-primary">
-            <i class="icon-filter"></i> {l s='Filter' mod='statsdashboard'}
-        </button>
-    </form>
-
-    <hr>
-    <div class="panel statsdashboard-wrap">
-        <div class="panel-heading">
-            <i class="icon-bar-chart"></i> {l s='Product Sales Breakdown' mod='statsdashboard'}
-        </div>
-
-        <hr>
-
-        <div class="table-responsive">
-            <table class="table table-striped">
+        <div class="statsdashboard-table-shell">
+            <table class="statsdashboard-table">
+                <caption class="sr-only">{l s='Sales by month, stock, total sales, and profit' mod='statsdashboard'}</caption>
                 <thead>
                     <tr>
-                        <th>{l s='Product Name' mod='statsdashboard'}</th>
-                        <th class="text-center">Jan</th>
-                        <th class="text-center">Feb</th>
-                        <th class="text-center">Mar</th>
-                        <th class="text-center">Apr</th>
-                        <th class="text-center">May</th>
-                        <th class="text-center">Jun</th>
-                        <th class="text-center">Jul</th>
-                        <th class="text-center">Aug</th>
-                        <th class="text-center">Sep</th>
-                        <th class="text-center">Oct</th>
-                        <th class="text-center">Nov</th>
-                        <th class="text-center">Dec</th>
-                        <th class="text-center" style="background-color: #fff3e0; color: #d84315;">{l s='Live Stock' mod='statsdashboard'}</th>
-                        <th class="text-center bg-totals">{l s='Total sales' mod='statsdashboard'}</th>
-                        <th class="text-right bg-profit">{l s='Total Profit' mod='statsdashboard'}</th>
+                        <th scope="col">{l s='Product Name' mod='statsdashboard'}</th>
+                        <th scope="col" class="statsdashboard-table__month">Jan</th>
+                        <th scope="col" class="statsdashboard-table__month">Feb</th>
+                        <th scope="col" class="statsdashboard-table__month">Mar</th>
+                        <th scope="col" class="statsdashboard-table__month">Apr</th>
+                        <th scope="col" class="statsdashboard-table__month">May</th>
+                        <th scope="col" class="statsdashboard-table__month">Jun</th>
+                        <th scope="col" class="statsdashboard-table__month">Jul</th>
+                        <th scope="col" class="statsdashboard-table__month">Aug</th>
+                        <th scope="col" class="statsdashboard-table__month">Sep</th>
+                        <th scope="col" class="statsdashboard-table__month">Oct</th>
+                        <th scope="col" class="statsdashboard-table__month">Nov</th>
+                        <th scope="col" class="statsdashboard-table__month">Dec</th>
+                        <th scope="col" style="color: black" class="statsdashboard-table__stock">{l s='Live Stock' mod='statsdashboard'}</th>
+                        <th scope="col" class="statsdashboard-table__total statsdashboard-table__total--sales">{l s='Total sales' mod='statsdashboard'}</th>
+                        <th scope="col" class="statsdashboard-table__total statsdashboard-table__total--profit">{l s='Total Profit' mod='statsdashboard'}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {if isset($productsList) && $productsList|@count > 0}
                         {foreach from=$productsList item=product}
                             <tr>
-                                <td>
-                                    <a href="{$product.product_link|escape:'html':'UTF-8'}" target="_blank" style="text-decoration: none; color: #2563eb; display: flex; align-items: center; gap: 5px;">
-                                        <strong>{$product.product_name}</strong>
-                                        <i class="icon-external-link" style="font-size: 11px; color: #9ca3af;"></i>
+                                <th scope="row" class="statsdashboard-table__product">
+                                    <a href="{$product.product_link|escape:'html':'UTF-8'}" target="_blank" rel="noopener noreferrer" class="statsdashboard-product-link">
+                                        <span class="statsdashboard-product-link__name">{$product.product_name|escape:'html':'UTF-8'}</span>
+                                        <span class="statsdashboard-product-link__icon" aria-hidden="true">↗</span>
                                     </a>
-                                </td>
-                                <td class="text-center">{$product.jan}</td>
-                                <td class="text-center">{$product.feb}</td>
-                                <td class="text-center">{$product.mar}</td>
-                                <td class="text-center">{$product.apr}</td>
-                                <td class="text-center">{$product.may}</td>
-                                <td class="text-center">{$product.jun}</td>
-                                <td class="text-center">{$product.jul}</td>
-                                <td class="text-center">{$product.aug}</td>
-                                <td class="text-center">{$product.sep}</td>
-                                <td class="text-center">{$product.oct}</td>
-                                <td class="text-center">{$product.nov}</td>
-                                <td class="text-center">{$product.decem}</td>
-
-                                <td class="text-center" style="font-weight: bold; color: #d84315; background-color: #fff8e1;">
-                                    {$product.current_stock}
-                                </td>
-
-                                <td class="text-center col-total">
-                                    {$product.total_sold}
-                                </td>
-                                <td class="text-right col-profit">
-                                    {displayPrice price=$product.total_profit}
-                                </td>
+                                </th>
+                                <td>{$product.jan}</td>
+                                <td>{$product.feb}</td>
+                                <td>{$product.mar}</td>
+                                <td>{$product.apr}</td>
+                                <td>{$product.may}</td>
+                                <td>{$product.jun}</td>
+                                <td>{$product.jul}</td>
+                                <td>{$product.aug}</td>
+                                <td>{$product.sep}</td>
+                                <td>{$product.oct}</td>
+                                <td>{$product.nov}</td>
+                                <td>{$product.decem}</td>
+                                <td class="statsdashboard-table__stock-value">{$product.current_stock}</td>
+                                <td class="statsdashboard-table__sales">{$product.total_sold}</td>
+                                <td class="statsdashboard-table__profit">{displayPrice price=$product.total_profit}</td>
                             </tr>
                         {/foreach}
                     {else}
                         <tr>
-                            <td colspan="16" class="text-center" style="padding: 40px; color: #9ca3af;">
-                                <i class="icon-inbox" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
-                                {l s='No sales data found for these filters.' mod='statsdashboard'}
+                            <td colspan="16">
+                                <div class="statsdashboard-empty" role="status" aria-live="polite">
+                                    <div class="statsdashboard-empty__icon" aria-hidden="true">⌘</div>
+                                    <h3 class="statsdashboard-empty__title">{l s='No sales data found for these filters.' mod='statsdashboard'}</h3>
+                                    <p class="statsdashboard-empty__text">{l s='Try clearing one or more filters, or choose a different year to reveal matching products.' mod='statsdashboard'}</p>
+                                </div>
                             </td>
                         </tr>
                     {/if}
                 </tbody>
             </table>
         </div>
-
-    </div>
+    </section>
 
     {if isset($totalPages) && $totalPages > 1}
-        <div class="row">
-            <div class="col-md-12 text-center">
-                <ul class="pagination">
-                    {if $page > 1}
-                        <li>
-                            <a href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$page-1}">&laquo; {l s='Prev' mod='statsdashboard'}</a>
-                        </li>
-                    {/if}
+        <nav class="statsdashboard-pagination" aria-label="{l s='Pagination' mod='statsdashboard'}">
+            {if $page > 1}
+                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--prev" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$page-1}">
+                    &laquo; {l s='Prev' mod='statsdashboard'}
+                </a>
+            {/if}
 
-                    {for $p=1 to $totalPages}
-                        <li {if $p == $page}class="active" {/if}>
-                            <a href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$p}">{$p}</a>
-                        </li>
-                    {/for}
-
-                    {if $page < $totalPages}
-                        <li>
-                            <a href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$page+1}">{l s='Next' mod='statsdashboard'} &raquo;</a>
-                        </li>
-                    {/if}
-                </ul>
+            <div class="statsdashboard-pagination__pages" role="list">
+                {for $p=1 to $totalPages}
+                    <a class="statsdashboard-pagination__link {if $p == $page}is-active{/if}" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$p}" {if $p == $page}aria-current="page" {/if}>
+                        {$p}
+                    </a>
+                {/for}
             </div>
-        </div>
-    {/if}
-</div>
 
-</div>
+            {if $page < $totalPages}
+                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--next" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&page={$page+1}">
+                    {l s='Next' mod='statsdashboard'} &raquo;
+                </a>
+            {/if}
+        </nav>
+    {/if}
+
+    <footer class="statsdashboard-footer">
+        <p class="statsdashboard-footer__text">
+            {l s='Designed for fast review, clean exports, and high-density catalog analysis.' mod='statsdashboard'}
+        </p>
+        <p class="statsdashboard-footer__meta">
+            {l s='Current page totals update with your selected filters.' mod='statsdashboard'}
+        </p>
+    </footer>
+</main>

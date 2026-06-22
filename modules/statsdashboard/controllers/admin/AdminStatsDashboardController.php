@@ -39,6 +39,11 @@ class AdminStatsDashboardController extends ModuleAdminController
         // 4. Fetch the pivoted product list
         $productsList = $this->getProductSalesList($selectedYear, $selectedBrand, $selectedSupplier, $page, $limit);
 
+        if (Tools::isSubmit('export_csv')) {
+            // We pass the list to our new export function and kill the script so HTML doesn't render
+            $this->exportToCsv($productsList);
+        }
+
         // 5. Assign to Smarty
         $this->context->smarty->assign([
             'productsList' => $productsList,
@@ -158,5 +163,56 @@ class AdminStatsDashboardController extends ModuleAdminController
             $years[] = $i;
         }
         return $years;
+    }
+    /**
+     * Generates a CSV file and forces the browser to download it.
+     */
+    private function exportToCsv($data)
+    {
+        // 1. Clear any random HTML or empty spaces that might corrupt the file
+        if (ob_get_level() && ob_get_length() > 0) {
+            ob_clean();
+        }
+
+        // 2. Set headers to force Excel download
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="Store_Stats_' . date('Y-m-d') . '.csv"');
+
+        // 3. Open output stream
+        $output = fopen('php://output', 'w');
+
+        // 4. Add a UTF-8 BOM. This is a magic trick that forces Microsoft Excel to 
+        // properly read special characters (like accents or symbols) instead of showing gibberish.
+        fputs($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        // 5. Write the Column Headers
+        // We use a semicolon (;) because Excel in European/African regions reads it better than a comma.
+        fputcsv($output, [
+            'Product Name', 
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 
+            'Live Stock', 
+            'Total Qty', 
+            'Total Profit (Tax Excl)'
+        ], ';');
+
+        // 6. Loop through the data and write each row
+        if (!empty($data)) {
+            foreach ($data as $row) {
+                fputcsv($output, [
+                    $row['product_name'],
+                    $row['jan'], $row['feb'], $row['mar'], $row['apr'], 
+                    $row['may'], $row['jun'], $row['jul'], $row['aug'], 
+                    $row['sep'], $row['oct'], $row['nov'], $row['decem'],
+                    $row['current_stock'],
+                    $row['total_sold'],
+                    // Round the profit to 2 decimals so Excel handles it as a clean number
+                    round($row['total_profit'], 2) 
+                ], ';');
+            }
+        }
+
+        // 7. Close the file and kill the script so PrestaShop doesn't print HTML into our CSV
+        fclose($output);
+        exit;
     }
 }
