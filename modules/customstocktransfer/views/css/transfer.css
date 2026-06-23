@@ -1,0 +1,131 @@
+.cst-dashboard-shell {
+  border: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.cst-view-toggle .btn {
+  min-width: 120px;
+}
+
+.cst-view-toggle .btn.active {
+  box-shadow: 0 10px 24px rgba(33, 37, 41, 0.12);
+}
+
+.cst-search-group .input-group-text {
+  border-color: #dce1e7;
+}
+
+.cst-search-group .form-control {
+  height: calc(2.875rem + 2px);
+}
+
+.cst-product-card {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.cst-product-card:hover {
+  transform: translateY(-2px);
+  transition: transform .18s ease, box-shadow .18s ease;
+  box-shadow: 0 1rem 2rem rgba(15, 23, 42, 0.12) !important;
+}
+
+.cst-product-media {
+  position: relative;
+  width: 100%;
+  padding-top: 66.6667%;
+  background: linear-gradient(135deg, #eef2f7 0%, #dfe7f3 100%);
+  overflow: hidden;
+}
+
+.cst-product-image,
+.cst-product-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cst-product-image {
+  object-fit: cover;
+  display: block;
+}
+
+.cst-product-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(226, 232, 240, 0.9));
+}
+
+.cst-product-card .card-body {
+  padding: 1.25rem;
+}
+
+.cst-store-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: .25rem .5rem .25rem 0;
+  padding: .4rem .7rem;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.cst-store-chip .badge {
+  min-width: 2.25rem;
+  text-align: center;
+}
+
+[data-cst-product-item].d-none {
+  display: none !important;
+}
+
+.cst-modal-content {
+  border: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.cst-modal-content .modal-header,
+.cst-modal-content .modal-footer {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.cst-modal-content .modal-header {
+  padding: 1.25rem 1.5rem;
+}
+
+.cst-modal-content .modal-body {
+  padding: 1.5rem;
+}
+
+.cst-modal-content .modal-footer {
+  padding: 1rem 1.5rem 1.25rem;
+}
+
+.cst-modal-content .form-control {
+  height: calc(2.875rem + 2px);
+}
+
+@media (max-width: 575.98px) {
+  .cst-view-toggle {
+    width: 100%;
+  }
+
+  .cst-view-toggle .btn {
+    flex: 1 1 50%;
+  }
+
+  .cst-product-card .card-body,
+  .cst-modal-content .modal-body,
+  .cst-modal-content .modal-header,
+  .cst-modal-content .modal-footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

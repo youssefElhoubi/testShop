@@ -15,6 +15,15 @@ class AdminCustomStockTransferController extends ModuleAdminController
         $this->meta_title = $this->trans('Stock Transfer', [], 'Modules.Customstocktransfer.Admin');
     }
 
+    public function setMedia($isNewTheme = false)
+    {
+        parent::setMedia($isNewTheme);
+
+        $baseUri = $this->module->getPathUri();
+        $this->addCSS($baseUri . 'views/css/transfer.css');
+        $this->addJS($baseUri . 'views/js/transfer.js');
+    }
+
     public function postProcess()
     {
         if (!Tools::isSubmit('submitCustomStockTransfer')) {
@@ -29,31 +38,36 @@ class AdminCustomStockTransferController extends ModuleAdminController
         if (!Validate::isUnsignedId($idProduct)) {
             $this->setFlashMessage(false, $this->trans('Please provide a valid product ID.', [], 'Modules.Customstocktransfer.Admin'));
 
-            return $this->redirectToDashboard();
+            $this->redirectToDashboard();
+            return false;
         }
 
         if (!Validate::isUnsignedId($sourceShopId)) {
             $this->setFlashMessage(false, $this->trans('Please select a valid source store.', [], 'Modules.Customstocktransfer.Admin'));
 
-            return $this->redirectToDashboard();
+            $this->redirectToDashboard();
+            return false;
         }
 
         if (!Validate::isUnsignedId($destinationShopId)) {
             $this->setFlashMessage(false, $this->trans('Please select a valid destination store.', [], 'Modules.Customstocktransfer.Admin'));
 
-            return $this->redirectToDashboard();
+            $this->redirectToDashboard();
+            return false;
         }
 
         if (!Validate::isUnsignedInt($quantity) || (int) $quantity <= 0) {
             $this->setFlashMessage(false, $this->trans('Please enter a valid quantity greater than zero.', [], 'Modules.Customstocktransfer.Admin'));
 
-            return $this->redirectToDashboard();
+            $this->redirectToDashboard();
+            return false;
         }
 
         if ($sourceShopId === $destinationShopId) {
             $this->setFlashMessage(false, $this->trans('The source and destination stores must be different.', [], 'Modules.Customstocktransfer.Admin'));
 
-            return $this->redirectToDashboard();
+            $this->redirectToDashboard();
+            return false;
         }
 
         $availableShopIds = array_map(static function (array $shop) {
@@ -63,26 +77,30 @@ class AdminCustomStockTransferController extends ModuleAdminController
         if (!in_array($sourceShopId, $availableShopIds, true)) {
             $this->setFlashMessage(false, $this->trans('The selected source store is not available.', [], 'Modules.Customstocktransfer.Admin'));
 
-            return $this->redirectToDashboard();
+            $this->redirectToDashboard();
+            return false;
         }
 
         if (!in_array($destinationShopId, $availableShopIds, true)) {
             $this->setFlashMessage(false, $this->trans('The selected destination store is not available.', [], 'Modules.Customstocktransfer.Admin'));
 
-            return $this->redirectToDashboard();
+            $this->redirectToDashboard();
+            return false;
         }
 
         if (!$this->productExists($idProduct)) {
             $this->setFlashMessage(false, $this->trans('The selected product does not exist or is not active.', [], 'Modules.Customstocktransfer.Admin'));
 
-            return $this->redirectToDashboard();
+            $this->redirectToDashboard();
+            return false;
         }
 
         $currentSourceQuantity = (int) StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $sourceShopId);
         if ($currentSourceQuantity < (int) $quantity) {
             $this->setFlashMessage(false, $this->trans('The source store does not have enough stock for this transfer.', [], 'Modules.Customstocktransfer.Admin'));
 
-            return $this->redirectToDashboard();
+            $this->redirectToDashboard();
+            return false;
         }
 
         $currentDestinationQuantity = (int) StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $destinationShopId);
@@ -92,7 +110,9 @@ class AdminCustomStockTransferController extends ModuleAdminController
 
         $this->setFlashMessage(true, $this->trans('Stock transfer completed successfully.', [], 'Modules.Customstocktransfer.Admin'));
 
-        return $this->redirectToDashboard();
+        $this->redirectToDashboard();
+
+        return false;
     }
 
     public function initContent()
@@ -139,11 +159,11 @@ class AdminCustomStockTransferController extends ModuleAdminController
         }
 
         $query = new DbQuery();
-        $query->select('p.id_product, pl.name');
+        $query->select('p.id_product, pl.name, pl.link_rewrite');
         $query->from('product', 'p');
         $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product AND ps.active = 1');
         $query->innerJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = ' . (int) $idLang . ' AND pl.id_shop = ' . (int) $idShopForName);
-        $query->groupBy('p.id_product, pl.name');
+        $query->groupBy('p.id_product, pl.name, pl.link_rewrite');
         $query->orderBy('pl.name ASC');
 
         $rows = Db::getInstance()->executeS($query);
@@ -152,6 +172,16 @@ class AdminCustomStockTransferController extends ModuleAdminController
             $productId = (int) $row['id_product'];
             $shopBreakdown = [];
             $totalQuantity = 0;
+            $coverUrl = '';
+
+            $cover = Image::getCover($productId);
+                if (is_array($cover) && !empty($cover['id_image']) && !empty($row['link_rewrite'])) {
+                $coverUrl = $this->context->link->getImageLink(
+                    $row['link_rewrite'],
+                    (int) $cover['id_image'],
+                    'home_default'
+                );
+            }
 
             foreach ($shops as $shop) {
                 $shopQuantity = (int) StockAvailable::getQuantityAvailableByProduct($productId, 0, (int) $shop['id_shop']);
@@ -160,6 +190,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
                     'id_shop' => (int) $shop['id_shop'],
                     'shop_name' => $shop['shop_name'],
                     'quantity_in_this_shop' => $shopQuantity,
+                    'badge_class' => $this->getStockBadgeClass($shopQuantity),
                 ];
 
                 $totalQuantity += $shopQuantity;
@@ -168,6 +199,8 @@ class AdminCustomStockTransferController extends ModuleAdminController
             $products[] = [
                 'id_product' => $productId,
                 'name' => (string) $row['name'],
+                'link_rewrite' => (string) $row['link_rewrite'],
+                'cover_url' => $coverUrl,
                 'total_quantity' => $totalQuantity,
                 'shops' => $shopBreakdown,
                 'is_low_stock' => $totalQuantity < 5,
@@ -186,6 +219,19 @@ class AdminCustomStockTransferController extends ModuleAdminController
         $sql->where('p.id_product = ' . (int) $idProduct);
 
         return (bool) Db::getInstance()->getValue($sql);
+    }
+
+    protected function getStockBadgeClass($quantity)
+    {
+        if ((int) $quantity === 0) {
+            return 'badge-danger';
+        }
+
+        if ((int) $quantity <= 5) {
+            return 'badge-warning';
+        }
+
+        return 'badge-success';
     }
 
     protected function redirectToDashboard()
