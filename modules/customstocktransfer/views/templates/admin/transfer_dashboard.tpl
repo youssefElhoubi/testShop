@@ -61,7 +61,7 @@
             <div id="customstocktransfer-grid-view" class="cst-view is-active" data-stock-view="grid">
                 <div class="row">
                     {foreach from=$products item=product}
-                        <div class="col-12 col-xl-6 mb-4" data-cst-product-item data-stock-view="grid" data-cst-product-text="#{$product.id_product|intval} {$product.name|escape:'htmlall':'UTF-8'}">
+                        <div class="col-12 col-xl-6 mb-4 product-item" data-cst-product-item data-stock-view="grid" data-cst-product-text="#{$product.id_product|intval} {$product.name|escape:'htmlall':'UTF-8'}">
                             <div class="card h-100 border-0 shadow-sm cst-product-card">
                                 <div class="cst-product-media">
                                     {if $product.cover_url}

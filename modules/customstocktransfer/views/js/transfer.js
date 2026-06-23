@@ -1,78 +1,40 @@
-(function ($) {
-  $(document).ready(function () {
-    var $modal = $('#customstocktransfer-transfer-modal');
-    var $form = $('#customstocktransfer-transfer-form');
-    var $hiddenProductId = $form.find('input[name="id_product"]');
-    var $modalTitle = $modal.find('.js-transfer-modal-title');
-    var $search = $('#customstocktransfer-search');
-    var $clearSearch = $('#customstocktransfer-search-clear');
-    var $resultCount = $('#customstocktransfer-result-count');
-    var activeView = 'grid';
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 1. Grid/Table Toggle (Using Event Delegation)
+    document.addEventListener('click', function(e) {
+        // Find if we clicked a toggle button
+        const btn = e.target.closest('.js-stock-view-toggle');
+        if (!btn) return;
 
-    function updateSearchState() {
-      var term = ($search.val() || '').toString().trim().toLowerCase();
-      var visibleCount = 0;
-      var $items = $('[data-cst-product-item][data-stock-view="' + activeView + '"]');
+        const targetView = btn.getAttribute('data-view'); // 'grid' or 'table'
+        const allBtns = document.querySelectorAll('.js-stock-view-toggle');
+        const allViews = document.querySelectorAll('.cst-view');
 
-      $items.each(function () {
-        var $item = $(this);
-        var text = ($item.data('cst-product-text') || '').toString().toLowerCase();
-        var isVisible = term === '' || text.indexOf(term) !== -1;
+        // Reset all buttons
+        allBtns.forEach(b => {
+            b.classList.remove('active', 'btn-primary');
+            b.classList.add('btn-outline-primary');
+        });
 
-        $item.toggleClass('d-none', !isVisible);
+        // Activate clicked button
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('active', 'btn-primary');
 
-        if (isVisible) {
-          visibleCount += 1;
-        }
-      });
-
-      $resultCount.text(visibleCount);
-    }
-
-    function setView(view) {
-      activeView = view === 'table' ? 'table' : 'grid';
-
-      $('#customstocktransfer-grid-view').toggleClass('is-active', activeView === 'grid');
-      $('#customstocktransfer-table-view').toggleClass('is-active', activeView === 'table');
-
-      $('.js-stock-view-toggle').each(function () {
-        var $button = $(this);
-        var isActive = $button.data('view') === activeView;
-
-        $button.toggleClass('btn-primary', isActive);
-        $button.toggleClass('btn-outline-primary', !isActive);
-        $button.toggleClass('active', isActive);
-      });
-
-      updateSearchState();
-    }
-
-    $('.js-open-transfer-modal').on('click', function () {
-      var productId = $(this).data('product-id');
-      var productName = $(this).data('product-name') || '';
-
-      $hiddenProductId.val(productId);
-      $modalTitle.text('Transfer Stock - #' + productId + ' ' + productName);
+        // Swap the views
+        allViews.forEach(v => v.classList.remove('is-active'));
+        document.getElementById('customstocktransfer-' + targetView + '-view').classList.add('is-active');
     });
 
-    $modal.on('hidden.bs.modal', function () {
-      $form[0].reset();
-      $hiddenProductId.val('');
-      $modalTitle.text('Transfer Stock');
+    // 2. Transfer Modal Data Injector (Using jQuery for PrestaShop BO compatibility)
+    $(document).on('click', '.js-open-transfer-modal', function() {
+        const productId = $(this).data('product-id');
+        const productName = $(this).data('product-name');
+        
+        // Inject ID into the hidden input
+        $('input[name="id_product"]').val(productId);
+        
+        // Change title so you know what you're moving
+        $('.js-transfer-modal-title').text('Transfer: ' + productName);
     });
 
-    $('.js-stock-view-toggle').on('click', function () {
-      setView($(this).data('view'));
-    });
-
-    $search.on('input', updateSearchState);
-
-    $clearSearch.on('click', function () {
-      $search.val('');
-      updateSearchState();
-      $search.trigger('focus');
-    });
-
-    setView('grid');
-  });
-})(jQuery);
+});

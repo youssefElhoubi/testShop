@@ -1,131 +1,164 @@
+/* --- Global Scope & Custom Scrollbars --- */
 .cst-dashboard-shell {
-  border: 0;
-  border-radius: 1rem;
-  overflow: hidden;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-.cst-view-toggle .btn {
-  min-width: 120px;
+/* Custom Webkit Scrollbar for the table view */
+.cst-dashboard-shell ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.cst-dashboard-shell ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+.cst-dashboard-shell ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.cst-dashboard-shell ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
-.cst-view-toggle .btn.active {
-  box-shadow: 0 10px 24px rgba(33, 37, 41, 0.12);
+/* --- View Toggles & Animations --- */
+.cst-view {
+    display: none;
+    opacity: 0;
+}
+.cst-view.is-active {
+    display: block;
+    animation: cstFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.cst-search-group .input-group-text {
-  border-color: #dce1e7;
+@keyframes cstFadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
-.cst-search-group .form-control {
-  height: calc(2.875rem + 2px);
+/* --- The Grid --- */
+#customstocktransfer-grid-view .row {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.75rem;
 }
 
+#customstocktransfer-grid-view .product-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: none !important;
+}
+
+/* --- Premium Card Design --- */
 .cst-product-card {
-  border-radius: 1rem;
-  overflow: hidden;
-  background: #fff;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 .cst-product-card:hover {
-  transform: translateY(-2px);
-  transition: transform .18s ease, box-shadow .18s ease;
-  box-shadow: 0 1rem 2rem rgba(15, 23, 42, 0.12) !important;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.15);
+    border-color: #cbd5e1;
 }
 
+/* Image Header */
 .cst-product-media {
-  position: relative;
-  width: 100%;
-  padding-top: 66.6667%;
-  background: linear-gradient(135deg, #eef2f7 0%, #dfe7f3 100%);
-  overflow: hidden;
-}
-
-.cst-product-image,
-.cst-product-placeholder {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 190px;
+    background-color: #f8fafc;
+    border-bottom: 1px solid #f1f5f9;
+    position: relative;
 }
 
 .cst-product-image {
-  object-fit: cover;
-  display: block;
-}
-
-.cst-product-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(226, 232, 240, 0.9));
-}
-
-.cst-product-card .card-body {
-  padding: 1.25rem;
-}
-
-.cst-store-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  margin: .25rem .5rem .25rem 0;
-  padding: .4rem .7rem;
-  border-radius: 999px;
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
-}
-
-.cst-store-chip .badge {
-  min-width: 2.25rem;
-  text-align: center;
-}
-
-[data-cst-product-item].d-none {
-  display: none !important;
-}
-
-.cst-modal-content {
-  border: 0;
-  border-radius: 1rem;
-  overflow: hidden;
-}
-
-.cst-modal-content .modal-header,
-.cst-modal-content .modal-footer {
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-.cst-modal-content .modal-header {
-  padding: 1.25rem 1.5rem;
-}
-
-.cst-modal-content .modal-body {
-  padding: 1.5rem;
-}
-
-.cst-modal-content .modal-footer {
-  padding: 1rem 1.5rem 1.25rem;
-}
-
-.cst-modal-content .form-control {
-  height: calc(2.875rem + 2px);
-}
-
-@media (max-width: 575.98px) {
-  .cst-view-toggle {
     width: 100%;
-  }
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
 
-  .cst-view-toggle .btn {
-    flex: 1 1 50%;
-  }
+.cst-product-card:hover .cst-product-image {
+    transform: scale(1.03);
+}
 
-  .cst-product-card .card-body,
-  .cst-modal-content .modal-body,
-  .cst-modal-content .modal-header,
-  .cst-modal-content .modal-footer {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
+/* --- Stock Chips (The SaaS Look) --- */
+.cst-store-chip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 10px 16px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #e2e8f0;
+    font-size: 13.5px;
+    color: #334155;
+    transition: background 0.2s;
+}
+
+.cst-store-chip:hover {
+    background: #f1f5f9;
+}
+
+.cst-store-chip .font-weight-bold {
+    font-weight: 600 !important;
+    letter-spacing: 0.2px;
+}
+
+/* Badges - Vibrancy Upgrade */
+.cst-store-chip .badge {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+.badge-success { background-color: #10b981; color: #fff; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+.badge-warning { background-color: #f59e0b; color: #fff; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2); }
+.badge-danger { background-color: #ef4444; color: #fff; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
+
+/* --- Inputs & Buttons --- */
+.cst-search-group .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.js-open-transfer-modal {
+    margin-top: auto;
+    border-radius: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px;
+    border: none;
+    background: #2563eb;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.js-open-transfer-modal:hover {
+    background: #1d4ed8;
+}
+.js-open-transfer-modal:active {
+    transform: scale(0.98);
+}
+
+/* --- Empty State --- */
+.cst-empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
 }
