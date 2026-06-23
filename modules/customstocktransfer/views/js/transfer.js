@@ -1,55 +1,53 @@
 document.addEventListener('DOMContentLoaded', function() {
     
-    // 1. Grid/Table Toggle (Using Event Delegation)
+    // Grab the exact containers
+    const gridView = document.getElementById('customstocktransfer-grid-view');
+    const tableView = document.getElementById('customstocktransfer-table-view');
+    const toggleBtns = document.querySelectorAll('.js-stock-view-toggle');
+
+    // 0. Force Initial State: Show Grid, Hide Table immediately on load
+    if (gridView && tableView) {
+        gridView.style.display = 'block';
+        tableView.style.display = 'none';
+    }
+
+    // 1. Bulletproof View Toggle
     document.addEventListener('click', function(e) {
-        // Find if we clicked a toggle button
         const btn = e.target.closest('.js-stock-view-toggle');
         if (!btn) return;
 
         const targetView = btn.getAttribute('data-view'); // 'grid' or 'table'
-        const allBtns = document.querySelectorAll('.js-stock-view-toggle');
-        const allViews = document.querySelectorAll('.cst-view');
 
-        // Reset all buttons
-        allBtns.forEach(b => {
-            b.classList.remove('active', 'btn-primary');
-            b.classList.add('btn-outline-primary');
-        });
+        // Swap button active states
+        toggleBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
 
-        // Activate clicked button
-        btn.classList.remove('btn-outline-primary');
-        btn.classList.add('active', 'btn-primary');
-
-        // Swap the views
-        allViews.forEach(v => v.classList.remove('is-active'));
-        document.getElementById('customstocktransfer-' + targetView + '-view').classList.add('is-active');
+        // Forcefully toggle displays using inline styles to override any broken CSS
+        if (targetView === 'grid') {
+            gridView.style.display = 'block';
+            tableView.style.display = 'none';
+        } else if (targetView === 'table') {
+            gridView.style.display = 'none';
+            tableView.style.display = 'block';
+        }
     });
 
-    // 2. Transfer Modal Data Injector (Using jQuery for PrestaShop BO compatibility)
+    // 2. Consolidated Modal Data Injector (Using jQuery)
     $(document).on('click', '.js-open-transfer-modal', function() {
         const productId = $(this).data('product-id');
         const productName = $(this).data('product-name');
+        const form = $('#customstocktransfer-transfer-form');
+        
+        // Clear out the form so old quantities don't get stuck
+        if (form.length) {
+            form[0].reset();
+        }
         
         // Inject ID into the hidden input
         $('input[name="id_product"]').val(productId);
         
-        // Change title so you know what you're moving
+        // Change title so you know exactly what you are transferring
         $('.js-transfer-modal-title').text('Transfer: ' + productName);
     });
-
-});
-
-$(document).on("click", ".js-open-transfer-modal", function () {
-
-    const productId = $(this).data("product-id");
-    const productName = $(this).data("product-name");
-
-    $('input[name="id_product"]').val(productId);
-
-    $(".js-transfer-modal-title").text(productName);
-
-    $("#customstocktransfer-transfer-form")[0].reset();
-
-    $('input[name="id_product"]').val(productId);
 
 });
