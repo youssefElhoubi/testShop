@@ -105,16 +105,6 @@
             </div>
 
             <div class="statsdashboard-field">
-                <label class="statsdashboard-field__label" for="filter_supplier">{l s='Supplier' mod='statsdashboard'}</label>
-                <select name="filter_supplier" id="filter_supplier" class="statsdashboard-field__control">
-                    <option value="0">{l s='All Suppliers' mod='statsdashboard'}</option>
-                    {foreach from=$suppliers item=supplier}
-                        <option value="{$supplier.id_supplier}" {if $selectedSupplier == $supplier.id_supplier}selected{/if}>{$supplier.name|escape:'html':'UTF-8'}</option>
-                    {/foreach}
-                </select>
-            </div>
-
-            <div class="statsdashboard-field">
                 <label class="statsdashboard-field__label" for="filter_limit">{l s='Rows per page' mod='statsdashboard'}</label>
                 <select name="filter_limit" id="filter_limit" class="statsdashboard-field__control">
                     <option value="10" {if $selectedLimit == 10}selected{/if}>10</option>
@@ -124,6 +114,7 @@
                     <option value="500" {if $selectedLimit == 500}selected{/if}>500</option>
                 </select>
             </div>
+
 
             <div class="statsdashboard-filters__actions">
                 <button type="submit" class="statsdashboard-button statsdashboard-button--primary">
@@ -216,27 +207,52 @@
         </div>
     </section>
 
-    {if isset($totalPages) && $totalPages > 1}
-        <nav class="statsdashboard-pagination" aria-label="{l s='Pagination' mod='statsdashboard'}">
-            {if $page > 1}
-                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--prev" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}&page={$page-1}">
-                    &laquo; {l s='Prev' mod='statsdashboard'}
-                </a>
-            {/if}
-
-            <div class="statsdashboard-pagination__pages" role="list">
-                {for $p=1 to $totalPages}
-                    <a class="statsdashboard-pagination__link {if $p == $page}is-active{/if}" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}&page={$p}" {if $p == $page}aria-current="page" {/if}>
-                        {$p}
-                    </a>
-                {/for}
+    {if isset($totalPages) && $totalPages > 1 || $productsList|@count > 0}
+        <div class="statsdashboard-bottom-bar">
+            
+            <div class="statsdashboard-per-page">
+                <label for="bottom_filter_limit">{l s='Rows per page:' mod='statsdashboard'}</label>
+                <select id="bottom_filter_limit" class="statsdashboard-field__control" onchange="window.location.href=this.value">
+                    <option value="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_shop={$selectedShop}&filter_limit=10" {if $selectedLimit == 10}selected{/if}>10</option>
+                    <option value="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_shop={$selectedShop}&filter_limit=20" {if $selectedLimit == 20}selected{/if}>20</option>
+                    <option value="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_shop={$selectedShop}&filter_limit=50" {if $selectedLimit == 50}selected{/if}>50</option>
+                    <option value="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_shop={$selectedShop}&filter_limit=100" {if $selectedLimit == 100}selected{/if}>100</option>
+                    <option value="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_shop={$selectedShop}&filter_limit=500" {if $selectedLimit == 500}selected{/if}>500</option>
+                </select>
             </div>
 
-            {if $page < $totalPages}
-                <a class="statsdashboard-pagination__link statsdashboard-pagination__link--next" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}&page={$page+1}">
-                    {l s='Next' mod='statsdashboard'} &raquo;
-                </a>
+            {if isset($totalPages) && $totalPages > 1}
+                <nav class="statsdashboard-pagination" aria-label="{l s='Pagination' mod='statsdashboard'}">
+                    
+                    {if $page > 1}
+                        <a class="statsdashboard-pagination__link statsdashboard-pagination__link--prev" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}&page={$page-1}">
+                            &laquo; {l s='Prev' mod='statsdashboard'}
+                        </a>
+                    {else}
+                        <span class="statsdashboard-pagination__link statsdashboard-pagination__link--disabled">&laquo; {l s='Prev' mod='statsdashboard'}</span>
+                    {/if}
+
+                    <div class="statsdashboard-pagination__pages" role="list">
+                        {for $p=1 to $totalPages}
+                            <a class="statsdashboard-pagination__link {if $p == $page}is-active{/if}" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}&page={$p}" {if $p == $page}aria-current="page" {/if}>
+                                {$p}
+                            </a>
+                        {/for}
+                    </div>
+
+                    {if $page < $totalPages}
+                        <a class="statsdashboard-pagination__link statsdashboard-pagination__link--next" href="{$form_url|escape:'html':'UTF-8'}&filter_year={$selectedYear}&filter_brand={$selectedBrand}&filter_supplier={$selectedSupplier}&filter_limit={$selectedLimit}&filter_shop={$selectedShop}&page={$page+1}">
+                            {l s='Next' mod='statsdashboard'} &raquo;
+                        </a>
+                    {else}
+                        <span class="statsdashboard-pagination__link statsdashboard-pagination__link--disabled">{l s='Next' mod='statsdashboard'} &raquo;</span>
+                    {/if}
+
+                </nav>
             {/if}
-        </nav>
+
+            <div class="statsdashboard-spacer"></div>
+
+        </div>
     {/if}
 </main>
