@@ -38,3 +38,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 });
+
+$(document).on("click", ".js-open-transfer-modal", function () {
+
+    const productId = $(this).data("product-id");
+    const productName = $(this).data("product-name");
+
+    $('input[name="id_product"]').val(productId);
+
+    $(".js-transfer-modal-title").text(productName);
+
+    $("#customstocktransfer-transfer-form")[0].reset();
+
+    $('input[name="id_product"]').val(productId);
+
+});
