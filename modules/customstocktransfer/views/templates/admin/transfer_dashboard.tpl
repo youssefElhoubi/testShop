@@ -168,6 +168,56 @@
                 </div>
             </div>
 
+            <div class="cst-advanced-filters">
+                <div class="cst-filter-grid">
+                    <div class="cst-filter-group">
+                        <label>Category</label>
+                        <select class="form-control cst-input" name="filter_category">
+                            <option value="">All Categories</option>
+                            {foreach from=$categories item=category}
+                                <option value="{$category.id_category|intval}" {if isset($filter) && $filter.category == $category.id_category}selected{/if}>{$category.name|escape:'htmlall':'UTF-8'}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    
+                    <div class="cst-filter-group">
+                        <label>Quantity</label>
+                        <div class="cst-filter-range">
+                            <input type="number" class="form-control cst-input" name="filter_qty_min" placeholder="Min" value="{if isset($filter) && $filter.qty_min !== null}{$filter.qty_min}{/if}">
+                            <span>-</span>
+                            <input type="number" class="form-control cst-input" name="filter_qty_max" placeholder="Max" value="{if isset($filter) && $filter.qty_max !== null}{$filter.qty_max}{/if}">
+                        </div>
+                    </div>
+                    
+                    <div class="cst-filter-group">
+                        <label>Price</label>
+                        <div class="cst-filter-range">
+                            <input type="number" step="0.01" class="form-control cst-input" name="filter_price_min" placeholder="Min" value="{if isset($filter) && $filter.price_min !== null}{$filter.price_min}{/if}">
+                            <span>-</span>
+                            <input type="number" step="0.01" class="form-control cst-input" name="filter_price_max" placeholder="Max" value="{if isset($filter) && $filter.price_max !== null}{$filter.price_max}{/if}">
+                        </div>
+                    </div>
+                    
+                    <div class="cst-filter-group">
+                        <label>Status</label>
+                        <select class="form-control cst-input" name="filter_status">
+                            <option value="" {if !isset($filter) || $filter.status === null}selected{/if}>All</option>
+                            <option value="1" {if isset($filter) && $filter.status === 1}selected{/if}>Active</option>
+                            <option value="0" {if isset($filter) && $filter.status === 0}selected{/if}>Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="cst-filter-actions mt-3 text-right">
+                    <button type="button" class="btn btn-default cst-btn-outline mr-2" onclick="window.location.href='{$form_action|escape:'htmlall':'UTF-8'}';">
+                        <i class="icon-eraser"></i> Clear Filters
+                    </button>
+                    <button type="submit" name="submitCustomStockTransferSearch" value="1" class="btn btn-primary cst-btn-primary">
+                        <i class="icon-filter"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+
             <div class="cst-toolbar">
 
                 <div class="cst-search">

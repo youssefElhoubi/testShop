@@ -132,20 +132,33 @@ class AdminCustomStockTransferController extends ModuleAdminController
 
         $productSearch = trim(Tools::getValue('product_search', ''));
 
+        $filter = [
+            'category' => (int)Tools::getValue('filter_category'),
+            'qty_min' => Tools::getValue('filter_qty_min') !== false && Tools::getValue('filter_qty_min') !== '' ? (int)Tools::getValue('filter_qty_min') : null,
+            'qty_max' => Tools::getValue('filter_qty_max') !== false && Tools::getValue('filter_qty_max') !== '' ? (int)Tools::getValue('filter_qty_max') : null,
+            'price_min' => Tools::getValue('filter_price_min') !== false && Tools::getValue('filter_price_min') !== '' ? (float)Tools::getValue('filter_price_min') : null,
+            'price_max' => Tools::getValue('filter_price_max') !== false && Tools::getValue('filter_price_max') !== '' ? (float)Tools::getValue('filter_price_max') : null,
+            'status' => Tools::getValue('filter_status') !== false && Tools::getValue('filter_status') !== '' ? (int)Tools::getValue('filter_status') : null,
+        ];
+
+        $categories = Category::getSimpleCategories($this->context->language->id);
+
         $shops = $this->getActiveShops();
-        $totalProducts = $this->getTotalProductsCount($shops, $productSearch);
+        $totalProducts = $this->getTotalProductsCount($shops, $productSearch, $filter);
         $totalPages = (int) ceil($totalProducts / $limit);
 
         if ($page > $totalPages && $totalPages > 0) {
             $page = $totalPages;
         }
 
-        $products = $this->getProductsDashboardData($shops, $page, $limit, $productSearch);
+        $products = $this->getProductsDashboardData($shops, $page, $limit, $productSearch, $filter);
 
         $this->applyFlashMessage();
 
         $this->context->smarty->assign([
             'product_search' => $productSearch,
+            'filter' => $filter,
+            'categories' => $categories,
             'products' => $products,
             'shops' => $shops,
             'form_action' => $this->context->link->getAdminLink('AdminCustomStockTransfer'),
@@ -173,7 +186,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
         return $shops;
     }
 
-    protected function getTotalProductsCount(array $shops, $productSearch = '')
+    protected function getTotalProductsCount(array $shops, $productSearch = '', $filter = [])
     {
         $idLang = (int) $this->context->language->id;
         $idShopForName = (int) $this->context->shop->id;
@@ -185,8 +198,33 @@ class AdminCustomStockTransferController extends ModuleAdminController
         $query = new DbQuery();
         $query->select('COUNT(DISTINCT p.id_product)');
         $query->from('product', 'p');
-        $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product AND ps.active = 1');
+        
+        $statusCondition = ($filter['status'] !== null) ? ' AND ps.active = ' . (int)$filter['status'] : ' AND ps.active = 1';
+        $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product' . $statusCondition);
+        
         $query->innerJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = ' . (int) $idLang . ' AND pl.id_shop = ' . (int) $idShopForName);
+
+        if ($filter['category'] > 0) {
+            $query->innerJoin('category_product', 'cp', 'cp.id_product = p.id_product');
+            $query->where('cp.id_category = ' . (int)$filter['category']);
+        }
+
+        if ($filter['price_min'] !== null) {
+            $query->where('p.price >= ' . (float)$filter['price_min']);
+        }
+        if ($filter['price_max'] !== null) {
+            $query->where('p.price <= ' . (float)$filter['price_max']);
+        }
+
+        if ($filter['qty_min'] !== null || $filter['qty_max'] !== null) {
+            $query->innerJoin('stock_available', 'sa', 'sa.id_product = p.id_product AND sa.id_product_attribute = 0 AND sa.id_shop = ps.id_shop');
+            if ($filter['qty_min'] !== null) {
+                $query->where('sa.quantity >= ' . (int)$filter['qty_min']);
+            }
+            if ($filter['qty_max'] !== null) {
+                $query->where('sa.quantity <= ' . (int)$filter['qty_max']);
+            }
+        }
 
         if ($productSearch !== '') {
             $productSearchEscaped = pSQL($productSearch);
@@ -196,7 +234,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
         return (int) Db::getInstance()->getValue($query);
     }
 
-    protected function getProductsDashboardData(array $shops, $page = 1, $limit = 20, $productSearch = '')
+    protected function getProductsDashboardData(array $shops, $page = 1, $limit = 20, $productSearch = '', $filter = [])
     {
         $products = [];
         $idLang = (int) $this->context->language->id;
@@ -209,8 +247,33 @@ class AdminCustomStockTransferController extends ModuleAdminController
         $query = new DbQuery();
         $query->select('p.id_product, pl.name, pl.link_rewrite');
         $query->from('product', 'p');
-        $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product AND ps.active = 1');
+        
+        $statusCondition = ($filter['status'] !== null) ? ' AND ps.active = ' . (int)$filter['status'] : ' AND ps.active = 1';
+        $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product' . $statusCondition);
+        
         $query->innerJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = ' . (int) $idLang . ' AND pl.id_shop = ' . (int) $idShopForName);
+
+        if ($filter['category'] > 0) {
+            $query->innerJoin('category_product', 'cp', 'cp.id_product = p.id_product');
+            $query->where('cp.id_category = ' . (int)$filter['category']);
+        }
+
+        if ($filter['price_min'] !== null) {
+            $query->where('p.price >= ' . (float)$filter['price_min']);
+        }
+        if ($filter['price_max'] !== null) {
+            $query->where('p.price <= ' . (float)$filter['price_max']);
+        }
+
+        if ($filter['qty_min'] !== null || $filter['qty_max'] !== null) {
+            $query->innerJoin('stock_available', 'sa', 'sa.id_product = p.id_product AND sa.id_product_attribute = 0 AND sa.id_shop = ps.id_shop');
+            if ($filter['qty_min'] !== null) {
+                $query->where('sa.quantity >= ' . (int)$filter['qty_min']);
+            }
+            if ($filter['qty_max'] !== null) {
+                $query->where('sa.quantity <= ' . (int)$filter['qty_max']);
+            }
+        }
 
         if ($productSearch !== '') {
             $productSearchEscaped = pSQL($productSearch);
