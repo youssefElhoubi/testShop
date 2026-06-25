@@ -30,42 +30,31 @@ class AdminCustomStockTransferController extends ModuleAdminController
             return parent::postProcess();
         }
 
-        $idProduct = (int) Tools::getValue('id_product');
         $sourceShopId = (int) Tools::getValue('source_shop_id');
         $destinationShopId = (int) Tools::getValue('destination_shop_id');
-        $quantity = Tools::getValue('quantity');
-
-        if (!Validate::isUnsignedId($idProduct)) {
-            $this->setFlashMessage(false, $this->trans('Please provide a valid product ID.', [], 'Modules.Customstocktransfer.Admin'));
-
-            $this->redirectToDashboard();
-            return false;
-        }
+        $bulkProductIds = Tools::getValue('bulk_product_ids');
+        $bulkQuantities = Tools::getValue('bulk_quantities');
 
         if (!Validate::isUnsignedId($sourceShopId)) {
             $this->setFlashMessage(false, $this->trans('Please select a valid source store.', [], 'Modules.Customstocktransfer.Admin'));
-
             $this->redirectToDashboard();
             return false;
         }
 
         if (!Validate::isUnsignedId($destinationShopId)) {
             $this->setFlashMessage(false, $this->trans('Please select a valid destination store.', [], 'Modules.Customstocktransfer.Admin'));
-
-            $this->redirectToDashboard();
-            return false;
-        }
-
-        if (!Validate::isUnsignedInt($quantity) || (int) $quantity <= 0) {
-            $this->setFlashMessage(false, $this->trans('Please enter a valid quantity greater than zero.', [], 'Modules.Customstocktransfer.Admin'));
-
             $this->redirectToDashboard();
             return false;
         }
 
         if ($sourceShopId === $destinationShopId) {
             $this->setFlashMessage(false, $this->trans('The source and destination stores must be different.', [], 'Modules.Customstocktransfer.Admin'));
+            $this->redirectToDashboard();
+            return false;
+        }
 
+        if (!is_array($bulkProductIds) || empty($bulkProductIds)) {
+            $this->setFlashMessage(false, $this->trans('Please select at least one product to transfer.', [], 'Modules.Customstocktransfer.Admin'));
             $this->redirectToDashboard();
             return false;
         }
@@ -74,44 +63,49 @@ class AdminCustomStockTransferController extends ModuleAdminController
             return (int) $shop['id_shop'];
         }, Shop::getShops(true, null, false));
 
-        if (!in_array($sourceShopId, $availableShopIds, true)) {
-            $this->setFlashMessage(false, $this->trans('The selected source store is not available.', [], 'Modules.Customstocktransfer.Admin'));
-
+        if (!in_array($sourceShopId, $availableShopIds, true) || !in_array($destinationShopId, $availableShopIds, true)) {
+            $this->setFlashMessage(false, $this->trans('The selected stores are not available.', [], 'Modules.Customstocktransfer.Admin'));
             $this->redirectToDashboard();
             return false;
         }
 
-        if (!in_array($destinationShopId, $availableShopIds, true)) {
-            $this->setFlashMessage(false, $this->trans('The selected destination store is not available.', [], 'Modules.Customstocktransfer.Admin'));
+        $successCount = 0;
+        $errorCount = 0;
 
-            $this->redirectToDashboard();
-            return false;
+        foreach ($bulkProductIds as $idProduct) {
+            $idProduct = (int) $idProduct;
+            $quantity = isset($bulkQuantities[$idProduct]) ? (int) $bulkQuantities[$idProduct] : 0;
+
+            if ($quantity <= 0 || !$this->productExists($idProduct)) {
+                $errorCount++;
+                continue;
+            }
+
+            $currentSourceQuantity = (int) StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $sourceShopId);
+            if ($currentSourceQuantity < $quantity) {
+                $errorCount++;
+                continue;
+            }
+
+            $currentDestinationQuantity = (int) StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $destinationShopId);
+
+            StockAvailable::setQuantity($idProduct, 0, $currentSourceQuantity - $quantity, $sourceShopId);
+            StockAvailable::setQuantity($idProduct, 0, $currentDestinationQuantity + $quantity, $destinationShopId);
+
+            $successCount++;
         }
 
-        if (!$this->productExists($idProduct)) {
-            $this->setFlashMessage(false, $this->trans('The selected product does not exist or is not active.', [], 'Modules.Customstocktransfer.Admin'));
-
-            $this->redirectToDashboard();
-            return false;
+        if ($successCount > 0) {
+            $message = sprintf($this->trans('Successfully transferred %d product(s).', [], 'Modules.Customstocktransfer.Admin'), $successCount);
+            if ($errorCount > 0) {
+                $message .= ' ' . sprintf($this->trans('Failed for %d product(s).', [], 'Modules.Customstocktransfer.Admin'), $errorCount);
+            }
+            $this->setFlashMessage(true, $message);
+        } else {
+            $this->setFlashMessage(false, $this->trans('Failed to transfer products. Check quantities and stock availability.', [], 'Modules.Customstocktransfer.Admin'));
         }
-
-        $currentSourceQuantity = (int) StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $sourceShopId);
-        if ($currentSourceQuantity < (int) $quantity) {
-            $this->setFlashMessage(false, $this->trans('The source store does not have enough stock for this transfer.', [], 'Modules.Customstocktransfer.Admin'));
-
-            $this->redirectToDashboard();
-            return false;
-        }
-
-        $currentDestinationQuantity = (int) StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $destinationShopId);
-
-        StockAvailable::setQuantity($idProduct, 0, $currentSourceQuantity - (int) $quantity, $sourceShopId);
-        StockAvailable::setQuantity($idProduct, 0, $currentDestinationQuantity + (int) $quantity, $destinationShopId);
-
-        $this->setFlashMessage(true, $this->trans('Stock transfer completed successfully.', [], 'Modules.Customstocktransfer.Admin'));
 
         $this->redirectToDashboard();
-
         return false;
     }
 
