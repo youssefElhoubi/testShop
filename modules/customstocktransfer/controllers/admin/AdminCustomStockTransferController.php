@@ -124,9 +124,17 @@ class AdminCustomStockTransferController extends ModuleAdminController
             $page = 1;
         }
 
-        $limit = (int) Tools::getValue('limit', 20);
-        if ($limit < 1) {
-            $limit = 20;
+        $limitValue = Tools::getValue('limit', false);
+        if ($limitValue !== false) {
+            $limit = (int) $limitValue;
+            $this->context->cookie->__set('customstocktransfer_limit', $limit);
+            $this->context->cookie->write();
+        } else {
+            $limit = (int) $this->context->cookie->__get('customstocktransfer_limit');
+        }
+
+        if (!in_array($limit, [10, 20, 50, 100], true)) {
+            $limit = 10;
         }
 
         $shops = $this->getActiveShops();
@@ -187,7 +195,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
         return (int) Db::getInstance()->getValue($query);
     }
 
-    protected function getProductsDashboardData(array $shops, $page = 1, $limit = 20)
+    protected function getProductsDashboardData(array $shops, $page = 1, $limit = 10)
     {
         $products = [];
         $idLang = (int) $this->context->language->id;
