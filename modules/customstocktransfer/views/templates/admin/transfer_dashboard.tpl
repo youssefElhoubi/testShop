@@ -174,7 +174,8 @@
 
                 {foreach from=$products item=product}
 
-                    <div class="cst-product" data-cst-product-item data-stock-view="grid" data-cst-product-text="#{$product.id_product|intval} {$product.name|escape:'htmlall':'UTF-8'}">
+                    <div class="cst-product" data-cst-product-item data-stock-view="grid"
+                        data-cst-product-text="#{$product.id_product|intval} {$product.name|escape:'htmlall':'UTF-8'}">
 
                         <div class="cst-product-card">
 
@@ -182,7 +183,8 @@
 
                                 {if $product.cover_url}
 
-                                    <img src="{$product.cover_url|escape:'htmlall':'UTF-8'}" class="cst-product-image" alt="{$product.name|escape:'htmlall':'UTF-8'}">
+                                    <img src="{$product.cover_url|escape:'htmlall':'UTF-8'}" class="cst-product-image"
+                                        alt="{$product.name|escape:'htmlall':'UTF-8'}">
 
                                 {else}
 
@@ -264,11 +266,30 @@
 
                                 <div class="cst-divider"></div>
 
-                                <button type="button" class="cst-transfer-btn js-open-transfer-modal" data-toggle="modal" data-target="#customstocktransfer-transfer-modal" data-product-id="{$product.id_product|intval}" data-product-name="{$product.name|escape:'htmlall':'UTF-8'}">
+                                {if $product.stock_diff > 20}
+                                    <div class="mb-2">
+                                        <span class="badge badge-warning font-weight-bold">⚠️ High Imbalance (Diff:
+                                            {$product.stock_diff|intval})</span>
+                                    </div>
+                                {/if}
+
+                                {if $product.stock_diff == 0 && $product.total_stock > 0}
+                                    <div class="mb-2 font-weight-bold text-danger">🔴 Stocks are completely identical.</div>
+                                {/if}
+
+                                <button type="button" class="cst-transfer-btn js-open-transfer-modal" data-toggle="modal"
+                                    data-target="#customstocktransfer-transfer-modal"
+                                    data-product-id="{$product.id_product|intval}"
+                                    data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
+                                    {if $product.total_stock == 0}disabled="disabled" {/if}>
 
                                     <i class="icon-exchange"></i>
 
-                                    Transfer Stock
+                                    {if $product.total_stock == 0}
+                                        Out of Stock
+                                    {else}
+                                        Transfer Stock
+                                    {/if}
 
                                 </button>
 
@@ -312,7 +333,8 @@
 
                         {foreach from=$products item=product}
 
-                            <tr data-cst-product-item data-stock-view="table" data-cst-product-text="#{$product.id_product|intval} {$product.name|escape:'htmlall':'UTF-8'}">
+                            <tr data-cst-product-item data-stock-view="table"
+                                data-cst-product-text="#{$product.id_product|intval} {$product.name|escape:'htmlall':'UTF-8'}">
 
                                 <td>
 
@@ -330,7 +352,8 @@
 
                                         {if $product.cover_url}
 
-                                            <img src="{$product.cover_url|escape:'htmlall':'UTF-8'}" class="cst-table-image" alt="{$product.name|escape:'htmlall':'UTF-8'}">
+                                            <img src="{$product.cover_url|escape:'htmlall':'UTF-8'}" class="cst-table-image"
+                                                alt="{$product.name|escape:'htmlall':'UTF-8'}">
 
                                         {else}
 
@@ -415,9 +438,28 @@
 
                                 <td class="text-right">
 
-                                    <button type="button" class="cst-table-btn js-open-transfer-modal" data-toggle="modal" data-target="#customstocktransfer-transfer-modal" data-product-id="{$product.id_product|intval}" data-product-name="{$product.name|escape:'htmlall':'UTF-8'}">
+                                    {if $product.stock_diff > 20}
+                                        <div class="mb-2">
+                                            <span class="badge badge-warning font-weight-bold">⚠️ High Imbalance (Diff:
+                                                {$product.stock_diff|intval})</span>
+                                        </div>
+                                    {/if}
 
-                                        Transfer →
+                                    {if $product.stock_diff == 0 && $product.total_stock > 0}
+                                        <div class="mb-2 font-weight-bold text-danger">🔴 Stocks are completely identical.</div>
+                                    {/if}
+
+                                    <button type="button" class="cst-table-btn js-open-transfer-modal" data-toggle="modal"
+                                        data-target="#customstocktransfer-transfer-modal"
+                                        data-product-id="{$product.id_product|intval}"
+                                        data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
+                                        {if $product.total_stock == 0}disabled="disabled" {/if}>
+
+                                        {if $product.total_stock == 0}
+                                            Out of Stock
+                                        {else}
+                                            Transfer →
+                                        {/if}
 
                                     </button>
 
@@ -441,7 +483,8 @@
 
                 <div class="modal-content cst-modal">
 
-                    <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" id="customstocktransfer-transfer-form">
+                    <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}"
+                        id="customstocktransfer-transfer-form">
 
                         <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
 
@@ -553,7 +596,8 @@
 
                                 </label>
 
-                                <input type="number" class="form-control cst-input" name="quantity" min="1" value="1" required>
+                                <input type="number" class="form-control cst-input" name="quantity" min="1" value="1"
+                                    required>
 
                             </div>
 

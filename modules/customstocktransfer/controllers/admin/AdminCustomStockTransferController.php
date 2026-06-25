@@ -171,7 +171,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
         foreach ($rows as $row) {
             $productId = (int) $row['id_product'];
             $shopBreakdown = [];
-            $totalQuantity = 0;
+            $shopQuantities = [];
             $coverUrl = '';
 
             $cover = Image::getCover($productId);
@@ -185,6 +185,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
 
             foreach ($shops as $shop) {
                 $shopQuantity = (int) StockAvailable::getQuantityAvailableByProduct($productId, 0, (int) $shop['id_shop']);
+                $shopQuantities[] = $shopQuantity;
 
                 $shopBreakdown[] = [
                     'id_shop' => (int) $shop['id_shop'],
@@ -192,18 +193,25 @@ class AdminCustomStockTransferController extends ModuleAdminController
                     'quantity_in_this_shop' => $shopQuantity,
                     'badge_class' => $this->getStockBadgeClass($shopQuantity),
                 ];
-
-                $totalQuantity += $shopQuantity;
             }
+
+            $totalStock = (int) array_sum($shopQuantities);
+            $maxStock = !empty($shopQuantities) ? (int) max($shopQuantities) : 0;
+            $minStock = !empty($shopQuantities) ? (int) min($shopQuantities) : 0;
+            $stockDiff = (int) ($maxStock - $minStock);
 
             $products[] = [
                 'id_product' => $productId,
                 'name' => (string) $row['name'],
                 'link_rewrite' => (string) $row['link_rewrite'],
                 'cover_url' => $coverUrl,
-                'total_quantity' => $totalQuantity,
+                'total_stock' => $totalStock,
+                'max_stock' => $maxStock,
+                'min_stock' => $minStock,
+                'stock_diff' => $stockDiff,
+                'total_quantity' => $totalStock,
                 'shops' => $shopBreakdown,
-                'is_low_stock' => $totalQuantity < 5,
+                'is_low_stock' => $totalStock < 5,
             ];
         }
 
