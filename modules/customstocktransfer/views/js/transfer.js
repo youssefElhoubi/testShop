@@ -50,4 +50,36 @@ document.addEventListener('DOMContentLoaded', function() {
         $('.js-transfer-modal-title').text('Transfer: ' + productName);
     });
 
+    // 3. AJAX Store Group Dependent Dropdown
+    $(document).on('change', '.js-cst-group-select', function() {
+        const groupId = $(this).val();
+        const targetSelect = $($(this).data('target'));
+        const ajaxUrl = $('#customstocktransfer-transfer-form').data('ajax-url');
+
+        targetSelect.empty().append('<option value="">Loading...</option>');
+
+        $.ajax({
+            type: 'POST',
+            url: ajaxUrl,
+            dataType: 'json',
+            data: {
+                ajax: 1,
+                action: 'GetStoresByGroup',
+                id_shop_group: groupId
+            },
+            success: function(response) {
+                targetSelect.empty();
+                targetSelect.append('<option value="">Select store</option>');
+                if (response && response.length > 0) {
+                    $.each(response, function(index, shop) {
+                        targetSelect.append('<option value="' + shop.id_shop + '">' + shop.name + '</option>');
+                    });
+                }
+            },
+            error: function() {
+                targetSelect.empty().append('<option value="">Error loading stores</option>');
+            }
+        });
+    });
+
 });
