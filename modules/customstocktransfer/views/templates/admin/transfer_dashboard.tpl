@@ -1,3 +1,4 @@
+<div class="custom-transfer-wrapper">
 {if isset($confirmations) && $confirmations}
     <div class="cst-alert cst-alert-success mb-4">
         <div class="cst-alert-icon">
@@ -173,11 +174,11 @@
 
                     <i class="icon-search"></i>
 
-                    <input id="customstocktransfer-search" type="search" placeholder="Search product by name or ID...">
+                    <input name="product_search" type="text" value="{$product_search|escape:'htmlall':'UTF-8'}" placeholder="Search by product name or reference...">
 
-                    <button id="customstocktransfer-search-clear" type="button">
+                    <button type="submit" name="submitCustomStockTransferSearch" value="1">
 
-                        Clear
+                        Search
 
                     </button>
 
@@ -501,31 +502,39 @@
 
             </div>
 
-            <div class="row mt-4 mb-4">
-                <div class="col-md-6 align-self-center">
-                    Showing
-                    {if isset($total_products) && $total_products == 0}0{else}{(($current_page - 1) * $limit) + 1}{/if} to
-                    {if $current_page * $limit > $total_products}{$total_products}{else}{$current_page * $limit}{/if} of
-                    {$total_products} products
+            <div class="row mt-4 mb-4" style="align-items: center;">
+                <div class="col-md-6" style="display: flex; align-items: center; gap: 15px;">
+                    <div>
+                        Showing
+                        {if isset($total_products) && $total_products == 0}0{else}{(($current_page - 1) * $limit) + 1}{/if} to
+                        {if $current_page * $limit > $total_products}{$total_products}{else}{$current_page * $limit}{/if} of
+                        {$total_products} products
+                    </div>
+                    <select class="form-control cst-input" style="width: auto; height: 42px; padding: 0 15px;" onchange="window.location.href='{$form_action|escape:'htmlall':'UTF-8'}&page=1&limit='+this.value+'&product_search={$product_search|escape:'url':'UTF-8'}';">
+                        <option value="10" {if $limit == 10}selected{/if}>10 per page</option>
+                        <option value="20" {if $limit == 20}selected{/if}>20 per page</option>
+                        <option value="50" {if $limit == 50}selected{/if}>50 per page</option>
+                        <option value="100" {if $limit == 100}selected{/if}>100 per page</option>
+                    </select>
                 </div>
                 <div class="col-md-6">
                     {if isset($total_pages) && $total_pages > 1}
                         <ul class="pagination justify-content-end mb-0">
                             <li class="page-item {if $current_page <= 1}disabled{/if}">
                                 <a class="page-link"
-                                    href="{$form_action|escape:'htmlall':'UTF-8'}&page={$current_page - 1}&limit={$limit}">
+                                    href="{$form_action|escape:'htmlall':'UTF-8'}&page={$current_page - 1}&limit={$limit}&product_search={$product_search|escape:'url':'UTF-8'}">
                                     &laquo; Previous
                                 </a>
                             </li>
                             {for $p=1 to $total_pages}
                                 <li class="page-item {if $p == $current_page}active{/if}">
                                     <a class="page-link"
-                                        href="{$form_action|escape:'htmlall':'UTF-8'}&page={$p}&limit={$limit}">{$p}</a>
+                                        href="{$form_action|escape:'htmlall':'UTF-8'}&page={$p}&limit={$limit}&product_search={$product_search|escape:'url':'UTF-8'}">{$p}</a>
                                 </li>
                             {/for}
                             <li class="page-item {if $current_page >= $total_pages}disabled{/if}">
                                 <a class="page-link"
-                                    href="{$form_action|escape:'htmlall':'UTF-8'}&page={$current_page + 1}&limit={$limit}">
+                                    href="{$form_action|escape:'htmlall':'UTF-8'}&page={$current_page + 1}&limit={$limit}&product_search={$product_search|escape:'url':'UTF-8'}">
                                     Next &raquo;
                                 </a>
                             </li>
@@ -558,5 +567,6 @@
 
         </div>
     {/if}
+</div>
 </div>
 </div>

@@ -118,24 +118,34 @@ class AdminCustomStockTransferController extends ModuleAdminController
             $page = 1;
         }
 
-        $limit = (int) Tools::getValue('limit', 20);
-        if ($limit < 1) {
-            $limit = 20;
+        $limit = (int) Tools::getValue('limit', 0);
+        if ($limit > 0) {
+            $this->context->cookie->__set('customstocktransfer_limit', $limit);
+            $this->context->cookie->write();
+        } else {
+            $limit = (int) $this->context->cookie->__get('customstocktransfer_limit');
         }
 
+        if ($limit < 1) {
+            $limit = 10;
+        }
+
+        $productSearch = trim(Tools::getValue('product_search', ''));
+
         $shops = $this->getActiveShops();
-        $totalProducts = $this->getTotalProductsCount($shops);
+        $totalProducts = $this->getTotalProductsCount($shops, $productSearch);
         $totalPages = (int) ceil($totalProducts / $limit);
 
         if ($page > $totalPages && $totalPages > 0) {
             $page = $totalPages;
         }
 
-        $products = $this->getProductsDashboardData($shops, $page, $limit);
+        $products = $this->getProductsDashboardData($shops, $page, $limit, $productSearch);
 
         $this->applyFlashMessage();
 
         $this->context->smarty->assign([
+            'product_search' => $productSearch,
             'products' => $products,
             'shops' => $shops,
             'form_action' => $this->context->link->getAdminLink('AdminCustomStockTransfer'),
@@ -163,7 +173,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
         return $shops;
     }
 
-    protected function getTotalProductsCount(array $shops)
+    protected function getTotalProductsCount(array $shops, $productSearch = '')
     {
         $idLang = (int) $this->context->language->id;
         $idShopForName = (int) $this->context->shop->id;
@@ -178,10 +188,15 @@ class AdminCustomStockTransferController extends ModuleAdminController
         $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product AND ps.active = 1');
         $query->innerJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = ' . (int) $idLang . ' AND pl.id_shop = ' . (int) $idShopForName);
 
+        if ($productSearch !== '') {
+            $productSearchEscaped = pSQL($productSearch);
+            $query->where('pl.name LIKE \'%'.$productSearchEscaped.'%\' OR p.reference LIKE \'%'.$productSearchEscaped.'%\'');
+        }
+
         return (int) Db::getInstance()->getValue($query);
     }
 
-    protected function getProductsDashboardData(array $shops, $page = 1, $limit = 20)
+    protected function getProductsDashboardData(array $shops, $page = 1, $limit = 20, $productSearch = '')
     {
         $products = [];
         $idLang = (int) $this->context->language->id;
@@ -196,6 +211,12 @@ class AdminCustomStockTransferController extends ModuleAdminController
         $query->from('product', 'p');
         $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product AND ps.active = 1');
         $query->innerJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = ' . (int) $idLang . ' AND pl.id_shop = ' . (int) $idShopForName);
+
+        if ($productSearch !== '') {
+            $productSearchEscaped = pSQL($productSearch);
+            $query->where('pl.name LIKE \'%'.$productSearchEscaped.'%\' OR p.reference LIKE \'%'.$productSearchEscaped.'%\'');
+        }
+
         $query->groupBy('p.id_product, pl.name, pl.link_rewrite');
         $query->orderBy('pl.name ASC');
 
