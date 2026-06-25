@@ -119,8 +119,25 @@ class AdminCustomStockTransferController extends ModuleAdminController
     {
         parent::initContent();
 
+        $page = (int) Tools::getValue('page', 1);
+        if ($page < 1) {
+            $page = 1;
+        }
+
+        $limit = (int) Tools::getValue('limit', 20);
+        if ($limit < 1) {
+            $limit = 20;
+        }
+
         $shops = $this->getActiveShops();
-        $products = $this->getProductsDashboardData($shops);
+        $totalProducts = $this->getTotalProductsCount($shops);
+        $totalPages = (int) ceil($totalProducts / $limit);
+
+        if ($page > $totalPages && $totalPages > 0) {
+            $page = $totalPages;
+        }
+
+        $products = $this->getProductsDashboardData($shops, $page, $limit);
 
         $this->applyFlashMessage();
 
@@ -129,6 +146,10 @@ class AdminCustomStockTransferController extends ModuleAdminController
             'shops' => $shops,
             'form_action' => $this->context->link->getAdminLink('AdminCustomStockTransfer'),
             'token' => Tools::getAdminTokenLite('AdminCustomStockTransfer'),
+            'current_page' => $page,
+            'limit' => $limit,
+            'total_products' => $totalProducts,
+            'total_pages' => $totalPages,
         ]);
 
         $this->setTemplate('transfer_dashboard.tpl');
@@ -148,7 +169,25 @@ class AdminCustomStockTransferController extends ModuleAdminController
         return $shops;
     }
 
-    protected function getProductsDashboardData(array $shops)
+    protected function getTotalProductsCount(array $shops)
+    {
+        $idLang = (int) $this->context->language->id;
+        $idShopForName = (int) $this->context->shop->id;
+
+        if ($idShopForName <= 0 && !empty($shops)) {
+            $idShopForName = (int) $shops[0]['id_shop'];
+        }
+
+        $query = new DbQuery();
+        $query->select('COUNT(DISTINCT p.id_product)');
+        $query->from('product', 'p');
+        $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product AND ps.active = 1');
+        $query->innerJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = ' . (int) $idLang . ' AND pl.id_shop = ' . (int) $idShopForName);
+
+        return (int) Db::getInstance()->getValue($query);
+    }
+
+    protected function getProductsDashboardData(array $shops, $page = 1, $limit = 20)
     {
         $products = [];
         $idLang = (int) $this->context->language->id;
@@ -165,6 +204,9 @@ class AdminCustomStockTransferController extends ModuleAdminController
         $query->innerJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = ' . (int) $idLang . ' AND pl.id_shop = ' . (int) $idShopForName);
         $query->groupBy('p.id_product, pl.name, pl.link_rewrite');
         $query->orderBy('pl.name ASC');
+
+        $offset = (int) (($page - 1) * $limit);
+        $query->limit((int) $limit, $offset);
 
         $rows = Db::getInstance()->executeS($query);
 

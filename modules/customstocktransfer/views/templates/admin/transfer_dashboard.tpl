@@ -78,7 +78,7 @@
         <div class="cst-stat-card">
 
             <div class="cst-stat-number">
-                {$products|count}
+                {if isset($total_products)}{$total_products|intval}{else}{$products|count}{/if}
             </div>
 
             <div class="cst-stat-label">
@@ -158,7 +158,7 @@
                 <span>
 
                     <strong id="customstocktransfer-result-count">
-                        {$products|count}
+                        {if isset($total_products)}{$total_products|intval}{else}{$products|count}{/if}
                     </strong>
 
                     Products
@@ -475,6 +475,33 @@
 
             </div>
 
+        </div>
+
+        <div class="row mt-4 mb-4">
+            <div class="col-md-6 align-self-center">
+                Showing {if isset($total_products) && $total_products == 0}0{else}{(($current_page - 1) * $limit) + 1}{/if} to {if $current_page * $limit > $total_products}{$total_products}{else}{$current_page * $limit}{/if} of {$total_products} products
+            </div>
+            <div class="col-md-6">
+                {if isset($total_pages) && $total_pages > 1}
+                <ul class="pagination justify-content-end mb-0">
+                    <li class="page-item {if $current_page <= 1}disabled{/if}">
+                        <a class="page-link" href="{$form_action|escape:'htmlall':'UTF-8'}&page={$current_page - 1}&limit={$limit}">
+                            &laquo; Previous
+                        </a>
+                    </li>
+                    {for $p=1 to $total_pages}
+                        <li class="page-item {if $p == $current_page}active{/if}">
+                            <a class="page-link" href="{$form_action|escape:'htmlall':'UTF-8'}&page={$p}&limit={$limit}">{$p}</a>
+                        </li>
+                    {/for}
+                    <li class="page-item {if $current_page >= $total_pages}disabled{/if}">
+                        <a class="page-link" href="{$form_action|escape:'htmlall':'UTF-8'}&page={$current_page + 1}&limit={$limit}">
+                            Next &raquo;
+                        </a>
+                    </li>
+                </ul>
+                {/if}
+            </div>
         </div>
 
         <div class="modal fade" id="customstocktransfer-transfer-modal" tabindex="-1" role="dialog" aria-hidden="true">
