@@ -24,27 +24,6 @@ class AdminCustomStockTransferController extends ModuleAdminController
         $this->addJS($baseUri . 'views/js/transfer.js');
     }
 
-    public function ajaxProcessGetStoresByGroup()
-    {
-        $idShopGroup = (int) Tools::getValue('id_shop_group');
-        $shops = [];
-
-        if ($idShopGroup > 0) {
-            $results = Shop::getShops(true, $idShopGroup, false);
-        } else {
-            $results = Shop::getShops(true, null, false);
-        }
-
-        foreach ($results as $shop) {
-            $shops[] = [
-                'id_shop' => (int) $shop['id_shop'],
-                'name' => $shop['name'],
-            ];
-        }
-
-        die(json_encode($shops));
-    }
-
     public function postProcess()
     {
         if (!Tools::isSubmit('submitCustomStockTransfer')) {
@@ -145,17 +124,9 @@ class AdminCustomStockTransferController extends ModuleAdminController
             $page = 1;
         }
 
-        $limitValue = Tools::getValue('limit', false);
-        if ($limitValue !== false) {
-            $limit = (int) $limitValue;
-            $this->context->cookie->__set('customstocktransfer_limit', $limit);
-            $this->context->cookie->write();
-        } else {
-            $limit = (int) $this->context->cookie->__get('customstocktransfer_limit');
-        }
-
-        if (!in_array($limit, [10, 20, 50, 100], true)) {
-            $limit = 10;
+        $limit = (int) Tools::getValue('limit', 20);
+        if ($limit < 1) {
+            $limit = 20;
         }
 
         $shops = $this->getActiveShops();
@@ -173,8 +144,6 @@ class AdminCustomStockTransferController extends ModuleAdminController
         $this->context->smarty->assign([
             'products' => $products,
             'shops' => $shops,
-            'shop_groups' => ShopGroup::getShopGroups(true),
-            'ajax_url' => $this->context->link->getAdminLink('AdminCustomStockTransfer'),
             'form_action' => $this->context->link->getAdminLink('AdminCustomStockTransfer'),
             'token' => Tools::getAdminTokenLite('AdminCustomStockTransfer'),
             'current_page' => $page,
@@ -218,7 +187,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
         return (int) Db::getInstance()->getValue($query);
     }
 
-    protected function getProductsDashboardData(array $shops, $page = 1, $limit = 10)
+    protected function getProductsDashboardData(array $shops, $page = 1, $limit = 20)
     {
         $products = [];
         $idLang = (int) $this->context->language->id;
