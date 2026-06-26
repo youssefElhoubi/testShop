@@ -138,35 +138,8 @@
 
     {if $products|count}
 
-        <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" id="customstocktransfer-bulk-form">
+        <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" id="cst-filter-form">
             <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
-
-            <div class="cst-bulk-actions row mb-4 align-items-end">
-                <div class="col-md-4">
-                    <label>Source Store</label>
-                    <select class="form-control cst-input" name="source_shop_id" required>
-                        <option value="">Select source</option>
-                        {foreach from=$shops item=shop}
-                            <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
-                        {/foreach}
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label>Destination Store</label>
-                    <select class="form-control cst-input" name="destination_shop_id" required>
-                        <option value="">Select destination</option>
-                        {foreach from=$shops item=shop}
-                            <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
-                        {/foreach}
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <button type="submit" name="submitCustomStockTransfer" value="1"
-                        class="btn btn-primary cst-btn-primary w-100">
-                        <i class="icon-exchange"></i> Submit Bulk Transfer
-                    </button>
-                </div>
-            </div>
 
             <div class="cst-advanced-filters">
                 <div class="cst-filter-grid">
@@ -249,6 +222,38 @@
                 </div>
 
             </div>
+        </form>
+
+        <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" id="cst-transfer-form">
+            <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
+
+            <div class="cst-bulk-actions row mb-4 align-items-end">
+                <div class="col-md-4">
+                    <label>Source Store</label>
+                    <select class="form-control cst-input" name="source_shop_id">
+                        <option value="">Select source</option>
+                        {foreach from=$shops item=shop}
+                            <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label>Destination Store</label>
+                    <select class="form-control cst-input" name="destination_shop_id">
+                        <option value="">Select destination</option>
+                        {foreach from=$shops item=shop}
+                            <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" name="submitCustomStockTransfer" value="1"
+                        class="btn btn-primary cst-btn-primary w-100">
+                        <i class="icon-exchange"></i> Submit Bulk Transfer
+                    </button>
+                </div>
+            </div>
+
             <div id="customstocktransfer-grid-view" class="cst-view is-active">
 
                 <div class="cst-products-grid">
@@ -551,6 +556,7 @@
                 </div>
 
             </div>
+        </form>
 
             <div class="row mt-4 mb-4" style="align-items: center;">
                 <div class="col-md-6" style="display: flex; align-items: center; gap: 15px;">
@@ -593,7 +599,6 @@
                 </div>
             </div>
 
-        </form>
     {else}
         <div class="cst-empty">
 

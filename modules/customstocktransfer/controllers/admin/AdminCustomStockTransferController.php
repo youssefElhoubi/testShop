@@ -26,6 +26,29 @@ class AdminCustomStockTransferController extends ModuleAdminController
 
     public function postProcess()
     {
+        if (Tools::isSubmit('submitCustomStockTransferSearch')) {
+            $qtyMin = Tools::getValue('filter_qty_min');
+            $qtyMax = Tools::getValue('filter_qty_max');
+            $priceMin = Tools::getValue('filter_price_min');
+            $priceMax = Tools::getValue('filter_price_max');
+
+            if ($qtyMin !== false && $qtyMin !== '' && $qtyMax !== false && $qtyMax !== '') {
+                if ((int)$qtyMin > (int)$qtyMax) {
+                    $this->setFlashMessage(false, $this->trans('Minimum quantity cannot be greater than maximum quantity.', [], 'Modules.Customstocktransfer.Admin'));
+                    $this->redirectToDashboard();
+                    return false;
+                }
+            }
+
+            if ($priceMin !== false && $priceMin !== '' && $priceMax !== false && $priceMax !== '') {
+                if ((float)$priceMin > (float)$priceMax) {
+                    $this->setFlashMessage(false, $this->trans('Minimum price cannot be greater than maximum price.', [], 'Modules.Customstocktransfer.Admin'));
+                    $this->redirectToDashboard();
+                    return false;
+                }
+            }
+        }
+
         if (!Tools::isSubmit('submitCustomStockTransfer')) {
             return parent::postProcess();
         }
