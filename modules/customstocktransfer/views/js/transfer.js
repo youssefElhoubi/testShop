@@ -1,4 +1,3 @@
-console.log("clicked");
 document.addEventListener('DOMContentLoaded', function () {
 
     // Grab the exact containers
@@ -12,43 +11,93 @@ document.addEventListener('DOMContentLoaded', function () {
         tableView.style.display = 'none';
     }
 
-    // 1. Bulletproof View Toggle
+    // === UNIFIED CLICK EVENT DELEGATION ===
     document.addEventListener('click', function (e) {
-        const btn = e.target.closest('.js-stock-view-toggle');
-        if (!btn) return;
-
-        const targetView = btn.getAttribute('data-view'); // 'grid' or 'table'
-
-        // Swap button active states
-        toggleBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // Forcefully toggle displays using inline styles to override any broken CSS
-        if (targetView === 'grid') {
-            gridView.style.display = 'block';
-            tableView.style.display = 'none';
-        } else if (targetView === 'table') {
-            gridView.style.display = 'none';
-            tableView.style.display = 'block';
-        }
-    });
-
-    // 2. Consolidated Modal Data Injector (Using jQuery)
-    $(document).on('click', '.js-open-transfer-modal', function () {
-        const productId = $(this).data('product-id');
-        const productName = $(this).data('product-name');
-        const form = $('#customstocktransfer-transfer-form');
-
-        // Clear out the form so old quantities don't get stuck
-        if (form.length) {
-            form[0].reset();
+        
+        // 1. View Toggle
+        const toggleBtn = e.target.closest('.js-stock-view-toggle');
+        if (toggleBtn) {
+            e.preventDefault();
+            const targetView = toggleBtn.getAttribute('data-view'); // 'grid' or 'table'
+            toggleBtns.forEach(b => b.classList.remove('active'));
+            toggleBtn.classList.add('active');
+            if (targetView === 'grid') {
+                gridView.style.display = 'block';
+                tableView.style.display = 'none';
+            } else if (targetView === 'table') {
+                gridView.style.display = 'none';
+                tableView.style.display = 'block';
+            }
+            return;
         }
 
-        // Inject ID into the hidden input
-        $('input[name="id_product"]').val(productId);
+        // 2. Open Transfer Modal (Legacy)
+        const openTransferBtn = e.target.closest('.js-open-transfer-modal');
+        if (openTransferBtn) {
+            e.preventDefault();
+            const productId = openTransferBtn.getAttribute('data-product-id');
+            const productName = openTransferBtn.getAttribute('data-product-name');
+            const form = document.getElementById('customstocktransfer-transfer-form');
+            if (form) form.reset();
+            const idProductInput = document.querySelector('input[name="id_product"]');
+            if (idProductInput) idProductInput.value = productId;
+            const titleElement = document.querySelector('.js-transfer-modal-title');
+            if (titleElement) titleElement.textContent = 'Transfer: ' + productName;
+            return;
+        }
 
-        // Change title so you know exactly what you are transferring
-        $('.js-transfer-modal-title').text('Transfer: ' + productName);
+        // 3. Open Edit/Transfer Modal
+        const openEditBtn = e.target.closest('.js-open-edit-modal');
+        if (openEditBtn) {
+            e.preventDefault();
+            const productId = openEditBtn.getAttribute('data-product-id');
+            const productName = openEditBtn.getAttribute('data-product-name');
+            const currentQty = openEditBtn.getAttribute('data-current-qty');
+            const maxQty = openEditBtn.getAttribute('data-max-qty');
+            
+            if (editForm) {
+                editForm.reset();
+                const idProductInput = editForm.querySelector('input[name="id_product"]');
+                if (idProductInput) idProductInput.value = productId;
+                const maxQuantityInput = editForm.querySelector('input[name="max_quantity"]');
+                if (maxQuantityInput) maxQuantityInput.value = maxQty;
+                const newQuantityInput = editForm.querySelector('input[name="new_quantity"]');
+                if (newQuantityInput) newQuantityInput.value = currentQty;
+                
+                const titleElement = document.querySelector('.js-edit-modal-title');
+                if (titleElement) titleElement.textContent = 'Transfer Stock: ' + productName;
+                const errorElement = document.querySelector('.js-edit-modal-error');
+                if (errorElement) errorElement.style.display = 'none';
+            }
+            if (editModal) {
+                editModal.style.display = 'flex';
+            }
+            return;
+        }
+
+        // 4. Close Edit Modal
+        if (e.target.matches('.js-close-edit-modal') || (e.target.closest('.cst-modal-close') && e.target.closest('#cst-edit-modal'))) {
+            e.preventDefault();
+            if (editModal) editModal.style.display = 'none';
+            return;
+        }
+
+        // 5. Open History Modal
+        const openHistoryBtn = e.target.closest('.js-open-history-modal');
+        if (openHistoryBtn) {
+            e.preventDefault();
+            console.log("button clicked ");
+            if (historyModal) historyModal.style.display = 'flex';
+            return;
+        }
+
+        // 6. Close History Modal
+        if (e.target.matches('.js-close-history-modal') || (e.target.closest('.cst-modal-close') && e.target.closest('#cst-history-modal'))) {
+            e.preventDefault();
+            if (historyModal) historyModal.style.display = 'none';
+            return;
+        }
+
     });
 
     // 3. Form Validation logic for Filter Form and Transfer Form
@@ -143,34 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const editForm = document.getElementById('cst-edit-form');
 
 
-    $(document).on('click', '.js-open-edit-modal', function () {
 
-        const productId = $(this).data('product-id');
-        const productName = $(this).data('product-name');
-        const currentQty = $(this).data('current-qty');
-        const maxQty = $(this).data('max-qty');
-
-        if (editForm) {
-            editForm.reset();
-            $('#cst-edit-form input[name="id_product"]').val(productId);
-            $('#cst-edit-form input[name="max_quantity"]').val(maxQty);
-            $('#cst-edit-form input[name="new_quantity"]').val(currentQty);
-            $('.js-edit-modal-title').text('Edit Quantity: ' + productName);
-            $('.js-edit-modal-error').hide();
-        }
-
-        if (editModal) {
-            editModal.style.display = 'flex';
-        }
-    });
-
-    $(document).on('click', '.js-close-edit-modal', function (e) {
-        if (e.target === this) {
-            if (editModal) {
-                editModal.style.display = 'none';
-            }
-        }
-    });
 
     if (editForm) {
         editForm.addEventListener('submit', function (e) {
@@ -220,19 +242,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // 5. History Modal Logic
     const historyModal = document.getElementById('cst-history-modal');
     
-    $(document).on('click', '.js-open-history-modal', function () {
-        if (historyModal) {
-            historyModal.style.display = 'flex';
-        }
-    });
 
-    $(document).on('click', '.js-close-history-modal', function (e) {
-        // e.target === this ensures it only closes when the close button or the overlay itself is clicked, not children
-        if (e.target === this || this.classList.contains('cst-modal-close') || this.classList.contains('js-close-history-modal')) {
-            if (historyModal) {
-                historyModal.style.display = 'none';
-            }
-        }
-    });
 
 });
