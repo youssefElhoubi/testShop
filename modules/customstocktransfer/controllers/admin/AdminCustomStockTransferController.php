@@ -32,6 +32,8 @@ class AdminCustomStockTransferController extends ModuleAdminController
             $idProduct = (int) Tools::getValue('id_product');
             $newQuantity = (int) Tools::getValue('new_quantity');
             $maxQuantity = (int) Tools::getValue('max_quantity');
+            $idStoreFrom = (int) Tools::getValue('id_store_from');
+            $idStoreTo = (int) Tools::getValue('id_store_to');
 
             if ($idProduct <= 0 || !$this->productExists($idProduct)) {
                 $this->setFlashMessage(false, $this->trans('Invalid product.', [], 'Modules.Customstocktransfer.Admin'));
@@ -39,8 +41,20 @@ class AdminCustomStockTransferController extends ModuleAdminController
                 return false;
             }
 
-            if ($newQuantity < 0) {
-                $this->setFlashMessage(false, $this->trans('Quantity cannot be less than 0.', [], 'Modules.Customstocktransfer.Admin'));
+            if ($idStoreFrom <= 0 || $idStoreTo <= 0) {
+                $this->setFlashMessage(false, $this->trans('Please select valid stores.', [], 'Modules.Customstocktransfer.Admin'));
+                $this->redirectToDashboard();
+                return false;
+            }
+
+            if ($idStoreFrom === $idStoreTo) {
+                $this->setFlashMessage(false, $this->trans('Store From and Store To cannot be the same.', [], 'Modules.Customstocktransfer.Admin'));
+                $this->redirectToDashboard();
+                return false;
+            }
+
+            if ($newQuantity <= 0) {
+                $this->setFlashMessage(false, $this->trans('Quantity must be greater than 0.', [], 'Modules.Customstocktransfer.Admin'));
                 $this->redirectToDashboard();
                 return false;
             }
@@ -52,9 +66,14 @@ class AdminCustomStockTransferController extends ModuleAdminController
                 return false;
             }
 
-            StockAvailable::setQuantity($idProduct, 0, $newQuantity, $this->context->shop->id);
+            // Perform transfer
+            $qtyFrom = StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $idStoreFrom);
+            StockAvailable::setQuantity($idProduct, 0, $qtyFrom - $newQuantity, $idStoreFrom);
 
-            $this->setFlashMessage(true, $this->trans('Stock quantity updated successfully.', [], 'Modules.Customstocktransfer.Admin'));
+            $qtyTo = StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $idStoreTo);
+            StockAvailable::setQuantity($idProduct, 0, $qtyTo + $newQuantity, $idStoreTo);
+
+            $this->setFlashMessage(true, $this->trans('Stock transferred successfully.', [], 'Modules.Customstocktransfer.Admin'));
             $this->redirectToDashboard();
             return false;
         }

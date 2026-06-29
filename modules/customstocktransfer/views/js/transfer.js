@@ -176,15 +176,34 @@ document.addEventListener('DOMContentLoaded', function () {
         editForm.addEventListener('submit', function (e) {
             const qtyInput = editForm.querySelector('input[name="new_quantity"]');
             const maxInput = editForm.querySelector('input[name="max_quantity"]');
+            const storeFromInput = editForm.querySelector('select[name="id_store_from"]');
+            const storeToInput = editForm.querySelector('select[name="id_store_to"]');
 
             const newQty = parseInt(qtyInput.value);
             const maxQty = parseInt(maxInput.value);
+            const storeFrom = storeFromInput ? storeFromInput.value : '';
+            const storeTo = storeToInput ? storeToInput.value : '';
+            
             const errorBox = editForm.querySelector('.js-edit-modal-error');
             const errorText = errorBox.querySelector('.error-text');
 
-            if (isNaN(newQty) || newQty < 0) {
+            if (!storeFrom || !storeTo) {
                 e.preventDefault();
-                errorText.innerText = 'Quantity cannot be less than 0.';
+                errorText.innerText = 'Please select both Store From and Store To.';
+                errorBox.style.display = 'flex';
+                return;
+            }
+
+            if (storeFrom === storeTo) {
+                e.preventDefault();
+                errorText.innerText = 'Store From and Store To cannot be the same.';
+                errorBox.style.display = 'flex';
+                return;
+            }
+
+            if (isNaN(newQty) || newQty <= 0) {
+                e.preventDefault();
+                errorText.innerText = 'Quantity must be greater than 0.';
                 errorBox.style.display = 'flex';
                 return;
             }
