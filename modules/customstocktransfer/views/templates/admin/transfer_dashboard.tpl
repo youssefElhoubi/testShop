@@ -688,10 +688,11 @@
                         <label>Store From</label>
                         <select name="id_store_from" class="form-control cst-input" required>
                             <option value="">-- Select Store From --</option>
-                            {if isset($stores)}
-                                {foreach from=$stores item=store}
-                                    <option value="{$store.id_store|escape:'htmlall':'UTF-8'}">
-                                        {$store.name|escape:'htmlall':'UTF-8'}</option>
+                            {if isset($shops)}
+                                {foreach from=$shops item=shop}
+                                    <option value="{$shop.id_shop|escape:'htmlall':'UTF-8'}">
+                                        {$shop.shop_name|escape:'htmlall':'UTF-8'}
+                                    </option>
                                 {/foreach}
                             {/if}
                         </select>
@@ -700,10 +701,11 @@
                         <label>Store To</label>
                         <select name="id_store_to" class="form-control cst-input" required>
                             <option value="">-- Select Store To --</option>
-                            {if isset($stores)}
-                                {foreach from=$stores item=store}
-                                    <option value="{$store.id_store|escape:'htmlall':'UTF-8'}">
-                                        {$store.name|escape:'htmlall':'UTF-8'}</option>
+                            {if isset($shops)}
+                                {foreach from=$shops item=shop}
+                                    <option value="{$shop.id_shop|escape:'htmlall':'UTF-8'}">
+                                        {$shop.shop_name|escape:'htmlall':'UTF-8'}
+                                    </option>
                                 {/foreach}
                             {/if}
                         </select>
@@ -744,6 +746,7 @@
                                 <th>Date</th>
                                 <th>Status</th>
                                 <th>Reason</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -771,6 +774,23 @@
                                             {$transfer.reason|escape:'htmlall':'UTF-8'}
                                         {else}
                                             -
+                                        {/if}
+                                    </td>
+                                    <td>
+                                        {if !isset($transfer.status) || $transfer.status == 'pending'}
+                                            <div style="display: flex; gap: 5px; align-items: center;">
+                                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" style="margin:0;">
+                                                    <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
+                                                    <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
+                                                    <button type="submit" name="submitApproveTransfer" value="1" class="btn btn-success btn-sm">Approve</button>
+                                                </form>
+                                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" style="margin:0; display:flex; gap:5px;">
+                                                    <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
+                                                    <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
+                                                    <input type="text" name="decline_reason" class="form-control cst-input input-sm" style="width: 150px;" placeholder="Reason..." required>
+                                                    <button type="submit" name="submitDeclineTransfer" value="1" class="btn btn-danger btn-sm">Decline</button>
+                                                </form>
+                                            </div>
                                         {/if}
                                     </td>
                                 </tr>
