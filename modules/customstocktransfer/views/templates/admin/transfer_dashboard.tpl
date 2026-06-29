@@ -746,7 +746,6 @@
                                 <th>Date</th>
                                 <th>Status</th>
                                 <th>Reason</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -774,30 +773,6 @@
                                             {$transfer.reason|escape:'htmlall':'UTF-8'}
                                         {else}
                                             -
-                                        {/if}
-                                    </td>
-                                    <td>
-                                        {if !isset($transfer.status) || $transfer.status == 'pending'}
-                                            <div style="display: flex; gap: 5px; align-items: center;">
-                                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}"
-                                                    style="margin:0;">
-                                                    <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
-                                                    <input type="hidden" name="id_transfer"
-                                                        value="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
-                                                    <button type="submit" name="submitApproveTransfer" value="1"
-                                                        class="btn btn-success btn-sm">Approve</button>
-                                                </form>
-                                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}"
-                                                    style="margin:0; display:flex; gap:5px;">
-                                                    <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
-                                                    <input type="hidden" name="id_transfer"
-                                                        value="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
-                                                    <input type="text" name="decline_reason" class="form-control cst-input input-sm"
-                                                        style="width: 150px;" placeholder="Reason..." required>
-                                                    <button type="submit" name="submitDeclineTransfer" value="1"
-                                                        class="btn btn-danger btn-sm">Decline</button>
-                                                </form>
-                                            </div>
                                         {/if}
                                     </td>
                                 </tr>
