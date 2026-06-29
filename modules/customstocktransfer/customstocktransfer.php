@@ -54,22 +54,25 @@ class CustomStockTransfer extends Module
 
     protected function installTab()
     {
-        if ((int) Tab::getIdFromClassName('AdminCustomStockTransfer') > 0) {
-            return true;
+        $tabs = [
+            ['class' => 'AdminCustomStockTransfer', 'name' => 'Stock Request'],
+            ['class' => 'AdminCustomStockApproval', 'name' => 'Transfer Approval']
+        ];
+        foreach ($tabs as $tabData) {
+            if ((int) Tab::getIdFromClassName($tabData['class']) > 0) continue;
+
+            $tab = new Tab();
+            $tab->class_name = $tabData['class'];
+            $tab->module = $this->name;
+            $tab->active = 1;
+            $tab->id_parent = $this->getCatalogParentTabId();
+            $tab->name = [];
+            foreach (Language::getLanguages(true) as $lang) {
+                $tab->name[(int)$lang['id_lang']] = $tabData['name'];
+            }
+            $tab->add();
         }
-
-        $tab = new Tab();
-        $tab->class_name = 'AdminCustomStockTransfer';
-        $tab->module = $this->name;
-        $tab->active = 1;
-        $tab->id_parent = $this->getCatalogParentTabId();
-        $tab->name = [];
-
-        foreach (Language::getLanguages(true) as $language) {
-            $tab->name[(int) $language['id_lang']] = 'Stock Transfer';
-        }
-
-        return (bool) $tab->add();
+        return true;
     }
 
     protected function uninstallTab()
