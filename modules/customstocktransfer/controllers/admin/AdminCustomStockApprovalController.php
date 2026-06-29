@@ -18,8 +18,8 @@ class AdminCustomStockApprovalController extends ModuleAdminController
         parent::setMedia($isNewTheme);
 
         $baseUri = $this->module->getPathUri();
-        $this->addCSS($baseUri . 'views/css/transfer.css');
-        $this->addJS($baseUri . 'views/js/transfer.js');
+        $this->addCSS($baseUri . 'views/css/approvale.css');
+        $this->addJS($baseUri . 'views/js/approvale.js');
     }
 
     public function initContent()
