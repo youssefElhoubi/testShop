@@ -77,17 +77,18 @@ class CustomStockTransfer extends Module
 
     protected function uninstallTab()
     {
-        $idTab = (int) Tab::getIdFromClassName('AdminCustomStockTransfer');
-        if ($idTab <= 0) {
-            return true;
-        }
+        $tabs = ['AdminCustomStockTransfer', 'AdminCustomStockApproval'];
 
-        $tab = new Tab($idTab);
-        if (!Validate::isLoadedObject($tab)) {
-            return true;
+        foreach ($tabs as $className) {
+            $idTab = (int) Tab::getIdFromClassName($className);
+            if ($idTab > 0) {
+                $tab = new Tab($idTab);
+                if (Validate::isLoadedObject($tab)) {
+                    $tab->delete();
+                }
+            }
         }
-
-        return (bool) $tab->delete();
+        return true;
     }
 
     protected function getCatalogParentTabId()
