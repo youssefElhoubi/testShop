@@ -1,0 +1,161 @@
+/* Custom Stock Transfer Approval Dashboard Styles */
+
+.panel .card {
+    margin-bottom: 1.5rem !important; /* Relative units */
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05) !important;
+    background: #ffffff !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* For equal height cards in row */
+}
+
+.panel .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.panel .card-body {
+    padding: 1.25rem !important; /* Relative units */
+    flex: 1; /* Pushes footer down */
+}
+
+/* Image Container */
+.panel .card .text-center {
+    height: 10rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa !important;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem !important;
+    overflow: hidden; /* Ensure images don't break out */
+}
+
+.panel .card img {
+    max-height: 9rem !important;
+    max-width: 100% !important;
+    object-fit: contain; /* Keeps image proportions */
+    transition: transform 0.3s ease;
+}
+
+.panel .card:hover img {
+    transform: scale(1.05); /* Subtle zoom on hover */
+}
+
+/* Card Title */
+.panel .card-title {
+    font-size: 1.1rem !important;
+    color: #333333;
+    font-weight: 600 !important;
+    margin-bottom: 1rem !important;
+}
+
+/* List Items */
+.panel .list-group-item {
+    padding: 0.75rem 0 !important;
+    font-size: 0.95rem;
+    color: #555555;
+    background-color: transparent !important;
+}
+
+.panel .list-group-item strong {
+    color: #333333;
+}
+
+.panel .badge-primary {
+    font-size: 0.9rem !important;
+    background-color: #2eadd3 !important; /* PrestaShop primary blue */
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 0.25rem;
+}
+
+/* Card Footer */
+.panel .card-footer {
+    background-color: #fafbfc !important;
+    padding: 1.25rem !important; /* Relative units */
+    border-top: 1px solid #e5e5e5 !important;
+    border-bottom-left-radius: 0.5rem !important;
+    border-bottom-right-radius: 0.5rem !important;
+}
+
+/* Forms & Buttons */
+.panel .card-footer form {
+    width: 100%;
+}
+
+.panel .btn {
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    font-weight: 500 !important;
+    padding: 0.5rem 1rem !important; /* Relative units */
+    border-radius: 0.25rem !important;
+    border: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel .btn:active {
+    transform: scale(0.98);
+}
+
+.panel .btn-success {
+    background-color: #28a745 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(40, 167, 69, 0.2) !important;
+}
+
+.panel .btn-success:hover {
+    background-color: #218838 !important;
+}
+
+.panel .btn-danger {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(220, 53, 69, 0.2) !important;
+}
+
+.panel .btn-danger:hover {
+    background-color: #c82333 !important;
+}
+
+.panel .cst-input {
+    border: 1px solid #ced4da !important;
+    border-radius: 0.25rem !important;
+    padding: 0.4rem 0.75rem !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.panel .cst-input:focus {
+    border-color: #80bdff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+    outline: none !important;
+}
+
+/* Responsive Grid */
+@media (max-width: 768px) {
+    .panel .col-md-4 {
+        width: 100% !important; /* 100% width on mobile */
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .panel .card-footer > div {
+        flex-direction: column !important;
+    }
+    
+    .panel .card-footer form[style*="display:flex"] {
+        flex-direction: column !important;
+    }
+    
+    .panel .card-footer .cst-input {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    .panel .card-footer .btn-danger {
+        width: 100% !important;
+    }
+}
