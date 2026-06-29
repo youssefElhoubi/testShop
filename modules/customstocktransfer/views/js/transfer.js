@@ -1,5 +1,6 @@
-document.addEventListener('DOMContentLoaded', function() {
-    
+console.log("clicked");
+document.addEventListener('DOMContentLoaded', function () {
+
     // Grab the exact containers
     const gridView = document.getElementById('customstocktransfer-grid-view');
     const tableView = document.getElementById('customstocktransfer-table-view');
@@ -12,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 1. Bulletproof View Toggle
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         const btn = e.target.closest('.js-stock-view-toggle');
         if (!btn) return;
 
@@ -33,25 +34,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 2. Consolidated Modal Data Injector (Using jQuery)
-    $(document).on('click', '.js-open-transfer-modal', function() {
+    $(document).on('click', '.js-open-transfer-modal', function () {
         const productId = $(this).data('product-id');
         const productName = $(this).data('product-name');
         const form = $('#customstocktransfer-transfer-form');
-        
+
         // Clear out the form so old quantities don't get stuck
         if (form.length) {
             form[0].reset();
         }
-        
+
         // Inject ID into the hidden input
         $('input[name="id_product"]').val(productId);
-        
+
         // Change title so you know exactly what you are transferring
         $('.js-transfer-modal-title').text('Transfer: ' + productName);
     });
 
     // 3. Form Validation logic for Filter Form and Transfer Form
-    
+
     function showCustomError(message) {
         let alertBox = document.querySelector('.cst-alert-danger');
         if (!alertBox) {
@@ -65,19 +66,34 @@ document.addEventListener('DOMContentLoaded', function() {
             container.insertBefore(alertBox, container.firstChild);
         }
         alertBox.querySelector('.cst-alert-content').innerHTML = '<p>' + message + '</p>';
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     const filterForm = document.getElementById('cst-filter-form');
     if (filterForm) {
-        filterForm.addEventListener('submit', function(e) {
-            // Price and Quantity validations removed
+        filterForm.addEventListener('submit', function (e) {
+            const qtyMin = filterForm.querySelector('input[name="filter_qty_min"]').value;
+            const qtyMax = filterForm.querySelector('input[name="filter_qty_max"]').value;
+            const priceMin = filterForm.querySelector('input[name="filter_price_min"]').value;
+            const priceMax = filterForm.querySelector('input[name="filter_price_max"]').value;
+
+            if (qtyMin !== '' && qtyMax !== '' && parseInt(qtyMin) > parseInt(qtyMax)) {
+                e.preventDefault();
+                showCustomError('Minimum quantity cannot be greater than maximum quantity.');
+                return;
+            }
+
+            if (priceMin !== '' && priceMax !== '' && parseFloat(priceMin) > parseFloat(priceMax)) {
+                e.preventDefault();
+                showCustomError('Minimum price cannot be greater than maximum price.');
+                return;
+            }
         });
     }
 
     const transferForm = document.getElementById('cst-transfer-form');
     if (transferForm) {
-        transferForm.addEventListener('submit', function(e) {
+        transferForm.addEventListener('submit', function (e) {
             const source = transferForm.querySelector('select[name="source_shop_id"]').value;
             const dest = transferForm.querySelector('select[name="destination_shop_id"]').value;
 
@@ -107,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             let validQuantity = true;
-            checkboxes.forEach(function(cb) {
+            checkboxes.forEach(function (cb) {
                 const qtyInput = transferForm.querySelector('input[name="bulk_quantities[' + cb.value + ']"]');
                 if (qtyInput && (parseInt(qtyInput.value) <= 0 || isNaN(parseInt(qtyInput.value)))) {
                     validQuantity = false;
@@ -125,13 +141,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // 4. Edit Quantity Modal Logic
     const editModal = document.getElementById('cst-edit-modal');
     const editForm = document.getElementById('cst-edit-form');
-    
-    $(document).on('click', '.js-open-edit-modal', function() {
+
+
+    $(document).on('click', '.js-open-edit-modal', function () {
+
         const productId = $(this).data('product-id');
         const productName = $(this).data('product-name');
         const currentQty = $(this).data('current-qty');
         const maxQty = $(this).data('max-qty');
-        
+
         if (editForm) {
             editForm.reset();
             $('#cst-edit-form input[name="id_product"]').val(productId);
@@ -140,13 +158,13 @@ document.addEventListener('DOMContentLoaded', function() {
             $('.js-edit-modal-title').text('Edit Quantity: ' + productName);
             $('.js-edit-modal-error').hide();
         }
-        
+
         if (editModal) {
             editModal.style.display = 'flex';
         }
     });
 
-    $(document).on('click', '.js-close-edit-modal', function(e) {
+    $(document).on('click', '.js-close-edit-modal', function (e) {
         if (e.target === this) {
             if (editModal) {
                 editModal.style.display = 'none';
@@ -155,22 +173,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     if (editForm) {
-        editForm.addEventListener('submit', function(e) {
+        editForm.addEventListener('submit', function (e) {
             const qtyInput = editForm.querySelector('input[name="new_quantity"]');
             const maxInput = editForm.querySelector('input[name="max_quantity"]');
-            
+
             const newQty = parseInt(qtyInput.value);
             const maxQty = parseInt(maxInput.value);
             const errorBox = editForm.querySelector('.js-edit-modal-error');
             const errorText = errorBox.querySelector('.error-text');
-            
+
             if (isNaN(newQty) || newQty < 0) {
                 e.preventDefault();
                 errorText.innerText = 'Quantity cannot be less than 0.';
                 errorBox.style.display = 'flex';
                 return;
             }
-            
+
             if (newQty > maxQty) {
                 e.preventDefault();
                 errorText.innerText = 'Quantity cannot exceed the maximum allowed value (' + maxQty + ').';

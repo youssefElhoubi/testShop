@@ -27,12 +27,28 @@ class CustomStockTransfer extends Module
 
     public function install()
     {
-        return parent::install() && $this->installTab();
+        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'transfers` (
+            `id_transfer` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+            `id_product` INT(10) UNSIGNED NOT NULL,
+            `id_store_from` INT(10) UNSIGNED NOT NULL,
+            `id_store_to` INT(10) UNSIGNED NOT NULL,
+            `quantity` INT(10) UNSIGNED NOT NULL,
+            `reason` TEXT NULL,
+            `date_add` DATETIME NOT NULL,
+            PRIMARY KEY (`id_transfer`)
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+        return parent::install() &&
+            Db::getInstance()->execute($sql) &&
+            $this->installTab();
     }
 
     public function uninstall()
     {
-        return $this->uninstallTab() && parent::uninstall();
+        $sql = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'transfers`';
+        return Db::getInstance()->execute($sql) &&
+            $this->uninstallTab() &&
+            parent::uninstall();
     }
 
     protected function installTab()
