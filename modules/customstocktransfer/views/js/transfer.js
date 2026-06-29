@@ -198,4 +198,22 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // 5. History Modal Logic
+    const historyModal = document.getElementById('cst-history-modal');
+    
+    $(document).on('click', '.js-open-history-modal', function () {
+        if (historyModal) {
+            historyModal.style.display = 'flex';
+        }
+    });
+
+    $(document).on('click', '.js-close-history-modal', function (e) {
+        // e.target === this ensures it only closes when the close button or the overlay itself is clicked, not children
+        if (e.target === this || this.classList.contains('cst-modal-close') || this.classList.contains('js-close-history-modal')) {
+            if (historyModal) {
+                historyModal.style.display = 'none';
+            }
+        }
+    });
+
 });

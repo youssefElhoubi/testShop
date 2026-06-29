@@ -184,6 +184,11 @@ class AdminCustomStockTransferController extends ModuleAdminController
 
         $products = $this->getProductsDashboardData($shops, $page, $limit, $productSearch, $filter);
 
+        $transferHistory = Db::getInstance()->executeS('SELECT * FROM `' . _DB_PREFIX_ . 'transfers`');
+        if (!is_array($transferHistory)) {
+            $transferHistory = [];
+        }
+
         $this->applyFlashMessage();
 
         $this->context->smarty->assign([
@@ -199,6 +204,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
             'limit' => $limit,
             'total_products' => $totalProducts,
             'total_pages' => $totalPages,
+            'transfer_history' => $transferHistory,
         ]);
 
         $this->setTemplate('transfer_dashboard.tpl');

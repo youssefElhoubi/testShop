@@ -51,6 +51,12 @@
 
             <div class="cst-view-switch">
 
+                {if isset($transfer_history) && $transfer_history|@count > 0}
+                <button type="button" class="js-open-history-modal" style="margin-right: 15px; background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: var(--cst-radius-sm); cursor: pointer; transition: background var(--cst-transition);">
+                    <i class="icon-history"></i> History
+                </button>
+                {/if}
+
                 <button type="button" class="js-stock-view-toggle active" data-view="grid">
 
                     <i class="icon-th"></i>
@@ -676,6 +682,68 @@
         </form>
     </div>
 </div>
+
+<!-- History Modal -->
+{if isset($transfer_history) && $transfer_history|@count > 0}
+<div id="cst-history-modal" class="cst-modal" style="display: none;">
+    <div class="cst-modal-overlay js-close-history-modal"></div>
+    <div class="cst-modal-content" style="max-width: 800px; width: 90%;">
+        <div class="cst-modal-header">
+            <h3 class="cst-modal-title">Transfer History</h3>
+            <button type="button" class="cst-modal-close js-close-history-modal">&times;</button>
+        </div>
+        <div class="cst-modal-body" style="max-height: 60vh; overflow-y: auto;">
+            <table class="table table-striped table-bordered cst-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product ID</th>
+                        <th>From Store</th>
+                        <th>To Store</th>
+                        <th>Quantity</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach from=$transfer_history item=transfer}
+                        <tr>
+                            <td>{$transfer.id_transfer|escape:'htmlall':'UTF-8'}</td>
+                            <td>{$transfer.id_product|escape:'htmlall':'UTF-8'}</td>
+                            <td>{$transfer.id_store_from|escape:'htmlall':'UTF-8'}</td>
+                            <td>{$transfer.id_store_to|escape:'htmlall':'UTF-8'}</td>
+                            <td>{$transfer.quantity|escape:'htmlall':'UTF-8'}</td>
+                            <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
+                            <td>
+                                {if isset($transfer.status) && $transfer.status|strtolower == 'approved'}
+                                    <span class="badge badge-success">Approved</span>
+                                {elseif isset($transfer.status) && $transfer.status|strtolower == 'declined'}
+                                    <span class="badge badge-danger">Declined</span>
+                                {elseif isset($transfer.status)}
+                                    <span class="badge badge-warning">{$transfer.status|escape:'htmlall':'UTF-8'}</span>
+                                {else}
+                                    <span class="badge badge-secondary">Pending</span>
+                                {/if}
+                            </td>
+                            <td>
+                                {if isset($transfer.status) && $transfer.status|strtolower == 'declined'}
+                                    {$transfer.reason|escape:'htmlall':'UTF-8'}
+                                {else}
+                                    -
+                                {/if}
+                            </td>
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        </div>
+        <div class="cst-modal-footer text-right mt-4">
+            <button type="button" class="btn btn-default cst-btn-outline js-close-history-modal">Close</button>
+        </div>
+    </div>
+</div>
+{/if}
 
 </div>
 </div>
