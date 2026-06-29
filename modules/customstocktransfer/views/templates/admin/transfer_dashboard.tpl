@@ -154,30 +154,33 @@
                     </div>
                     
                     <div class="cst-filter-group">
-                        <label>Quantity</label>
-                        <div class="cst-filter-range">
-                            <input type="number" class="form-control cst-input" name="filter_qty_min" placeholder="Min" value="{if isset($filter) && $filter.qty_min !== null}{$filter.qty_min}{/if}">
-                            <span>-</span>
-                            <input type="number" class="form-control cst-input" name="filter_qty_max" placeholder="Max" value="{if isset($filter) && $filter.qty_max !== null}{$filter.qty_max}{/if}">
-                        </div>
-                    </div>
-                    
-                    <div class="cst-filter-group">
-                        <label>Price</label>
-                        <div class="cst-filter-range">
-                            <input type="number" step="0.01" class="form-control cst-input" name="filter_price_min" placeholder="Min" value="{if isset($filter) && $filter.price_min !== null}{$filter.price_min}{/if}">
-                            <span>-</span>
-                            <input type="number" step="0.01" class="form-control cst-input" name="filter_price_max" placeholder="Max" value="{if isset($filter) && $filter.price_max !== null}{$filter.price_max}{/if}">
-                        </div>
+                        <label>Brand</label>
+                        <select class="form-control cst-input" name="filter_brand">
+                            <option value="" {if !isset($filter) || $filter.brand === null}selected{/if}>All Brands</option>
+                            {if isset($brands) && $brands}
+                                {foreach from=$brands item=brand}
+                                    <option value="{$brand.id_manufacturer|intval}" {if isset($filter) && $filter.brand == $brand.id_manufacturer}selected{/if}>{$brand.name|escape:'htmlall':'UTF-8'}</option>
+                                {/foreach}
+                            {/if}
+                        </select>
                     </div>
                     
                     <div class="cst-filter-group">
                         <label>Status</label>
-                        <select class="form-control cst-input" name="filter_status">
-                            <option value="" {if !isset($filter) || $filter.status === null}selected{/if}>All</option>
-                            <option value="1" {if isset($filter) && $filter.status === 1}selected{/if}>Active</option>
-                            <option value="0" {if isset($filter) && $filter.status === 0}selected{/if}>Inactive</option>
-                        </select>
+                        <div class="cst-radio-group">
+                            <label class="cst-radio-label">
+                                <input type="radio" name="filter_status" value="" {if !isset($filter) || $filter.status === null}checked{/if}>
+                                <span>All</span>
+                            </label>
+                            <label class="cst-radio-label">
+                                <input type="radio" name="filter_status" value="1" {if isset($filter) && $filter.status === 1}checked{/if}>
+                                <span>Active</span>
+                            </label>
+                            <label class="cst-radio-label">
+                                <input type="radio" name="filter_status" value="0" {if isset($filter) && $filter.status === 0}checked{/if}>
+                                <span>Inactive</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 
@@ -370,9 +373,19 @@
                                                 {if $product.total_stock == 0}disabled="disabled" {/if}>
                                             Select
                                         </label>
-                                        <input type="number" class="form-control cst-input" style="width: 80px;"
-                                            name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
-                                            {if $product.total_stock == 0}disabled="disabled" {/if}>
+                                        <div class="d-flex align-items-center" style="gap: 10px;">
+                                            <input type="number" class="form-control cst-input" style="width: 80px;"
+                                                name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
+                                                {if $product.total_stock == 0}disabled="disabled" {/if}>
+                                            <button type="button" class="btn btn-default cst-btn-outline js-open-edit-modal" style="padding: 0.5em 0.8em;"
+                                                data-product-id="{$product.id_product|intval}"
+                                                data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
+                                                data-current-qty="{$product.total_stock|intval}"
+                                                data-max-qty="99999"
+                                                title="Edit Quantity">
+                                                <i class="icon-pencil"></i>
+                                            </button>
+                                        </div>
                                     </div>
 
                                 </div>
@@ -539,9 +552,19 @@
                                             <div class="mb-2 font-weight-bold text-danger">🔴 Stocks are completely identical.</div>
                                         {/if}
 
-                                        <input type="number" class="form-control cst-input d-inline-block" style="width: 80px;"
-                                            name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
-                                            {if $product.total_stock == 0}disabled="disabled" {/if}>
+                                        <div class="d-inline-flex align-items-center" style="gap: 10px;">
+                                            <input type="number" class="form-control cst-input" style="width: 80px;"
+                                                name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
+                                                {if $product.total_stock == 0}disabled="disabled" {/if}>
+                                            <button type="button" class="btn btn-default cst-btn-outline js-open-edit-modal" style="padding: 0.5em 0.8em;"
+                                                data-product-id="{$product.id_product|intval}"
+                                                data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
+                                                data-current-qty="{$product.total_stock|intval}"
+                                                data-max-qty="99999"
+                                                title="Edit Quantity">
+                                                <i class="icon-pencil"></i>
+                                            </button>
+                                        </div>
 
                                     </td>
 
@@ -623,5 +646,36 @@
         </div>
     {/if}
 </div>
+
+<!-- Edit Quantity Modal -->
+<div id="cst-edit-modal" class="cst-modal" style="display: none;">
+    <div class="cst-modal-overlay js-close-edit-modal"></div>
+    <div class="cst-modal-content">
+        <div class="cst-modal-header">
+            <h3 class="cst-modal-title js-edit-modal-title">Edit Quantity</h3>
+            <button type="button" class="cst-modal-close js-close-edit-modal">&times;</button>
+        </div>
+        <form id="cst-edit-form" method="post" action="{$form_action|escape:'htmlall':'UTF-8'}">
+            <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
+            <input type="hidden" name="id_product" value="">
+            <input type="hidden" name="max_quantity" value="">
+            <div class="cst-modal-body">
+                <div class="cst-alert cst-alert-danger js-edit-modal-error" style="display: none;">
+                    <div class="cst-alert-icon"><i class="icon-warning"></i></div>
+                    <div class="cst-alert-content error-text"></div>
+                </div>
+                <div class="cst-filter-group" style="text-align: left;">
+                    <label>New Quantity</label>
+                    <input type="number" class="form-control cst-input js-edit-modal-qty" name="new_quantity" value="" min="0" required>
+                </div>
+            </div>
+            <div class="cst-modal-footer text-right mt-4">
+                <button type="button" class="btn btn-default cst-btn-outline js-close-edit-modal">Cancel</button>
+                <button type="submit" name="submitEditQuantity" value="1" class="btn btn-primary cst-btn-primary ml-2">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 </div>
 </div>

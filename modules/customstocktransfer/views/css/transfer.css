@@ -194,6 +194,10 @@
     gap: 0.5em;
 }
 
+.cst-btn-primary {
+    margin-top: 1.6rem !important;
+}
+
 .custom-transfer-wrapper .cst-btn-primary:hover {
     transform: translateY(-0.125rem);
     box-shadow: var(--cst-shadow-btn);
@@ -642,6 +646,28 @@
     font-weight: 600;
 }
 
+.custom-transfer-wrapper .cst-radio-group {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+    height: 100%;
+}
+
+.custom-transfer-wrapper .cst-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin: 0;
+    font-weight: 400;
+    cursor: pointer;
+    color: var(--cst-text-main);
+}
+
+.custom-transfer-wrapper .cst-radio-label input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+}
+
 /* RESPONSIVE */
 @media(max-width: 62em) {
     .custom-transfer-wrapper .cst-table {
@@ -664,4 +690,84 @@
         flex-direction: column;
         align-items: flex-start;
     }
+}
+
+/* MODAL STYLES */
+.cst-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cst-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.cst-modal-content {
+    position: relative;
+    background: var(--cst-bg-surface);
+    border-radius: var(--cst-radius-lg);
+    width: 100%;
+    max-width: 30rem;
+    padding: 1.875rem;
+    box-shadow: var(--cst-shadow-hover);
+    z-index: 10001;
+    animation: cstModalFadeIn 0.3s ease;
+}
+
+@keyframes cstModalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-1.25rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cst-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--cst-border-color);
+}
+
+.cst-modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--cst-text-main);
+}
+
+.cst-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--cst-text-light);
+    cursor: pointer;
+    transition: var(--cst-transition);
+}
+
+.cst-modal-close:hover {
+    color: var(--cst-danger);
+}
+
+.cst-modal-body {
+    margin-bottom: 1.5rem;
 }

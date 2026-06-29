@@ -71,22 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterForm = document.getElementById('cst-filter-form');
     if (filterForm) {
         filterForm.addEventListener('submit', function(e) {
-            const qtyMin = filterForm.querySelector('input[name="filter_qty_min"]').value;
-            const qtyMax = filterForm.querySelector('input[name="filter_qty_max"]').value;
-            const priceMin = filterForm.querySelector('input[name="filter_price_min"]').value;
-            const priceMax = filterForm.querySelector('input[name="filter_price_max"]').value;
-
-            if (qtyMin !== '' && qtyMax !== '' && parseInt(qtyMin) > parseInt(qtyMax)) {
-                e.preventDefault();
-                showCustomError('Minimum quantity cannot be greater than maximum quantity.');
-                return;
-            }
-
-            if (priceMin !== '' && priceMax !== '' && parseFloat(priceMin) > parseFloat(priceMax)) {
-                e.preventDefault();
-                showCustomError('Minimum price cannot be greater than maximum price.');
-                return;
-            }
+            // Price and Quantity validations removed
         });
     }
 
@@ -132,6 +117,64 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!validQuantity) {
                 e.preventDefault();
                 showCustomError('Quantities for selected products must be greater than zero.');
+                return;
+            }
+        });
+    }
+
+    // 4. Edit Quantity Modal Logic
+    const editModal = document.getElementById('cst-edit-modal');
+    const editForm = document.getElementById('cst-edit-form');
+    
+    $(document).on('click', '.js-open-edit-modal', function() {
+        const productId = $(this).data('product-id');
+        const productName = $(this).data('product-name');
+        const currentQty = $(this).data('current-qty');
+        const maxQty = $(this).data('max-qty');
+        
+        if (editForm) {
+            editForm.reset();
+            $('#cst-edit-form input[name="id_product"]').val(productId);
+            $('#cst-edit-form input[name="max_quantity"]').val(maxQty);
+            $('#cst-edit-form input[name="new_quantity"]').val(currentQty);
+            $('.js-edit-modal-title').text('Edit Quantity: ' + productName);
+            $('.js-edit-modal-error').hide();
+        }
+        
+        if (editModal) {
+            editModal.style.display = 'flex';
+        }
+    });
+
+    $(document).on('click', '.js-close-edit-modal', function(e) {
+        if (e.target === this) {
+            if (editModal) {
+                editModal.style.display = 'none';
+            }
+        }
+    });
+
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            const qtyInput = editForm.querySelector('input[name="new_quantity"]');
+            const maxInput = editForm.querySelector('input[name="max_quantity"]');
+            
+            const newQty = parseInt(qtyInput.value);
+            const maxQty = parseInt(maxInput.value);
+            const errorBox = editForm.querySelector('.js-edit-modal-error');
+            const errorText = errorBox.querySelector('.error-text');
+            
+            if (isNaN(newQty) || newQty < 0) {
+                e.preventDefault();
+                errorText.innerText = 'Quantity cannot be less than 0.';
+                errorBox.style.display = 'flex';
+                return;
+            }
+            
+            if (newQty > maxQty) {
+                e.preventDefault();
+                errorText.innerText = 'Quantity cannot exceed the maximum allowed value (' + maxQty + ').';
+                errorBox.style.display = 'flex';
                 return;
             }
         });

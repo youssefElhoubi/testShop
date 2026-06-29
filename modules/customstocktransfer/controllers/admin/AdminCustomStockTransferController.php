@@ -26,27 +26,37 @@ class AdminCustomStockTransferController extends ModuleAdminController
 
     public function postProcess()
     {
-        if (Tools::isSubmit('submitCustomStockTransferSearch')) {
-            $qtyMin = Tools::getValue('filter_qty_min');
-            $qtyMax = Tools::getValue('filter_qty_max');
-            $priceMin = Tools::getValue('filter_price_min');
-            $priceMax = Tools::getValue('filter_price_max');
 
-            if ($qtyMin !== false && $qtyMin !== '' && $qtyMax !== false && $qtyMax !== '') {
-                if ((int)$qtyMin > (int)$qtyMax) {
-                    $this->setFlashMessage(false, $this->trans('Minimum quantity cannot be greater than maximum quantity.', [], 'Modules.Customstocktransfer.Admin'));
-                    $this->redirectToDashboard();
-                    return false;
-                }
+
+        if (Tools::isSubmit('submitEditQuantity')) {
+            $idProduct = (int) Tools::getValue('id_product');
+            $newQuantity = (int) Tools::getValue('new_quantity');
+            $maxQuantity = (int) Tools::getValue('max_quantity');
+
+            if ($idProduct <= 0 || !$this->productExists($idProduct)) {
+                $this->setFlashMessage(false, $this->trans('Invalid product.', [], 'Modules.Customstocktransfer.Admin'));
+                $this->redirectToDashboard();
+                return false;
             }
 
-            if ($priceMin !== false && $priceMin !== '' && $priceMax !== false && $priceMax !== '') {
-                if ((float)$priceMin > (float)$priceMax) {
-                    $this->setFlashMessage(false, $this->trans('Minimum price cannot be greater than maximum price.', [], 'Modules.Customstocktransfer.Admin'));
-                    $this->redirectToDashboard();
-                    return false;
-                }
+            if ($newQuantity < 0) {
+                $this->setFlashMessage(false, $this->trans('Quantity cannot be less than 0.', [], 'Modules.Customstocktransfer.Admin'));
+                $this->redirectToDashboard();
+                return false;
             }
+
+            $maxLimit = $maxQuantity > 0 ? $maxQuantity : 99999;
+            if ($newQuantity > $maxLimit) {
+                $this->setFlashMessage(false, sprintf($this->trans('Quantity cannot exceed the maximum allowed value (%d).', [], 'Modules.Customstocktransfer.Admin'), $maxLimit));
+                $this->redirectToDashboard();
+                return false;
+            }
+
+            StockAvailable::setQuantity($idProduct, 0, $newQuantity, $this->context->shop->id);
+
+            $this->setFlashMessage(true, $this->trans('Stock quantity updated successfully.', [], 'Modules.Customstocktransfer.Admin'));
+            $this->redirectToDashboard();
+            return false;
         }
 
         if (!Tools::isSubmit('submitCustomStockTransfer')) {
@@ -157,14 +167,12 @@ class AdminCustomStockTransferController extends ModuleAdminController
 
         $filter = [
             'category' => (int)Tools::getValue('filter_category'),
-            'qty_min' => Tools::getValue('filter_qty_min') !== false && Tools::getValue('filter_qty_min') !== '' ? (int)Tools::getValue('filter_qty_min') : null,
-            'qty_max' => Tools::getValue('filter_qty_max') !== false && Tools::getValue('filter_qty_max') !== '' ? (int)Tools::getValue('filter_qty_max') : null,
-            'price_min' => Tools::getValue('filter_price_min') !== false && Tools::getValue('filter_price_min') !== '' ? (float)Tools::getValue('filter_price_min') : null,
-            'price_max' => Tools::getValue('filter_price_max') !== false && Tools::getValue('filter_price_max') !== '' ? (float)Tools::getValue('filter_price_max') : null,
+            'brand' => Tools::getValue('filter_brand') !== false && Tools::getValue('filter_brand') !== '' ? (int)Tools::getValue('filter_brand') : null,
             'status' => Tools::getValue('filter_status') !== false && Tools::getValue('filter_status') !== '' ? (int)Tools::getValue('filter_status') : null,
         ];
 
         $categories = Category::getSimpleCategories($this->context->language->id);
+        $brands = Manufacturer::getManufacturers(false, $this->context->language->id, true);
 
         $shops = $this->getActiveShops();
         $totalProducts = $this->getTotalProductsCount($shops, $productSearch, $filter);
@@ -182,6 +190,7 @@ class AdminCustomStockTransferController extends ModuleAdminController
             'product_search' => $productSearch,
             'filter' => $filter,
             'categories' => $categories,
+            'brands' => $brands,
             'products' => $products,
             'shops' => $shops,
             'form_action' => $this->context->link->getAdminLink('AdminCustomStockTransfer'),
@@ -232,21 +241,8 @@ class AdminCustomStockTransferController extends ModuleAdminController
             $query->where('cp.id_category = ' . (int)$filter['category']);
         }
 
-        if ($filter['price_min'] !== null) {
-            $query->where('p.price >= ' . (float)$filter['price_min']);
-        }
-        if ($filter['price_max'] !== null) {
-            $query->where('p.price <= ' . (float)$filter['price_max']);
-        }
-
-        if ($filter['qty_min'] !== null || $filter['qty_max'] !== null) {
-            $query->innerJoin('stock_available', 'sa', 'sa.id_product = p.id_product AND sa.id_product_attribute = 0 AND sa.id_shop = ps.id_shop');
-            if ($filter['qty_min'] !== null) {
-                $query->where('sa.quantity >= ' . (int)$filter['qty_min']);
-            }
-            if ($filter['qty_max'] !== null) {
-                $query->where('sa.quantity <= ' . (int)$filter['qty_max']);
-            }
+        if ($filter['brand'] > 0) {
+            $query->where('p.id_manufacturer = ' . (int)$filter['brand']);
         }
 
         if ($productSearch !== '') {
@@ -281,21 +277,8 @@ class AdminCustomStockTransferController extends ModuleAdminController
             $query->where('cp.id_category = ' . (int)$filter['category']);
         }
 
-        if ($filter['price_min'] !== null) {
-            $query->where('p.price >= ' . (float)$filter['price_min']);
-        }
-        if ($filter['price_max'] !== null) {
-            $query->where('p.price <= ' . (float)$filter['price_max']);
-        }
-
-        if ($filter['qty_min'] !== null || $filter['qty_max'] !== null) {
-            $query->innerJoin('stock_available', 'sa', 'sa.id_product = p.id_product AND sa.id_product_attribute = 0 AND sa.id_shop = ps.id_shop');
-            if ($filter['qty_min'] !== null) {
-                $query->where('sa.quantity >= ' . (int)$filter['qty_min']);
-            }
-            if ($filter['qty_max'] !== null) {
-                $query->where('sa.quantity <= ' . (int)$filter['qty_max']);
-            }
+        if ($filter['brand'] > 0) {
+            $query->where('p.id_manufacturer = ' . (int)$filter['brand']);
         }
 
         if ($productSearch !== '') {
