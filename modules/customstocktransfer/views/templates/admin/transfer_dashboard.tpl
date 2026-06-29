@@ -726,7 +726,7 @@
     </div>
 
     <!-- History Modal -->
-    {if isset($transfer_history) && $transfer_history|@count > 0}
+    
         <div id="cst-history-modal" class="cst-modal" style="display: none;">
             <div class="cst-modal-overlay js-close-history-modal"></div>
             <div class="cst-modal-content" style="max-width: 800px; width: 90%;">
@@ -779,19 +779,32 @@
                                     <td>
                                         {if !isset($transfer.status) || $transfer.status == 'pending'}
                                             <div style="display: flex; gap: 5px; align-items: center;">
-                                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" style="margin:0;">
+                                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}"
+                                                    style="margin:0;">
                                                     <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
-                                                    <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
-                                                    <button type="submit" name="submitApproveTransfer" value="1" class="btn btn-success btn-sm">Approve</button>
+                                                    <input type="hidden" name="id_transfer"
+                                                        value="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
+                                                    <button type="submit" name="submitApproveTransfer" value="1"
+                                                        class="btn btn-success btn-sm">Approve</button>
                                                 </form>
-                                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" style="margin:0; display:flex; gap:5px;">
+                                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}"
+                                                    style="margin:0; display:flex; gap:5px;">
                                                     <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
-                                                    <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
-                                                    <input type="text" name="decline_reason" class="form-control cst-input input-sm" style="width: 150px;" placeholder="Reason..." required>
-                                                    <button type="submit" name="submitDeclineTransfer" value="1" class="btn btn-danger btn-sm">Decline</button>
+                                                    <input type="hidden" name="id_transfer"
+                                                        value="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
+                                                    <input type="text" name="decline_reason" class="form-control cst-input input-sm"
+                                                        style="width: 150px;" placeholder="Reason..." required>
+                                                    <button type="submit" name="submitDeclineTransfer" value="1"
+                                                        class="btn btn-danger btn-sm">Decline</button>
                                                 </form>
                                             </div>
                                         {/if}
+                                    </td>
+                                </tr>
+                            {foreachelse}
+                                <tr>
+                                    <td colspan="9" class="text-center" style="padding: 20px;">
+                                        <strong>No transfers found.</strong>
                                     </td>
                                 </tr>
                             {/foreach}
@@ -803,7 +816,6 @@
                 </div>
             </div>
         </div>
-    {/if}
 
 </div>
 </div>
