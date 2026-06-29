@@ -33,6 +33,7 @@ class CustomStockTransfer extends Module
             `id_store_from` INT(10) UNSIGNED NOT NULL,
             `id_store_to` INT(10) UNSIGNED NOT NULL,
             `quantity` INT(10) UNSIGNED NOT NULL,
+            `status` ENUM(\'pending\', \'approved\', \'declined\', \'completed\') NOT NULL DEFAULT \'pending\',
             `reason` TEXT NULL,
             `date_add` DATETIME NOT NULL,
             PRIMARY KEY (`id_transfer`)

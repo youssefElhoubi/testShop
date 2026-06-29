@@ -10,6 +10,7 @@ class StockTransfer extends ObjectModel
     public $id_store_from;
     public $id_store_to;
     public $quantity;
+    public $status;
     public $reason;
     public $date_add;
 
@@ -17,12 +18,13 @@ class StockTransfer extends ObjectModel
         'table' => 'transfers',
         'primary' => 'id_transfer',
         'fields' => [
-            'id_product' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true],
+            'id_product'    => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true],
             'id_store_from' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true],
-            'id_store_to' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true],
-            'quantity' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
-            'reason' => ['type' => self::TYPE_HTML, 'validate' => 'isCleanHtml'],
-            'date_add' => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
+            'id_store_to'   => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true],
+            'quantity'      => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
+            'status'        => ['type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true, 'values' => ['pending', 'approved', 'declined', 'completed']],
+            'reason'        => ['type' => self::TYPE_HTML, 'validate' => 'isCleanHtml'],
+            'date_add'      => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
         ],
     ];
 }

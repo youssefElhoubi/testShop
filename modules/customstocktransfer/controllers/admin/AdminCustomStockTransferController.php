@@ -4,6 +4,8 @@
         exit;
     }
 
+    require_once dirname(__FILE__) . '/../../classes/StockTransfer.php';
+
     class AdminCustomStockTransferController extends ModuleAdminController
     {
         public function __construct()
@@ -26,6 +28,46 @@
 
         public function postProcess()
         {
+            if (Tools::isSubmit('submitApproveTransfer')) {
+                $id_transfer = (int) Tools::getValue('id_transfer');
+                $transfer = new StockTransfer($id_transfer);
+
+                if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
+                    $qtyFrom = StockAvailable::getQuantityAvailableByProduct($transfer->id_product, 0, $transfer->id_store_from);
+                    StockAvailable::setQuantity($transfer->id_product, 0, $qtyFrom - $transfer->quantity, $transfer->id_store_from);
+
+                    $qtyTo = StockAvailable::getQuantityAvailableByProduct($transfer->id_product, 0, $transfer->id_store_to);
+                    StockAvailable::setQuantity($transfer->id_product, 0, $qtyTo + $transfer->quantity, $transfer->id_store_to);
+
+                    $transfer->status = 'approved';
+                    $transfer->update();
+
+                    $this->setFlashMessage(true, $this->trans('Transfer approved successfully.', [], 'Modules.Customstocktransfer.Admin'));
+                } else {
+                    $this->setFlashMessage(false, $this->trans('Invalid transfer or already processed.', [], 'Modules.Customstocktransfer.Admin'));
+                }
+
+                $this->redirectToDashboard();
+                return false;
+            }
+
+            if (Tools::isSubmit('submitDeclineTransfer')) {
+                $id_transfer = (int) Tools::getValue('id_transfer');
+                $transfer = new StockTransfer($id_transfer);
+
+                if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
+                    $transfer->status = 'declined';
+                    $transfer->reason = Tools::getValue('decline_reason');
+                    $transfer->update();
+
+                    $this->setFlashMessage(true, $this->trans('Transfer declined.', [], 'Modules.Customstocktransfer.Admin'));
+                } else {
+                    $this->setFlashMessage(false, $this->trans('Invalid transfer or already processed.', [], 'Modules.Customstocktransfer.Admin'));
+                }
+
+                $this->redirectToDashboard();
+                return false;
+            }
 
 
             if (Tools::isSubmit('submitEditQuantity')) {
@@ -66,14 +108,24 @@
                     return false;
                 }
 
-                // Perform transfer
-                $qtyFrom = StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $idStoreFrom);
-                StockAvailable::setQuantity($idProduct, 0, $qtyFrom - $newQuantity, $idStoreFrom);
+                // --- NEW LOGIC: QUEUE THE TRANSFER, DO NOT MOVE STOCK YET ---
 
-                $qtyTo = StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $idStoreTo);
-                StockAvailable::setQuantity($idProduct, 0, $qtyTo + $newQuantity, $idStoreTo);
+                $transfer = new StockTransfer();
+                $transfer->id_product = $idProduct;
+                $transfer->id_store_from = $idStoreFrom;
+                $transfer->id_store_to = $idStoreTo;
+                $transfer->quantity = $newQuantity;
+                $transfer->status = 'pending';
 
-                $this->setFlashMessage(true, $this->trans('Stock transferred successfully.', [], 'Modules.Customstocktransfer.Admin'));
+                // If you kept the secure_token column for the QR code feature, uncomment the line below:
+                // $transfer->secure_token = md5(uniqid(rand(), true));
+
+                if ($transfer->add()) {
+                    $this->setFlashMessage(true, $this->trans('Transfer request submitted successfully and is pending admin approval.', [], 'Modules.Customstocktransfer.Admin'));
+                } else {
+                    $this->setFlashMessage(false, $this->trans('An error occurred while saving the transfer request.', [], 'Modules.Customstocktransfer.Admin'));
+                }
+
                 $this->redirectToDashboard();
                 return false;
             }
@@ -255,10 +307,10 @@
             $query = new DbQuery();
             $query->select('COUNT(DISTINCT p.id_product)');
             $query->from('product', 'p');
-            
+
             $statusCondition = ($filter['status'] !== null) ? ' AND ps.active = ' . (int)$filter['status'] : ' AND ps.active = 1';
             $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product' . $statusCondition);
-            
+
             $query->innerJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = ' . (int) $idLang . ' AND pl.id_shop = ' . (int) $idShopForName);
 
             if ($filter['category'] > 0) {
@@ -272,7 +324,7 @@
 
             if ($productSearch !== '') {
                 $productSearchEscaped = pSQL($productSearch);
-                $query->where('pl.name LIKE \'%'.$productSearchEscaped.'%\' OR p.reference LIKE \'%'.$productSearchEscaped.'%\'');
+                $query->where('pl.name LIKE \'%' . $productSearchEscaped . '%\' OR p.reference LIKE \'%' . $productSearchEscaped . '%\'');
             }
 
             return (int) Db::getInstance()->getValue($query);
@@ -291,10 +343,10 @@
             $query = new DbQuery();
             $query->select('p.id_product, pl.name, pl.link_rewrite');
             $query->from('product', 'p');
-            
+
             $statusCondition = ($filter['status'] !== null) ? ' AND ps.active = ' . (int)$filter['status'] : ' AND ps.active = 1';
             $query->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product' . $statusCondition);
-            
+
             $query->innerJoin('product_lang', 'pl', 'pl.id_product = p.id_product AND pl.id_lang = ' . (int) $idLang . ' AND pl.id_shop = ' . (int) $idShopForName);
 
             if ($filter['category'] > 0) {
@@ -308,7 +360,7 @@
 
             if ($productSearch !== '') {
                 $productSearchEscaped = pSQL($productSearch);
-                $query->where('pl.name LIKE \'%'.$productSearchEscaped.'%\' OR p.reference LIKE \'%'.$productSearchEscaped.'%\'');
+                $query->where('pl.name LIKE \'%' . $productSearchEscaped . '%\' OR p.reference LIKE \'%' . $productSearchEscaped . '%\'');
             }
 
             $query->groupBy('p.id_product, pl.name, pl.link_rewrite');
@@ -326,7 +378,7 @@
                 $coverUrl = '';
 
                 $cover = Image::getCover($productId);
-                    if (is_array($cover) && !empty($cover['id_image']) && !empty($row['link_rewrite'])) {
+                if (is_array($cover) && !empty($cover['id_image']) && !empty($row['link_rewrite'])) {
                     $coverUrl = $this->context->link->getImageLink(
                         $row['link_rewrite'],
                         (int) $cover['id_image'],
