@@ -6,20 +6,29 @@
     <!-- Nav tabs -->
     <ul class="nav nav-tabs cst-tabs" role="tablist" style="margin-bottom: 20px;">
         <li role="presentation" class="active">
-            <a href="#pending" aria-controls="pending" role="tab" data-toggle="tab">Pending Approvals</a>
+            <a href="#tab-pending" aria-controls="tab-pending" role="tab" data-toggle="tab">Pending</a>
         </li>
         <li role="presentation">
-            <a href="#approved" aria-controls="approved" role="tab" data-toggle="tab">Approved History</a>
+            <a href="#tab-approved" aria-controls="tab-approved" role="tab" data-toggle="tab">Approved</a>
         </li>
         <li role="presentation">
-            <a href="#declined" aria-controls="declined" role="tab" data-toggle="tab">Declined History</a>
+            <a href="#tab-prepared" aria-controls="tab-prepared" role="tab" data-toggle="tab">Prepared</a>
+        </li>
+        <li role="presentation">
+            <a href="#tab-in_transit" aria-controls="tab-in_transit" role="tab" data-toggle="tab">In Transit</a>
+        </li>
+        <li role="presentation">
+            <a href="#tab-completed" aria-controls="tab-completed" role="tab" data-toggle="tab">Completed</a>
+        </li>
+        <li role="presentation">
+            <a href="#tab-declined" aria-controls="tab-declined" role="tab" data-toggle="tab">Declined</a>
         </li>
     </ul>
 
     <!-- Tab panes -->
     <div class="tab-content">
         <!-- PENDING TAB -->
-        <div role="tabpanel" class="tab-pane active" id="pending">
+        <div role="tabpanel" class="tab-pane active" id="tab-pending">
             {if isset($grouped_transfers['pending']) && $grouped_transfers['pending']|@count > 0}
                 <div class="cst-card-grid">
                     {foreach from=$grouped_transfers['pending'] item=transfer}
@@ -65,7 +74,7 @@
         </div>
 
         <!-- APPROVED TAB -->
-        <div role="tabpanel" class="tab-pane" id="approved">
+        <div role="tabpanel" class="tab-pane" id="tab-approved">
             {if isset($grouped_transfers['approved']) && $grouped_transfers['approved']|@count > 0}
                 <div class="cst-card-grid">
                     {foreach from=$grouped_transfers['approved'] item=transfer}
@@ -97,9 +106,84 @@
                 </div>
             {/if}
         </div>
+        
+        <!-- PREPARED TAB -->
+        <div role="tabpanel" class="tab-pane" id="tab-prepared">
+            {if isset($grouped_transfers['prepared']) && $grouped_transfers['prepared']|@count > 0}
+                <div class="cst-card-grid">
+                    {foreach from=$grouped_transfers['prepared'] item=transfer}
+                        <div class="cst-card">
+                            <div class="cst-card-img-area">
+                                {if $transfer.image_url}
+                                    <img src="{$transfer.image_url|escape:'htmlall':'UTF-8'}" alt="{$transfer.product_name|escape:'htmlall':'UTF-8'}">
+                                {else}
+                                    <div style="height: 150px; background: #f5f5f5; display: flex; align-items: center; justify-content: center;"><span class="text-muted"><i class="icon-picture-o fa-3x"></i></span></div>
+                                {/if}
+                            </div>
+                            <div class="cst-card-body" style="padding: 1.5rem;">
+                                <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{$transfer.product_name|escape:'htmlall':'UTF-8'}</h3>
+                                <span class="badge badge-warning" style="border-radius: 20px;">Prepared</span>
+                            </div>
+                        </div>
+                    {/foreach}
+                </div>
+            {else}
+                <div class="alert alert-info" style="margin-top: 15px;">No prepared transfers found.</div>
+            {/if}
+        </div>
+
+        <!-- IN TRANSIT TAB -->
+        <div role="tabpanel" class="tab-pane" id="tab-in_transit">
+            {if isset($grouped_transfers['in_transit']) && $grouped_transfers['in_transit']|@count > 0}
+                <div class="cst-card-grid">
+                    {foreach from=$grouped_transfers['in_transit'] item=transfer}
+                        <div class="cst-card">
+                            <div class="cst-card-img-area">
+                                {if $transfer.image_url}
+                                    <img src="{$transfer.image_url|escape:'htmlall':'UTF-8'}" alt="{$transfer.product_name|escape:'htmlall':'UTF-8'}">
+                                {else}
+                                    <div style="height: 150px; background: #f5f5f5; display: flex; align-items: center; justify-content: center;"><span class="text-muted"><i class="icon-picture-o fa-3x"></i></span></div>
+                                {/if}
+                            </div>
+                            <div class="cst-card-body" style="padding: 1.5rem;">
+                                <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{$transfer.product_name|escape:'htmlall':'UTF-8'}</h3>
+                                <span class="badge badge-info" style="border-radius: 20px;">In Transit</span>
+                            </div>
+                        </div>
+                    {/foreach}
+                </div>
+            {else}
+                <div class="alert alert-info" style="margin-top: 15px;">No transfers in transit found.</div>
+            {/if}
+        </div>
+        
+        <!-- COMPLETED TAB -->
+        <div role="tabpanel" class="tab-pane" id="tab-completed">
+            {if isset($grouped_transfers['completed']) && $grouped_transfers['completed']|@count > 0}
+                <div class="cst-card-grid">
+                    {foreach from=$grouped_transfers['completed'] item=transfer}
+                        <div class="cst-card">
+                            <div class="cst-card-img-area">
+                                {if $transfer.image_url}
+                                    <img src="{$transfer.image_url|escape:'htmlall':'UTF-8'}" alt="{$transfer.product_name|escape:'htmlall':'UTF-8'}">
+                                {else}
+                                    <div style="height: 150px; background: #f5f5f5; display: flex; align-items: center; justify-content: center;"><span class="text-muted"><i class="icon-picture-o fa-3x"></i></span></div>
+                                {/if}
+                            </div>
+                            <div class="cst-card-body" style="padding: 1.5rem;">
+                                <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{$transfer.product_name|escape:'htmlall':'UTF-8'}</h3>
+                                <span class="badge badge-success" style="border-radius: 20px;">Completed</span>
+                            </div>
+                        </div>
+                    {/foreach}
+                </div>
+            {else}
+                <div class="alert alert-info" style="margin-top: 15px;">No completed transfers found.</div>
+            {/if}
+        </div>
 
         <!-- DECLINED TAB -->
-        <div role="tabpanel" class="tab-pane" id="declined">
+        <div role="tabpanel" class="tab-pane" id="tab-declined">
             {if isset($grouped_transfers['declined']) && $grouped_transfers['declined']|@count > 0}
                 <div class="cst-card-grid">
                     {foreach from=$grouped_transfers['declined'] item=transfer}
