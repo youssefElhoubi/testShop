@@ -4,17 +4,17 @@
     margin-bottom: 1.5rem !important; /* Relative units */
     border: 1px solid #e5e5e5 !important;
     border-radius: 0.5rem !important;
-    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
     background: #ffffff !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
     height: 100%; /* For equal height cards in row */
 }
 
 .panel .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1) !important;
 }
 
 .panel .card-body {
@@ -65,11 +65,38 @@
     color: #333333;
 }
 
+/* Badges */
 .panel .badge-primary {
     font-size: 0.9rem !important;
-    background-color: #2eadd3 !important; /* PrestaShop primary blue */
+    background-color: #e0f2fe !important; /* Soft blue */
+    color: #0284c7 !important; /* Dark blue text */
     padding: 0.25rem 0.5rem !important;
     border-radius: 0.25rem;
+    font-weight: 600;
+}
+.panel .badge-success {
+    font-size: 0.9rem !important;
+    background-color: #d1fae5 !important; /* Soft green */
+    color: #059669 !important; /* Dark green text */
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 0.25rem;
+    font-weight: 600;
+}
+.panel .badge-warning {
+    font-size: 0.9rem !important;
+    background-color: #fef3c7 !important; /* Soft yellow/orange */
+    color: #d97706 !important; /* Dark orange text */
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 0.25rem;
+    font-weight: 600;
+}
+.panel .badge-danger {
+    font-size: 0.9rem !important;
+    background-color: #fee2e2 !important; /* Soft red */
+    color: #dc2626 !important; /* Dark red text */
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 0.25rem;
+    font-weight: 600;
 }
 
 /* Card Footer */
@@ -87,10 +114,10 @@
 }
 
 .panel .btn {
-    transition: background-color 0.2s ease, transform 0.1s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease !important;
     font-weight: 500 !important;
     padding: 0.5rem 1rem !important; /* Relative units */
-    border-radius: 0.25rem !important;
+    border-radius: 6px !important;
     border: none !important;
     display: inline-flex;
     align-items: center;
@@ -102,23 +129,25 @@
 }
 
 .panel .btn-success {
-    background-color: #28a745 !important;
+    background-color: #10b981 !important; /* Modern soft green */
     color: #ffffff !important;
-    box-shadow: 0 0.125rem 0.25rem rgba(40, 167, 69, 0.2) !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(16, 185, 129, 0.2) !important;
 }
 
 .panel .btn-success:hover {
-    background-color: #218838 !important;
+    background-color: #059669 !important; /* Deeper green */
+    transform: scale(1.02);
 }
 
 .panel .btn-danger {
-    background-color: #dc3545 !important;
+    background-color: #ef4444 !important; /* Modern soft red */
     color: #ffffff !important;
-    box-shadow: 0 0.125rem 0.25rem rgba(220, 53, 69, 0.2) !important;
+    box-shadow: 0 0.125rem 0.25rem rgba(239, 68, 68, 0.2) !important;
 }
 
 .panel .btn-danger:hover {
-    background-color: #c82333 !important;
+    background-color: #dc2626 !important; /* Deeper red */
+    transform: scale(1.02);
 }
 
 .panel .cst-input {
@@ -132,6 +161,28 @@
     border-color: #80bdff !important;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
     outline: none !important;
+}
+
+/* Modals */
+.cst-modal-overlay {
+    backdrop-filter: blur(3px) !important;
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    transition: opacity 0.3s ease;
+}
+
+.cst-modal-content {
+    animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes modalSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 /* Responsive Grid */
