@@ -35,18 +35,28 @@ class StockTransfer extends ObjectModel
             'quantity'      => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
             'barcode'       => ['type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true, 'size' => 100],
             'status'        => ['type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true, 'values' => ['pending', 'approved', 'prepared', 'in_transit', 'completed', 'declined']],
-            'approved_by'   => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId'],
-            'approved_at'   => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
-            'prepared_by'   => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId'],
-            'prepared_at'   => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
-            'shipped_by'    => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId'],
-            'shipped_at'    => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
-            'received_by'   => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId'],
-            'received_at'   => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
-            'reason'        => ['type' => self::TYPE_HTML, 'validate' => 'isCleanHtml'],
-            'notes'         => ['type' => self::TYPE_HTML, 'validate' => 'isCleanHtml'],
+            'approved_by'   => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'allow_null' => true],
+            'approved_at'   => ['type' => self::TYPE_DATE, 'validate' => 'isDate', 'allow_null' => true],
+            'prepared_by'   => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'allow_null' => true],
+            'prepared_at'   => ['type' => self::TYPE_DATE, 'validate' => 'isDate', 'allow_null' => true],
+            'shipped_by'    => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'allow_null' => true],
+            'shipped_at'    => ['type' => self::TYPE_DATE, 'validate' => 'isDate', 'allow_null' => true],
+            'received_by'   => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'allow_null' => true],
+            'received_at'   => ['type' => self::TYPE_DATE, 'validate' => 'isDate', 'allow_null' => true],
+            'reason'        => ['type' => self::TYPE_HTML, 'validate' => 'isCleanHtml', 'allow_null' => true],
+            'notes'         => ['type' => self::TYPE_HTML, 'validate' => 'isCleanHtml', 'allow_null' => true],
             'date_add'      => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
             'date_upd'      => ['type' => self::TYPE_DATE, 'validate' => 'isDate'],
         ],
     ];
+
+    public function validateFields($die = true, $error_return = false)
+    {
+        foreach ($this->def['fields'] as $field => $data) {
+            if ($data['type'] == self::TYPE_DATE && $this->$field == '0000-00-00 00:00:00') {
+                $this->$field = null;
+            }
+        }
+        return parent::validateFields($die, $error_return);
+    }
 }

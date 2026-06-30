@@ -111,6 +111,9 @@ class AdminCustomStockApprovalController extends ModuleAdminController
                         StockAvailable::setQuantity($id_product, 0, $current_qty_to + $qty, $id_store_to);
                         
                         $transfer->status = 'approved';
+                        $transfer->approved_by = (int) $this->context->employee->id;
+                        $transfer->approved_at = date('Y-m-d H:i:s');
+                        $transfer->date_upd = date('Y-m-d H:i:s');
                         if ($transfer->update()) {
                             $this->confirmations[] = $this->trans('Transfer approved successfully and stock updated.', [], 'Admin.Notifications.Success');
                         } else {
@@ -137,6 +140,7 @@ class AdminCustomStockApprovalController extends ModuleAdminController
                 if (!empty($reason)) {
                     $transfer->status = 'declined';
                     $transfer->reason = $reason;
+                    $transfer->date_upd = date('Y-m-d H:i:s');
                     if ($transfer->update()) {
                         $this->confirmations[] = $this->trans('Transfer declined successfully.', [], 'Admin.Notifications.Success');
                     } else {

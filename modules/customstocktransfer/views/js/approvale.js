@@ -72,7 +72,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (typeof showToast === 'function') {
                     showToast('You must provide a reason to decline this request.', 'error');
                 } else {
-                    window.alert('You must provide a reason to decline this request.');
                 }
                 
                 // Highlight the input in red and focus it for UX
