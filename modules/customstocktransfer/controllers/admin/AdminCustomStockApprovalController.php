@@ -41,10 +41,12 @@ class AdminCustomStockApprovalController extends ModuleAdminController
         $raw_transfers = Db::getInstance()->executeS($sql);
 
         $grouped_transfers = [
-            'pending' => [],
-            'approved' => [],
-            'declined' => [],
-            'completed' => []
+            'pending'    => [],
+            'approved'   => [],
+            'prepared'   => [],
+            'in_transit' => [],
+            'completed'  => [],
+            'declined'   => []
         ];
 
         if (is_array($raw_transfers) && !empty($raw_transfers)) {
