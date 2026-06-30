@@ -94,16 +94,31 @@ class AdminCustomStockApprovalController extends ModuleAdminController
                 $qty_from = StockAvailable::getQuantityAvailableByProduct($id_product, 0, $id_store_from);
                 
                 if ($qty_from >= $qty) {
-                    StockAvailable::setQuantity($id_product, 0, $qty_from - $qty, $id_store_from);
+                    $originalContext = Shop::getContext();
+                    $originalShopId = Shop::getContextShopID();
                     
-                    $qty_to = StockAvailable::getQuantityAvailableByProduct($id_product, 0, $id_store_to);
-                    StockAvailable::setQuantity($id_product, 0, $qty_to + $qty, $id_store_to);
-                    
-                    $transfer->status = 'approved';
-                    if ($transfer->update()) {
-                        $this->confirmations[] = $this->trans('Transfer approved successfully and stock updated.', [], 'Admin.Notifications.Success');
-                    } else {
-                        $this->errors[] = $this->trans('Failed to update transfer status.', [], 'Admin.Notifications.Error');
+                    try {
+                        // Force context to the source store
+                        Shop::setContext(Shop::CONTEXT_SHOP, $id_store_from);
+                        $current_qty_from = StockAvailable::getQuantityAvailableByProduct($id_product, 0, $id_store_from);
+                        StockAvailable::setQuantity($id_product, 0, $current_qty_from - $qty, $id_store_from);
+                        
+                        // Force context to the destination store
+                        Shop::setContext(Shop::CONTEXT_SHOP, $id_store_to);
+                        $current_qty_to = StockAvailable::getQuantityAvailableByProduct($id_product, 0, $id_store_to);
+                        StockAvailable::setQuantity($id_product, 0, $current_qty_to + $qty, $id_store_to);
+                        
+                        $transfer->status = 'approved';
+                        if ($transfer->update()) {
+                            $this->confirmations[] = $this->trans('Transfer approved successfully and stock updated.', [], 'Admin.Notifications.Success');
+                        } else {
+                            $this->errors[] = $this->trans('Failed to update transfer status.', [], 'Admin.Notifications.Error');
+                        }
+                    } catch (Exception $e) {
+                        $this->errors[] = $e->getMessage();
+                    } finally {
+                        // Unconditionally restore original context
+                        Shop::setContext($originalContext, $originalShopId);
                     }
                 } else {
                     $this->errors[] = $this->trans('Not enough stock in the source store.', [], 'Admin.Notifications.Error');
