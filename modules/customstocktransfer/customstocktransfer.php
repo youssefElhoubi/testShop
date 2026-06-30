@@ -28,15 +28,60 @@ class CustomStockTransfer extends Module
     public function install()
     {
         $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'transfers` (
-            `id_transfer` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-            `id_product` INT(10) UNSIGNED NOT NULL,
-            `id_store_from` INT(10) UNSIGNED NOT NULL,
-            `id_store_to` INT(10) UNSIGNED NOT NULL,
-            `quantity` INT(10) UNSIGNED NOT NULL,
-            `status` ENUM(\'pending\', \'approved\', \'declined\', \'completed\') NOT NULL DEFAULT \'pending\',
-            `reason` TEXT NULL,
-            `date_add` DATETIME NOT NULL,
-            PRIMARY KEY (`id_transfer`)
+                `id_transfer` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+
+                `id_product` INT(10) UNSIGNED NOT NULL,
+                `quantity` INT(10) UNSIGNED NOT NULL,
+
+                -- Stores
+                `id_store_from` INT(10) UNSIGNED NOT NULL,
+                `id_store_to` INT(10) UNSIGNED NOT NULL,
+
+                -- Barcode
+                `barcode` VARCHAR(100) NOT NULL UNIQUE,
+
+                -- Workflow Status
+                `status` ENUM(
+                    \'pending\',
+                    \'approved\',
+                    \'prepared\',
+                    \'in_transit\',
+                    \'completed\',
+                    \'declined\'
+                ) NOT NULL DEFAULT \'pending\',
+
+                -- Admin Approval
+                `approved_by` INT(10) UNSIGNED NULL,
+                `approved_at` DATETIME NULL,
+
+                -- Warehouse Preparation
+                `prepared_by` INT(10) UNSIGNED NULL,
+                `prepared_at` DATETIME NULL,
+
+                -- Shipping
+                `shipped_by` INT(10) UNSIGNED NULL,
+                `shipped_at` DATETIME NULL,
+
+                -- Destination Store Validation
+                `received_by` INT(10) UNSIGNED NULL,
+                `received_at` DATETIME NULL,
+
+                -- Optional Notes
+                `reason` TEXT NULL,
+                `notes` TEXT NULL,
+
+                -- Timestamps
+                `date_add` DATETIME NOT NULL,
+                `date_upd` DATETIME NOT NULL,
+
+                PRIMARY KEY (`id_transfer`),
+
+                INDEX (`id_product`),
+                INDEX (`id_store_from`),
+                INDEX (`id_store_to`),
+                INDEX (`status`),
+                INDEX (`barcode`)
+
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
         return parent::install() &&
