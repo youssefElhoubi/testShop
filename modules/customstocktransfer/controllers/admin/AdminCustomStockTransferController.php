@@ -215,16 +215,22 @@
                     continue;
                 }
 
-                $currentDestinationQuantity = (int) StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $destinationShopId);
+                $transfer = new StockTransfer();
+                $transfer->id_product = (int) $idProduct;
+                $transfer->id_store_from = (int) $sourceShopId;
+                $transfer->id_store_to = (int) $destinationShopId;
+                $transfer->quantity = (int) $quantity;
+                $transfer->status = 'pending';
 
-                StockAvailable::setQuantity($idProduct, 0, $currentSourceQuantity - $quantity, $sourceShopId);
-                StockAvailable::setQuantity($idProduct, 0, $currentDestinationQuantity + $quantity, $destinationShopId);
-
-                $successCount++;
+                if ($transfer->add()) {
+                    $successCount++;
+                } else {
+                    $errorCount++;
+                }
             }
 
             if ($successCount > 0) {
-                $message = sprintf($this->trans('Successfully transferred %d product(s).', [], 'Modules.Customstocktransfer.Admin'), $successCount);
+                $message = sprintf($this->trans('Successfully submitted %d transfer request(s) for admin approval.', [], 'Modules.Customstocktransfer.Admin'), $successCount);
                 if ($errorCount > 0) {
                     $message .= ' ' . sprintf($this->trans('Failed for %d product(s).', [], 'Modules.Customstocktransfer.Admin'), $errorCount);
                 }
