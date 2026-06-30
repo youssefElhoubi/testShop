@@ -58,28 +58,28 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // 2. Decline Button Handler
-        const declineBtn = e.target.closest('button[name="submitDeclineTransfer"]');
-        if (declineBtn) {
-            const form = declineBtn.closest('form');
-            const reasonInput = form.querySelector('input[name="decline_reason"]');
+    });
+
+    // === FORM SUBMIT INTERCEPTION ===
+    document.addEventListener('submit', function (e) {
+        if (e.target.matches('.js-decline-form')) {
+            const reasonInput = e.target.querySelector('input[name="decline_reason"]');
             
-            if (reasonInput) {
-                // Check if the input is empty or just whitespace
-                if (reasonInput.value.trim() === '') {
-                    // Stop the form submission
-                    e.preventDefault();
-                    
-                    // Alert the admin natively
-                    window.alert('You must provide a reason for declining this stock transfer.');
-                    
-                    // Highlight the input in red and focus it for UX
-                    reasonInput.style.borderColor = '#dc3545';
-                    reasonInput.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
-                    reasonInput.focus();
+            if (reasonInput && reasonInput.value.trim() === '') {
+                e.preventDefault(); // Stop form submission
+                
+                // Show warning using showToast if available, otherwise fallback to native alert
+                if (typeof showToast === 'function') {
+                    showToast('You must provide a reason to decline this request.', 'error');
+                } else {
+                    window.alert('You must provide a reason to decline this request.');
                 }
+                
+                // Highlight the input in red and focus it for UX
+                reasonInput.style.borderColor = '#dc3545';
+                reasonInput.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+                reasonInput.focus();
             }
-            return;
         }
     });
 

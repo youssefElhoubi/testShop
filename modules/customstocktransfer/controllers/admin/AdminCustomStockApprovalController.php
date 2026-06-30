@@ -4,6 +4,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+require_once dirname(__FILE__) . '/../../classes/StockTransfer.php';
+
 class AdminCustomStockApprovalController extends ModuleAdminController
 {
     public function __construct()
@@ -79,6 +81,58 @@ class AdminCustomStockApprovalController extends ModuleAdminController
     }
     public function postProcess()
     {
+        if (Tools::isSubmit('submitApproveTransfer')) {
+            $id_transfer = (int) Tools::getValue('id_transfer');
+            $transfer = new StockTransfer($id_transfer);
+
+            if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
+                $qty = (int) $transfer->quantity;
+                $id_product = (int) $transfer->id_product;
+                $id_store_from = (int) $transfer->id_store_from;
+                $id_store_to = (int) $transfer->id_store_to;
+
+                $qty_from = StockAvailable::getQuantityAvailableByProduct($id_product, 0, $id_store_from);
+                
+                if ($qty_from >= $qty) {
+                    StockAvailable::setQuantity($id_product, 0, $qty_from - $qty, $id_store_from);
+                    
+                    $qty_to = StockAvailable::getQuantityAvailableByProduct($id_product, 0, $id_store_to);
+                    StockAvailable::setQuantity($id_product, 0, $qty_to + $qty, $id_store_to);
+                    
+                    $transfer->status = 'approved';
+                    if ($transfer->update()) {
+                        $this->confirmations[] = $this->trans('Transfer approved successfully and stock updated.', [], 'Admin.Notifications.Success');
+                    } else {
+                        $this->errors[] = $this->trans('Failed to update transfer status.', [], 'Admin.Notifications.Error');
+                    }
+                } else {
+                    $this->errors[] = $this->trans('Not enough stock in the source store.', [], 'Admin.Notifications.Error');
+                }
+            } else {
+                $this->errors[] = $this->trans('Invalid transfer or already processed.', [], 'Admin.Notifications.Error');
+            }
+        } elseif (Tools::isSubmit('submitDeclineTransfer')) {
+            $id_transfer = (int) Tools::getValue('id_transfer');
+            $reason = pSQL(Tools::getValue('decline_reason'));
+            $transfer = new StockTransfer($id_transfer);
+
+            if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
+                if (!empty($reason)) {
+                    $transfer->status = 'declined';
+                    $transfer->reason = $reason;
+                    if ($transfer->update()) {
+                        $this->confirmations[] = $this->trans('Transfer declined successfully.', [], 'Admin.Notifications.Success');
+                    } else {
+                        $this->errors[] = $this->trans('Failed to decline transfer.', [], 'Admin.Notifications.Error');
+                    }
+                } else {
+                    $this->errors[] = $this->trans('Decline reason is required.', [], 'Admin.Notifications.Error');
+                }
+            } else {
+                $this->errors[] = $this->trans('Invalid transfer or already processed.', [], 'Admin.Notifications.Error');
+            }
+        }
+
         parent::postProcess();
     }
 }

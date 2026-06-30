@@ -3,48 +3,130 @@
         <i class="icon-clock-o"></i> Pending Approvals
     </div>
     
-    {if isset($grouped_transfers['pending']) && $grouped_transfers['pending']|@count > 0}
-        <div class="cst-card-grid">
-            {foreach from=$grouped_transfers['pending'] item=transfer}
-                <div class="cst-card">
-                    <div class="cst-card-img-area">
-                        <span class="cst-card-tab">Store From: {$transfer.id_store_from|escape:'htmlall':'UTF-8'}</span>
-                        {if $transfer.image_url}
-                            <img src="{$transfer.image_url|escape:'htmlall':'UTF-8'}" alt="{$transfer.product_name|escape:'htmlall':'UTF-8'}">
-                        {else}
-                            <div style="height: 150px; background: #f5f5f5; display: flex; align-items: center; justify-content: center;">
-                                <span class="text-muted"><i class="icon-picture-o fa-3x"></i></span>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs cst-tabs" role="tablist" style="margin-bottom: 20px;">
+        <li role="presentation" class="active">
+            <a href="#pending" aria-controls="pending" role="tab" data-toggle="tab">Pending Approvals</a>
+        </li>
+        <li role="presentation">
+            <a href="#approved" aria-controls="approved" role="tab" data-toggle="tab">Approved History</a>
+        </li>
+        <li role="presentation">
+            <a href="#declined" aria-controls="declined" role="tab" data-toggle="tab">Declined History</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <!-- PENDING TAB -->
+        <div role="tabpanel" class="tab-pane active" id="pending">
+            {if isset($grouped_transfers['pending']) && $grouped_transfers['pending']|@count > 0}
+                <div class="cst-card-grid">
+                    {foreach from=$grouped_transfers['pending'] item=transfer}
+                        <div class="cst-card">
+                            <div class="cst-card-img-area">
+                                <span class="cst-card-tab">Store From: {$transfer.id_store_from|escape:'htmlall':'UTF-8'}</span>
+                                {if $transfer.image_url}
+                                    <img src="{$transfer.image_url|escape:'htmlall':'UTF-8'}" alt="{$transfer.product_name|escape:'htmlall':'UTF-8'}">
+                                {else}
+                                    <div style="height: 150px; background: #f5f5f5; display: flex; align-items: center; justify-content: center;">
+                                        <span class="text-muted"><i class="icon-picture-o fa-3x"></i></span>
+                                    </div>
+                                {/if}
                             </div>
-                        {/if}
-                    </div>
-                    
-                    <div class="cst-card-body">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h3 style="margin: 0; font-size: 16px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{$transfer.product_name|escape:'htmlall':'UTF-8'}">
-                                {$transfer.product_name|escape:'htmlall':'UTF-8'}
-                            </h3>
-                            <span class="cst-qty-badge badge badge-primary" style="border-radius: 20px;">Qty: {$transfer.quantity|intval}</span>
+                            
+                            <div class="cst-card-body">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{$transfer.product_name|escape:'htmlall':'UTF-8'}">
+                                        {$transfer.product_name|escape:'htmlall':'UTF-8'}
+                                    </h3>
+                                    <span class="cst-qty-badge badge badge-primary" style="border-radius: 20px;">Qty: {$transfer.quantity|intval}</span>
+                                </div>
+                                
+                                <p style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">Transfer to Store ID: {$transfer.id_store_to|intval}</p>
+                                
+                                <div class="cst-card-tags" style="display: flex; gap: 8px; margin-bottom: 20px;">
+                                    <span class="badge badge-warning" style="border-radius: 20px; font-weight: 500;">Pending</span>
+                                    <span class="badge badge-secondary" style="border-radius: 20px; font-weight: 500;">{$transfer.date_add|escape:'htmlall':'UTF-8'}</span>
+                                </div>
+                                
+                                <button class="cst-action-btn btn btn-primary js-open-action-modal" style="width: 100%; border-radius: 6px; font-weight: 600; text-transform: uppercase; padding: 10px;" data-transfer-id="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
+                                    Take Action
+                                </button>
+                            </div>
                         </div>
-                        
-                        <p style="color: #6c757d; font-size: 14px; margin-bottom: 15px;">Transfer to Store ID: {$transfer.id_store_to|intval}</p>
-                        
-                        <div class="cst-card-tags" style="display: flex; gap: 8px; margin-bottom: 20px;">
-                            <span class="badge badge-warning" style="border-radius: 20px; font-weight: 500;">Pending</span>
-                            <span class="badge badge-secondary" style="border-radius: 20px; font-weight: 500;">{$transfer.date_add|escape:'htmlall':'UTF-8'}</span>
-                        </div>
-                        
-                        <button class="cst-action-btn btn btn-primary js-open-action-modal" style="width: 100%; border-radius: 6px; font-weight: 600; text-transform: uppercase; padding: 10px;" data-transfer-id="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
-                            Take Action
-                        </button>
-                    </div>
+                    {/foreach}
                 </div>
-            {/foreach}
+            {else}
+                <div class="alert alert-info" style="margin-top: 15px;">
+                    There are no pending stock transfers awaiting approval.
+                </div>
+            {/if}
         </div>
-    {else}
-        <div class="alert alert-info" style="margin-top: 15px;">
-            There are no pending stock transfers awaiting approval.
+
+        <!-- APPROVED TAB -->
+        <div role="tabpanel" class="tab-pane" id="approved">
+            {if isset($grouped_transfers['approved']) && $grouped_transfers['approved']|@count > 0}
+                <div class="cst-card-grid">
+                    {foreach from=$grouped_transfers['approved'] item=transfer}
+                        <div class="cst-card" style="opacity: 0.9;">
+                            <div class="cst-card-img-area">
+                                <span class="cst-card-tab" style="background: #e6f4ea; color: #137333;">Approved</span>
+                                {if $transfer.image_url}
+                                    <img src="{$transfer.image_url|escape:'htmlall':'UTF-8'}" alt="{$transfer.product_name|escape:'htmlall':'UTF-8'}">
+                                {else}
+                                    <div style="height: 150px; background: #f5f5f5; display: flex; align-items: center; justify-content: center;">
+                                        <span class="text-muted"><i class="icon-picture-o fa-3x"></i></span>
+                                    </div>
+                                {/if}
+                            </div>
+                            
+                            <div class="cst-card-body" style="padding: 1.5rem;">
+                                <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    {$transfer.product_name|escape:'htmlall':'UTF-8'}
+                                </h3>
+                                <p style="margin: 0; color: #555;"><strong>Qty Transferred:</strong> {$transfer.quantity|intval}</p>
+                                <p style="margin: 0; color: #555;"><strong>Destination Store:</strong> {$transfer.id_store_to|intval}</p>
+                            </div>
+                        </div>
+                    {/foreach}
+                </div>
+            {else}
+                <div class="alert alert-info" style="margin-top: 15px;">
+                    No approved transfers found.
+                </div>
+            {/if}
         </div>
-    {/if}
+
+        <!-- DECLINED TAB -->
+        <div role="tabpanel" class="tab-pane" id="declined">
+            {if isset($grouped_transfers['declined']) && $grouped_transfers['declined']|@count > 0}
+                <div class="cst-card-grid">
+                    {foreach from=$grouped_transfers['declined'] item=transfer}
+                        <div class="cst-card" style="opacity: 0.8; background: #fffaf9;">
+                            <div class="cst-card-body">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: bold; color: #333;">
+                                        {$transfer.product_name|escape:'htmlall':'UTF-8'}
+                                    </h3>
+                                    <span class="badge badge-danger" style="background-color: #dc3545; padding: 5px 10px; border-radius: 12px; color: #fff;">Declined</span>
+                                </div>
+                                
+                                <p style="color: #666; margin-bottom: 10px;"><strong>From:</strong> {$transfer.id_store_from|intval} | <strong>To:</strong> {$transfer.id_store_to|intval}</p>
+                                <div style="background: #fdf2f2; padding: 12px; border-left: 4px solid #dc3545; border-radius: 4px;">
+                                    <strong>Reason:</strong> {$transfer.reason|escape:'htmlall':'UTF-8'}
+                                </div>
+                            </div>
+                        </div>
+                    {/foreach}
+                </div>
+            {else}
+                <div class="alert alert-info" style="margin-top: 15px;">
+                    No declined transfers found.
+                </div>
+            {/if}
+        </div>
+    </div>
 </div>
 
 <!-- Action Modal -->
@@ -74,7 +156,7 @@
             </div>
             
             <!-- Decline Form -->
-            <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" style="margin: 0; display: flex; flex-direction: column; gap: 10px;">
+            <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" class="js-decline-form" style="margin: 0; display: flex; flex-direction: column; gap: 10px;">
                 <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
                 <input type="hidden" name="id_transfer" class="modal-transfer-id" value="">
                 
