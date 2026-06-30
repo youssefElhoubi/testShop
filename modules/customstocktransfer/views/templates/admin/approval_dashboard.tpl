@@ -46,3 +46,48 @@
         </div>
     {/if}
 </div>
+
+<!-- Action Modal -->
+<div id="cst-action-modal" class="cst-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; align-items: center; justify-content: center;">
+    <div class="cst-modal-overlay js-close-modal" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+    <div class="cst-modal-content" style="position: relative; background: #fff; padding: 25px; border-radius: 12px; width: 400px; max-width: 90%; z-index: 10001; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h3 style="margin: 0; font-size: 1.25rem; font-weight: bold; color: #333;">Take Action</h3>
+            <button type="button" class="js-close-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999; padding: 0; line-height: 1;">&times;</button>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Approve Form -->
+            <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" style="margin: 0;">
+                <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
+                <!-- Using class instead of duplicate IDs for validity -->
+                <input type="hidden" name="id_transfer" class="modal-transfer-id" value="">
+                <button type="submit" name="submitApproveTransfer" value="1" class="btn btn-success" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 8px;">
+                    <i class="icon-check"></i> Approve Transfer
+                </button>
+            </form>
+            
+            <div style="text-align: center; color: #999; font-size: 0.9rem; position: relative;">
+                <span style="background: #fff; padding: 0 10px; position: relative; z-index: 1;">OR</span>
+                <hr style="position: absolute; top: 50%; left: 0; right: 0; margin: 0; border-top: 1px solid #eee; z-index: 0;">
+            </div>
+            
+            <!-- Decline Form -->
+            <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" style="margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
+                <input type="hidden" name="id_transfer" class="modal-transfer-id" value="">
+                
+                <div>
+                    <label style="font-weight: 600; font-size: 0.95rem; color: #333; margin-bottom: 5px; display: block;">Decline Reason <span style="color: #dc3545;">*</span></label>
+                    <input type="text" name="decline_reason" class="form-control cst-input" placeholder="Explain why..." required style="width: 100%;">
+                </div>
+                
+                <button type="submit" name="submitDeclineTransfer" value="1" class="btn btn-danger" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 8px;">
+                    <i class="icon-times"></i> Decline Transfer
+                </button>
+            </form>
+        </div>
+        
+    </div>
+</div>

@@ -3,7 +3,47 @@ document.addEventListener('DOMContentLoaded', function () {
     // === UNIFIED EVENT DELEGATION ===
     document.addEventListener('click', function (e) {
         
-        // 1. Approve Button Handler
+        // --- 0. Modal Toggle Logic ---
+        
+        // Open Modal
+        const openActionBtn = e.target.closest('.js-open-action-modal');
+        if (openActionBtn) {
+            e.preventDefault();
+            const transferId = openActionBtn.getAttribute('data-transfer-id');
+            const modal = document.getElementById('cst-action-modal');
+            
+            if (modal) {
+                // Populate all hidden transfer ID inputs in the modal forms
+                const hiddenInputs = modal.querySelectorAll('.modal-transfer-id');
+                hiddenInputs.forEach(input => {
+                    input.value = transferId;
+                });
+                
+                // Clear any previous validation errors or input values
+                const reasonInput = modal.querySelector('input[name="decline_reason"]');
+                if (reasonInput) {
+                    reasonInput.value = '';
+                    reasonInput.style.borderColor = '';
+                    reasonInput.style.boxShadow = '';
+                }
+                
+                // Show modal (we use flex for centering)
+                modal.style.display = 'flex';
+            }
+            return;
+        }
+
+        // Close Modal
+        if (e.target.matches('.js-close-modal') || e.target.closest('.js-close-modal')) {
+            e.preventDefault();
+            const modal = document.getElementById('cst-action-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            return;
+        }
+
+        // --- 1. Approve Button Handler ---
         const approveBtn = e.target.closest('button[name="submitApproveTransfer"]');
         if (approveBtn) {
             // Show native confirmation prompt
