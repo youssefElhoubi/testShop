@@ -155,3 +155,21 @@
         transform: translateY(0) scale(1);
     }
 }
+
+/* Barcode Wrapper */
+.cst-barcode-wrapper {
+    background-color: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    color: #495057;
+}
+
+.cst-barcode-wrapper strong {
+    color: #212529;
+    margin-right: 5px;
+}

@@ -59,6 +59,10 @@
                                     <span class="badge badge-secondary" style="border-radius: 20px; font-weight: 500;">{$transfer.date_add|escape:'htmlall':'UTF-8'}</span>
                                 </div>
                                 
+                                <div class="cst-barcode-wrapper">
+                                    <strong>Barcode:</strong> <span>{$transfer.barcode|escape:'htmlall':'UTF-8'}</span>
+                                </div>
+                                
                                 <button class="cst-action-btn btn btn-primary js-open-action-modal" style="width: 100%; border-radius: 6px; font-weight: 600; text-transform: uppercase; padding: 10px;" data-transfer-id="{$transfer.id_transfer|escape:'htmlall':'UTF-8'}">
                                     Take Action
                                 </button>
@@ -96,6 +100,10 @@
                                 </h3>
                                 <p style="margin: 0; color: #555;"><strong>Qty Transferred:</strong> {$transfer.quantity|intval}</p>
                                 <p style="margin: 0; color: #555;"><strong>Destination Store:</strong> {$transfer.id_store_to|intval}</p>
+                                
+                                <div class="cst-barcode-wrapper">
+                                    <strong>Barcode:</strong> <span>{$transfer.barcode|escape:'htmlall':'UTF-8'}</span>
+                                </div>
                             </div>
                         </div>
                     {/foreach}
