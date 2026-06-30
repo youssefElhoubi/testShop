@@ -122,6 +122,30 @@
 
                 if ($transfer->add()) {
                     $this->setFlashMessage(true, $this->trans('Transfer request submitted successfully and is pending admin approval.', [], 'Modules.Customstocktransfer.Admin'));
+                    
+                    // --- SEND EMAIL NOTIFICATION TO ADMIN ---
+                    $adminEmail = Configuration::get('PS_SHOP_EMAIL');
+                    if ($adminEmail) {
+                        Mail::Send(
+                            (int) $this->context->language->id,
+                            'transfer_request', // Template name
+                            $this->trans('New Stock Transfer Request Pending Approval', [], 'Modules.Customstocktransfer.Admin'),
+                            [
+                                '{product_id}'  => (int) $transfer->id_product,
+                                '{quantity}'    => (int) $transfer->quantity,
+                                '{store_from}'  => (int) $transfer->id_store_from,
+                                '{store_to}'    => (int) $transfer->id_store_to,
+                            ],
+                            $adminEmail,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            _PS_MODULE_DIR_ . $this->module->name . '/mails/'
+                        );
+                    }
+
                 } else {
                     $this->setFlashMessage(false, $this->trans('An error occurred while saving the transfer request.', [], 'Modules.Customstocktransfer.Admin'));
                 }

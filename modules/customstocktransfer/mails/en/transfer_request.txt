@@ -1,0 +1,11 @@
+New Stock Transfer Request
+
+A new stock transfer request has been submitted and is awaiting your approval.
+
+Details:
+- Product ID: {product_id}
+- Quantity: {quantity}
+- Source Store (ID): {store_from}
+- Destination Store (ID): {store_to}
+
+Please log in to the Back Office and navigate to the Transfer Approval dashboard to review this request.

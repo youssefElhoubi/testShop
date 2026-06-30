@@ -41,7 +41,26 @@ class CustomStockTransfer extends Module
 
         return parent::install() &&
             Db::getInstance()->execute($sql) &&
-            $this->installTab();
+            $this->installTab() &&
+            $this->registerHook('displayAdminNavBarBeforeEnd');
+    }
+
+    public function hookDisplayAdminNavBarBeforeEnd($params)
+    {
+        $count = (int) Db::getInstance()->getValue(
+            'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'transfers` WHERE `status` = \'pending\''
+        );
+
+        if ($count <= 0) {
+            return '';
+        }
+
+        $this->context->smarty->assign([
+            'pending_transfers_count' => $count,
+            'approval_link' => $this->context->link->getAdminLink('AdminCustomStockApproval')
+        ]);
+
+        return $this->display(__FILE__, 'views/templates/hook/admin_notification.tpl');
     }
 
     public function uninstall()
