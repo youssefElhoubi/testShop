@@ -116,6 +116,7 @@
                 $transfer->id_store_to = $idStoreTo;
                 $transfer->quantity = $newQuantity;
                 $transfer->status = 'pending';
+                $transfer->barcode = 'TRF-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
 
                 // If you kept the secure_token column for the QR code feature, uncomment the line below:
                 // $transfer->secure_token = md5(uniqid(rand(), true));
@@ -221,6 +222,7 @@
                 $transfer->id_store_to = (int) $destinationShopId;
                 $transfer->quantity = (int) $quantity;
                 $transfer->status = 'pending';
+                $transfer->barcode = 'TRF-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
 
                 if ($transfer->add()) {
                     $successCount++;
