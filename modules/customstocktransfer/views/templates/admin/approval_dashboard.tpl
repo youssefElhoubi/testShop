@@ -104,6 +104,12 @@
                                 <div class="cst-barcode-wrapper">
                                     <strong>Barcode:</strong> <span>{$transfer.barcode|escape:'htmlall':'UTF-8'}</span>
                                 </div>
+                                
+                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" class="js-pipeline-form" style="margin: 0; margin-top: auto;">
+                                    <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
+                                    <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|intval}">
+                                    <button type="submit" name="submitMarkPrepared" value="1" class="cst-action-btn" style="background: #007bff !important; width: 100%; text-transform: uppercase; border-radius: 6px; padding: 10px;">Mark as Prepared</button>
+                                </form>
                             </div>
                         </div>
                     {/foreach}
@@ -130,7 +136,13 @@
                             </div>
                             <div class="cst-card-body" style="padding: 1.5rem;">
                                 <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{$transfer.product_name|escape:'htmlall':'UTF-8'}</h3>
-                                <span class="badge badge-warning" style="border-radius: 20px;">Prepared</span>
+                                <span class="badge badge-warning" style="border-radius: 20px; margin-bottom: 15px; display: inline-block;">Prepared</span>
+                                
+                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" class="js-pipeline-form" style="margin: 0; margin-top: auto;">
+                                    <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
+                                    <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|intval}">
+                                    <button type="submit" name="submitMarkShipped" value="1" class="cst-action-btn" style="background: #6f42c1 !important; width: 100%; text-transform: uppercase; border-radius: 6px; padding: 10px;">Mark as Shipped</button>
+                                </form>
                             </div>
                         </div>
                     {/foreach}
@@ -155,7 +167,13 @@
                             </div>
                             <div class="cst-card-body" style="padding: 1.5rem;">
                                 <h3 style="margin: 0 0 10px 0; font-size: 16px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{$transfer.product_name|escape:'htmlall':'UTF-8'}</h3>
-                                <span class="badge badge-info" style="border-radius: 20px;">In Transit</span>
+                                <span class="badge badge-info" style="border-radius: 20px; margin-bottom: 15px; display: inline-block;">In Transit</span>
+                                
+                                <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" class="js-pipeline-form" style="margin: 0; margin-top: auto;">
+                                    <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
+                                    <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|intval}">
+                                    <button type="submit" name="submitMarkCompleted" value="1" class="cst-action-btn" style="background: #28a745 !important; width: 100%; text-transform: uppercase; border-radius: 6px; padding: 10px;">Mark as Completed</button>
+                                </form>
                             </div>
                         </div>
                     {/foreach}

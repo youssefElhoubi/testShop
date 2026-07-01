@@ -79,6 +79,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 reasonInput.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
                 reasonInput.focus();
             }
+        } else if (
+            e.target.querySelector('button[name="submitMarkPrepared"]') ||
+            e.target.querySelector('button[name="submitMarkShipped"]') ||
+            e.target.querySelector('button[name="submitMarkCompleted"]')
+        ) {
+            const confirmAdvance = window.confirm('Are you sure you want to advance this transfer to the next stage?');
+            if (!confirmAdvance) {
+                e.preventDefault();
+            }
         }
     });
 
