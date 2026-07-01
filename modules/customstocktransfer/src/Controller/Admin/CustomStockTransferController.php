@@ -35,7 +35,7 @@ class CustomStockTransferController extends FrameworkBundleAdminController
         $idLang = (int) $context->language->id;
         $idShopForName = (int) $context->shop->id;
 
-        $repository = $this->get('prestashop.module.customstocktransfer.repository.transfer');
+        $repository = $this->get(\PrestaShop\Module\Customstocktransfer\Repository\CustomStockTransferRepository::class);
 
         $page = (int) $request->query->get('page', 1);
         if ($page < 1) {
@@ -159,7 +159,7 @@ class CustomStockTransferController extends FrameworkBundleAdminController
 
     private function handlePostProcess(Request $request): Response
     {
-        $idLang = (int) $this->get('prestashop.adapter.legacy.context')->getContext()->language->id;
+        $idLang = (int) $this->get('\prestashop.adapter.legacy.context')->getContext()->language->id;
 
         try {
             if ($request->request->has('submitEditQuantity')) {

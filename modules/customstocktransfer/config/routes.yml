@@ -2,7 +2,7 @@ admin_custom_stock_approval_dashboard:
   path: /customstocktransfer/approval
   methods: [GET, POST]
   defaults:
-    _controller: 'prestashop.module.customstocktransfer.controller.admin.approval::indexAction'
+    _controller: 'PrestaShop\Module\CustomStockTransfer\Controller\Admin\CustomStockApprovalController::indexAction'
     _legacy_controller: 'AdminCustomStockApproval'
     _legacy_link: 'AdminCustomStockApproval'
 
@@ -10,6 +10,6 @@ admin_custom_stock_transfer_dashboard:
   path: /customstocktransfer/transfer
   methods: [GET, POST]
   defaults:
-    _controller: 'prestashop.module.customstocktransfer.controller.admin.transfer::indexAction'
+    _controller: 'PrestaShop\Module\CustomStockTransfer\Controller\Admin\CustomStockTransferController::indexAction'
     _legacy_controller: 'AdminCustomStockTransfer'
     _legacy_link: 'AdminCustomStockTransfer'
