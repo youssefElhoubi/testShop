@@ -1,0 +1,16 @@
+{
+  "name": "prestashop/customstocktransfer",
+  "description": "Custom stock transfer module",
+  "type": "prestashop-module",
+  "autoload": {
+    "psr-4": {
+      "PrestaShop\\Module\\Customstocktransfer\\": "src/"
+    },
+    "classmap": [
+      "classes/"
+    ]
+  },
+  "config": {
+    "prepend-autoloader": false
+  }
+}

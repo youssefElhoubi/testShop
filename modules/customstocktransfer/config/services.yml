@@ -1,0 +1,30 @@
+services:
+  prestashop.module.customstocktransfer.repository.approval:
+    class: PrestaShop\Module\Customstocktransfer\Repository\CustomStockApprovalRepository
+
+  prestashop.module.customstocktransfer.repository.transfer:
+    class: PrestaShop\Module\Customstocktransfer\Repository\CustomStockTransferRepository
+
+  prestashop.module.customstocktransfer.service.approval:
+    class: PrestaShop\Module\Customstocktransfer\Service\CustomStockApprovalService
+    arguments:
+      - '@prestashop.module.customstocktransfer.repository.approval'
+
+  prestashop.module.customstocktransfer.service.transfer:
+    class: PrestaShop\Module\Customstocktransfer\Service\CustomStockTransferService
+    arguments:
+      - '@prestashop.module.customstocktransfer.repository.transfer'
+
+  prestashop.module.customstocktransfer.controller.admin.approval:
+    class: PrestaShop\Module\Customstocktransfer\Controller\Admin\CustomStockApprovalController
+    arguments:
+      - '@prestashop.module.customstocktransfer.service.approval'
+    tags:
+      - { name: 'controller.service_arguments' }
+
+  prestashop.module.customstocktransfer.controller.admin.transfer:
+    class: PrestaShop\Module\Customstocktransfer\Controller\Admin\CustomStockTransferController
+    arguments:
+      - '@prestashop.module.customstocktransfer.service.transfer'
+    tags:
+      - { name: 'controller.service_arguments' }
