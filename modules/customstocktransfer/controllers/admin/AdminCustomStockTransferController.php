@@ -70,179 +70,89 @@
             }
 
 
-            if (Tools::isSubmit('submitEditQuantity')) {
-                $idProduct = (int) Tools::getValue('id_product');
-                $newQuantity = (int) Tools::getValue('new_quantity');
-                $maxQuantity = (int) Tools::getValue('max_quantity');
-                $idStoreFrom = (int) Tools::getValue('id_store_from');
-                $idStoreTo = (int) Tools::getValue('id_store_to');
+            return parent::postProcess();
+        }
 
-                if ($idProduct <= 0 || !$this->productExists($idProduct)) {
-                    $this->setFlashMessage(false, $this->trans('Invalid product.', [], 'Modules.Customstocktransfer.Admin'));
-                    $this->redirectToDashboard();
-                    return false;
+        public function ajaxProcessConfirmCart()
+        {
+            $sourceStoreId = (int) Tools::getValue('source_shop_id');
+            $destStoreId = (int) Tools::getValue('destination_shop_id');
+            $cartItems = Tools::getValue('cart_items');
+
+            if (!$sourceStoreId || !$destStoreId) {
+                die(json_encode(['success' => false, 'message' => 'Invalid stores selected.']));
+            }
+
+            if (!is_array($cartItems) || empty($cartItems)) {
+                die(json_encode(['success' => false, 'message' => 'Cart is empty.']));
+            }
+
+            Db::getInstance()->execute('START TRANSACTION');
+
+            try {
+                $barcode = 'TRF-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
+                
+                $resHeader = Db::getInstance()->insert('transfers', [
+                    'id_store_from' => $sourceStoreId,
+                    'id_store_to' => $destStoreId,
+                    'barcode' => pSQL($barcode),
+                    'status' => 'pending',
+                    'date_add' => date('Y-m-d H:i:s'),
+                    'date_upd' => date('Y-m-d H:i:s'),
+                ]);
+
+                if (!$resHeader) {
+                    throw new Exception('Failed to insert transfer header.');
                 }
 
-                if ($idStoreFrom <= 0 || $idStoreTo <= 0) {
-                    $this->setFlashMessage(false, $this->trans('Please select valid stores.', [], 'Modules.Customstocktransfer.Admin'));
-                    $this->redirectToDashboard();
-                    return false;
-                }
+                $idTransfer = (int) Db::getInstance()->Insert_ID();
 
-                if ($idStoreFrom === $idStoreTo) {
-                    $this->setFlashMessage(false, $this->trans('Store From and Store To cannot be the same.', [], 'Modules.Customstocktransfer.Admin'));
-                    $this->redirectToDashboard();
-                    return false;
-                }
+                foreach ($cartItems as $item) {
+                    $idProduct = (int) $item['productId'];
+                    $idProductAttribute = isset($item['productAttributeId']) ? (int) $item['productAttributeId'] : 0;
+                    $quantity = (int) $item['qty'];
 
-                if ($newQuantity <= 0) {
-                    $this->setFlashMessage(false, $this->trans('Quantity must be greater than 0.', [], 'Modules.Customstocktransfer.Admin'));
-                    $this->redirectToDashboard();
-                    return false;
-                }
+                    if ($quantity <= 0) continue;
 
-                $maxLimit = $maxQuantity > 0 ? $maxQuantity : 99999;
-                if ($newQuantity > $maxLimit) {
-                    $this->setFlashMessage(false, sprintf($this->trans('Quantity cannot exceed the maximum allowed value (%d).', [], 'Modules.Customstocktransfer.Admin'), $maxLimit));
-                    $this->redirectToDashboard();
-                    return false;
-                }
+                    $resDetail = Db::getInstance()->insert('transfer_details', [
+                        'id_transfer' => $idTransfer,
+                        'id_product' => $idProduct,
+                        'id_product_attribute' => $idProductAttribute,
+                        'quantity' => $quantity
+                    ]);
 
-                // --- NEW LOGIC: QUEUE THE TRANSFER, DO NOT MOVE STOCK YET ---
-
-                $transfer = new StockTransfer();
-                $transfer->id_product = $idProduct;
-                $transfer->id_store_from = $idStoreFrom;
-                $transfer->id_store_to = $idStoreTo;
-                $transfer->quantity = $newQuantity;
-                $transfer->status = 'pending';
-                $transfer->barcode = 'TRF-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
-
-                // If you kept the secure_token column for the QR code feature, uncomment the line below:
-                // $transfer->secure_token = md5(uniqid(rand(), true));
-
-                if ($transfer->add()) {
-                    $this->setFlashMessage(true, $this->trans('Transfer request submitted successfully and is pending admin approval.', [], 'Modules.Customstocktransfer.Admin'));
-                    
-                    // --- SEND EMAIL NOTIFICATION TO ADMIN ---
-                    $adminEmail = Configuration::get('PS_SHOP_EMAIL');
-                    if ($adminEmail) {
-                        Mail::Send(
-                            (int) $this->context->language->id,
-                            'transfer_request', // Template name
-                            $this->trans('New Stock Transfer Request Pending Approval', [], 'Modules.Customstocktransfer.Admin'),
-                            [
-                                '{product_id}'  => (int) $transfer->id_product,
-                                '{quantity}'    => (int) $transfer->quantity,
-                                '{store_from}'  => (int) $transfer->id_store_from,
-                                '{store_to}'    => (int) $transfer->id_store_to,
-                            ],
-                            $adminEmail,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            _PS_MODULE_DIR_ . $this->module->name . '/mails/'
-                        );
+                    if (!$resDetail) {
+                        throw new Exception('Failed to insert transfer detail for product ' . $idProduct);
                     }
-
-                } else {
-                    $this->setFlashMessage(false, $this->trans('An error occurred while saving the transfer request.', [], 'Modules.Customstocktransfer.Admin'));
                 }
 
-                $this->redirectToDashboard();
-                return false;
-            }
-
-            if (!Tools::isSubmit('submitCustomStockTransfer')) {
-                return parent::postProcess();
-            }
-
-            $sourceShopId = (int) Tools::getValue('source_shop_id');
-            $destinationShopId = (int) Tools::getValue('destination_shop_id');
-            $bulkProductIds = Tools::getValue('bulk_product_ids');
-            $bulkQuantities = Tools::getValue('bulk_quantities');
-
-            if (!Validate::isUnsignedId($sourceShopId)) {
-                $this->setFlashMessage(false, $this->trans('Please select a valid source store.', [], 'Modules.Customstocktransfer.Admin'));
-                $this->redirectToDashboard();
-                return false;
-            }
-
-            if (!Validate::isUnsignedId($destinationShopId)) {
-                $this->setFlashMessage(false, $this->trans('Please select a valid destination store.', [], 'Modules.Customstocktransfer.Admin'));
-                $this->redirectToDashboard();
-                return false;
-            }
-
-            if ($sourceShopId === $destinationShopId) {
-                $this->setFlashMessage(false, $this->trans('The source and destination stores must be different.', [], 'Modules.Customstocktransfer.Admin'));
-                $this->redirectToDashboard();
-                return false;
-            }
-
-            if (!is_array($bulkProductIds) || empty($bulkProductIds)) {
-                $this->setFlashMessage(false, $this->trans('Please select at least one product to transfer.', [], 'Modules.Customstocktransfer.Admin'));
-                $this->redirectToDashboard();
-                return false;
-            }
-
-            $availableShopIds = array_map(static function (array $shop) {
-                return (int) $shop['id_shop'];
-            }, Shop::getShops(true, null, false));
-
-            if (!in_array($sourceShopId, $availableShopIds, true) || !in_array($destinationShopId, $availableShopIds, true)) {
-                $this->setFlashMessage(false, $this->trans('The selected stores are not available.', [], 'Modules.Customstocktransfer.Admin'));
-                $this->redirectToDashboard();
-                return false;
-            }
-
-            $successCount = 0;
-            $errorCount = 0;
-
-            foreach ($bulkProductIds as $idProduct) {
-                $idProduct = (int) $idProduct;
-                $quantity = isset($bulkQuantities[$idProduct]) ? (int) $bulkQuantities[$idProduct] : 0;
-
-                if ($quantity <= 0 || !$this->productExists($idProduct)) {
-                    $errorCount++;
-                    continue;
+                Db::getInstance()->execute('COMMIT');
+                
+                // Send email notification to admin
+                $adminEmail = Configuration::get('PS_SHOP_EMAIL');
+                if ($adminEmail) {
+                    Mail::Send(
+                        (int) $this->context->language->id,
+                        'transfer_request',
+                        $this->trans('New Stock Transfer Request Pending Approval', [], 'Modules.Customstocktransfer.Admin'),
+                        [
+                            '{product_id}'  => 'Multiple Products',
+                            '{quantity}'    => count($cartItems),
+                            '{store_from}'  => $sourceStoreId,
+                            '{store_to}'    => $destStoreId,
+                        ],
+                        $adminEmail,
+                        null, null, null, null, null,
+                        _PS_MODULE_DIR_ . $this->module->name . '/mails/'
+                    );
                 }
 
-                $currentSourceQuantity = (int) StockAvailable::getQuantityAvailableByProduct($idProduct, 0, $sourceShopId);
-                if ($currentSourceQuantity < $quantity) {
-                    $errorCount++;
-                    continue;
-                }
+                die(json_encode(['success' => true]));
 
-                $transfer = new StockTransfer();
-                $transfer->id_product = (int) $idProduct;
-                $transfer->id_store_from = (int) $sourceShopId;
-                $transfer->id_store_to = (int) $destinationShopId;
-                $transfer->quantity = (int) $quantity;
-                $transfer->status = 'pending';
-                $transfer->barcode = 'TRF-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
-
-                if ($transfer->add()) {
-                    $successCount++;
-                } else {
-                    $errorCount++;
-                }
+            } catch (Exception $e) {
+                Db::getInstance()->execute('ROLLBACK');
+                die(json_encode(['success' => false, 'message' => $e->getMessage()]));
             }
-
-            if ($successCount > 0) {
-                $message = sprintf($this->trans('Successfully submitted %d transfer request(s) for admin approval.', [], 'Modules.Customstocktransfer.Admin'), $successCount);
-                if ($errorCount > 0) {
-                    $message .= ' ' . sprintf($this->trans('Failed for %d product(s).', [], 'Modules.Customstocktransfer.Admin'), $errorCount);
-                }
-                $this->setFlashMessage(true, $message);
-            } else {
-                $this->setFlashMessage(false, $this->trans('Failed to transfer products. Check quantities and stock availability.', [], 'Modules.Customstocktransfer.Admin'));
-            }
-
-            $this->redirectToDashboard();
-            return false;
         }
 
         public function initContent()
