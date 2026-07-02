@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // === UNIFIED CLICK EVENT DELEGATION ===
     document.addEventListener('click', function (e) {
-        
+
         // 1. View Toggle
         const toggleBtn = e.target.closest('.js-stock-view-toggle');
         if (toggleBtn) {
@@ -118,9 +118,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderCartItems() {
         const container = document.getElementById('cart-items-container');
         if (!container) return;
-        
+
         container.innerHTML = '';
-        
+
         if (window.transferCart.length === 0) {
             container.innerHTML = '<tr><td colspan="2" class="text-center" style="padding: 20px;">Your cart is empty.</td></tr>';
             return;
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (btnOpenCart && cartModal) {
-        btnOpenCart.addEventListener('click', function() {
+        btnOpenCart.addEventListener('click', function () {
             renderCartItems();
             cartModal.style.display = 'flex';
         });
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (btnsCloseCart) {
         btnsCloseCart.forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 cartModal.style.display = 'none';
             });
         });
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const cartContainer = document.getElementById('cart-items-container');
     if (cartContainer) {
-        cartContainer.addEventListener('input', function(e) {
+        cartContainer.addEventListener('input', function (e) {
             if (e.target.classList.contains('cart-item-qty')) {
                 let val = parseInt(e.target.value, 10);
                 let max = parseInt(e.target.getAttribute('max'), 10);
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        cartContainer.addEventListener('click', function(e) {
+        cartContainer.addEventListener('click', function (e) {
             const removeBtn = e.target.closest('.js-remove-cart-item');
             if (removeBtn) {
                 const index = removeBtn.getAttribute('data-index');
@@ -217,12 +217,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const btnsAddToCart = document.querySelectorAll('.js-add-to-cart');
     btnsAddToCart.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const productId = this.getAttribute('data-product-id');
             const productAttributeId = this.getAttribute('data-product-attribute-id') || 0;
             const productName = this.getAttribute('data-product-name');
             const maxQty = this.getAttribute('data-max-qty');
-            
+
             const parentContainer = this.closest('.d-flex') || this.closest('.d-inline-flex');
             let qty = 1;
             if (parentContainer) {
@@ -230,10 +230,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (qtyInput) qty = parseInt(qtyInput.value, 10);
             }
 
-            const existingItemIndex = window.transferCart.findIndex(item => 
+            const existingItemIndex = window.transferCart.findIndex(item =>
                 item.productId === productId && item.productAttributeId === productAttributeId
             );
-            
+
             if (existingItemIndex > -1) {
                 let newQty = qty;
                 let maxAllowed = parseInt(maxQty, 10);
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             saveCartState();
             updateCartBadge();
-            
+
             const originalHtml = this.innerHTML;
             this.innerHTML = '<i class="icon-check"></i>';
             this.classList.replace('cst-btn-primary', 'cst-btn-success');
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Clear Cart ---
     const btnClearCart = document.querySelector('.js-clear-cart');
     if (btnClearCart) {
-        btnClearCart.addEventListener('click', function() {
+        btnClearCart.addEventListener('click', function () {
             window.transferCart = [];
             saveCartState();
             updateCartBadge();
@@ -280,9 +280,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Confirm Transfer AJAX ---
     const btnConfirmTransfer = document.querySelector('.js-confirm-transfer');
     if (btnConfirmTransfer) {
-        btnConfirmTransfer.addEventListener('click', function() {
+        btnConfirmTransfer.addEventListener('click', function () {
             hideModalError();
-            
+
             if (window.transferCart.length === 0) {
                 showModalError('Your transfer cart is empty.');
                 return;
@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     destination_shop_id: destStoreId,
                     cart_items: window.transferCart
                 },
-                success: function(response) {
+                success: function (response) {
                     btnConfirmTransfer.innerHTML = originalBtnText;
                     btnConfirmTransfer.disabled = false;
 
@@ -325,14 +325,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         localStorage.removeItem('cst_transfer_cart');
                         cartModal.style.display = 'none';
                         showCustomSuccess('Transfer created successfully!');
-                        setTimeout(function() {
+                        setTimeout(function () {
                             window.location.reload();
                         }, 1000);
                     } else {
                         showModalError('Error: ' + (response ? response.message : 'Failed to create transfer.'));
                     }
                 },
-                error: function() {
+                error: function () {
                     btnConfirmTransfer.innerHTML = originalBtnText;
                     btnConfirmTransfer.disabled = false;
                     showModalError('A server error occurred while processing the transfer.');
@@ -344,9 +344,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Bulk Action Override ---
     const transferForm = document.getElementById('cst-transfer-form');
     if (transferForm) {
-        transferForm.addEventListener('submit', function(e) {
+        transferForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const checkboxes = document.querySelectorAll('.cst-product-checkbox:checked');
             if (checkboxes.length === 0) {
                 showCustomError('Please select at least one product.');
@@ -362,14 +362,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         const productAttributeId = btnAddToCart.getAttribute('data-product-attribute-id') || 0;
                         const productName = btnAddToCart.getAttribute('data-product-name');
                         const maxQty = btnAddToCart.getAttribute('data-max-qty');
-                        
+
                         const qtyInput = container.querySelector('input[name="bulk_quantities[' + productId + ']"]');
                         let qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
-                        
-                        const existingItemIndex = window.transferCart.findIndex(item => 
+
+                        const existingItemIndex = window.transferCart.findIndex(item =>
                             item.productId === productId && item.productAttributeId === productAttributeId
                         );
-                        
+
                         if (existingItemIndex > -1) {
                             let newQty = qty;
                             let maxAllowed = parseInt(maxQty, 10);
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 qty: qty
                             });
                         }
-                        
+
                         cb.checked = false;
                     }
                 }
@@ -402,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    
+
 
 
 });
