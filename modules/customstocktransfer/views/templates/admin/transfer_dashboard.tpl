@@ -401,12 +401,13 @@
                                                 <input type="number" class="form-control cst-input" style="width: 80px;"
                                                     name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
                                                     {if $product.total_stock == 0}disabled="disabled" {/if}>
-                                                <button type="button" class="btn btn-default cst-btn-outline js-open-edit-modal"
+                                                <button type="button" class="btn btn-primary cst-btn-primary js-add-to-cart"
                                                     style="padding: 0.5em 0.8em;" data-product-id="{$product.id_product|intval}"
+                                                    data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
-                                                    data-current-qty="{$product.total_stock|intval}" data-max-qty="99999"
-                                                    title="Edit Quantity">
-                                                    <i class="icon-pencil"></i>
+                                                    data-max-qty="{$product.total_stock|intval}"
+                                                    title="Add to Transfer Cart">
+                                                    <i class="icon-cart-plus"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -580,12 +581,13 @@
                                                 <input type="number" class="form-control cst-input" style="width: 80px;"
                                                     name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
                                                     {if $product.total_stock == 0}disabled="disabled" {/if}>
-                                                <button type="button" class="btn btn-default cst-btn-outline js-open-edit-modal"
+                                                <button type="button" class="btn btn-primary cst-btn-primary js-add-to-cart"
                                                     style="padding: 0.5em 0.8em;" data-product-id="{$product.id_product|intval}"
+                                                    data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
-                                                    data-current-qty="{$product.total_stock|intval}" data-max-qty="99999"
-                                                    title="Edit Quantity">
-                                                    <i class="icon-pencil"></i>
+                                                    data-max-qty="{$product.total_stock|intval}"
+                                                    title="Add to Transfer Cart">
+                                                    <i class="icon-cart-plus"></i>
                                                 </button>
                                             </div>
 
@@ -875,6 +877,61 @@
                     }
                 });
             }
+
+            // Cart State and Add to Cart Logic
+            window.transferCart = [];
+
+            function updateCartBadge() {
+                const badge = document.getElementById('cart-item-count');
+                if (badge) {
+                    badge.innerText = window.transferCart.length;
+                }
+            }
+
+            const btnsAddToCart = document.querySelectorAll('.js-add-to-cart');
+            btnsAddToCart.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    const productAttributeId = this.getAttribute('data-product-attribute-id') || 0;
+                    const productName = this.getAttribute('data-product-name');
+                    const maxQty = this.getAttribute('data-max-qty');
+                    
+                    const parentContainer = this.closest('.d-flex') || this.closest('.d-inline-flex');
+                    let qty = 1;
+                    if (parentContainer) {
+                        const qtyInput = parentContainer.querySelector('input[type="number"]');
+                        if (qtyInput) qty = parseInt(qtyInput.value, 10);
+                    }
+
+                    const existingItemIndex = window.transferCart.findIndex(item => 
+                        item.productId === productId && item.productAttributeId === productAttributeId
+                    );
+                    
+                    if (existingItemIndex > -1) {
+                        window.transferCart[existingItemIndex].qty += qty;
+                    } else {
+                        window.transferCart.push({
+                            productId: productId,
+                            productAttributeId: productAttributeId,
+                            productName: productName,
+                            maxQty: maxQty,
+                            qty: qty
+                        });
+                    }
+
+                    updateCartBadge();
+                    
+                    const originalHtml = this.innerHTML;
+                    this.innerHTML = '<i class="icon-check"></i>';
+                    this.classList.replace('cst-btn-primary', 'cst-btn-success');
+                    this.classList.replace('btn-primary', 'btn-success');
+                    setTimeout(() => {
+                        this.innerHTML = originalHtml;
+                        this.classList.replace('cst-btn-success', 'cst-btn-primary');
+                        this.classList.replace('btn-success', 'btn-primary');
+                    }, 1000);
+                });
+            });
         });
     </script>
 </div>
