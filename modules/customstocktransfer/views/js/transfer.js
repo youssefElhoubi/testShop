@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 3. Form Validation logic for Filter Form and Transfer Form
 
     function showCustomError(message) {
-        let alertBox = document.querySelector('.cst-alert-danger');
+        let alertBox = document.querySelector('.custom-transfer-wrapper > .cst-alert-danger');
         if (!alertBox) {
             alertBox = document.createElement('div');
             alertBox.className = 'cst-alert cst-alert-danger mb-4';
@@ -51,6 +51,41 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         alertBox.querySelector('.cst-alert-content').innerHTML = '<p>' + message + '</p>';
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showCustomSuccess(message) {
+        if (typeof $.growl !== 'undefined' && $.growl.notice) {
+            $.growl.notice({ title: '', message: message });
+            return;
+        }
+        let alertBox = document.querySelector('.custom-transfer-wrapper > .cst-alert-success');
+        if (!alertBox) {
+            alertBox = document.createElement('div');
+            alertBox.className = 'cst-alert cst-alert-success mb-4';
+            alertBox.innerHTML = `
+                <div class="cst-alert-icon"><i class="icon-check"></i></div>
+                <div class="cst-alert-content"></div>
+            `;
+            const container = document.querySelector('.custom-transfer-wrapper');
+            container.insertBefore(alertBox, container.firstChild);
+        }
+        alertBox.querySelector('.cst-alert-content').innerHTML = '<p>' + message + '</p>';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showModalError(message) {
+        const errorDiv = document.querySelector('.js-modal-error');
+        if (errorDiv) {
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    function hideModalError() {
+        const errorDiv = document.querySelector('.js-modal-error');
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
     }
 
     const filterForm = document.getElementById('cst-filter-form');
@@ -125,7 +160,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Input Validation & Cart State Logic
-    window.transferCart = [];
+    try {
+        const storedCart = localStorage.getItem('cst_transfer_cart');
+        window.transferCart = storedCart ? JSON.parse(storedCart) : [];
+    } catch (e) {
+        window.transferCart = [];
+    }
+
+    function saveCartState() {
+        localStorage.setItem('cst_transfer_cart', JSON.stringify(window.transferCart));
+    }
 
     function updateCartBadge() {
         const badge = document.getElementById('cart-item-count');
@@ -133,6 +177,9 @@ document.addEventListener('DOMContentLoaded', function () {
             badge.innerText = window.transferCart.length;
         }
     }
+
+    updateCartBadge();
+    renderCartItems();
 
     const cartContainer = document.getElementById('cart-items-container');
     if (cartContainer) {
@@ -151,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const index = e.target.getAttribute('data-index');
                 if (index !== null && window.transferCart[index]) {
                     window.transferCart[index].qty = parseInt(e.target.value, 10);
+                    saveCartState();
                 }
             }
         });
@@ -160,6 +208,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (removeBtn) {
                 const index = removeBtn.getAttribute('data-index');
                 window.transferCart.splice(index, 1);
+                saveCartState();
                 updateCartBadge();
                 renderCartItems();
             }
@@ -202,6 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
 
+            saveCartState();
             updateCartBadge();
             
             const originalHtml = this.innerHTML;
@@ -221,6 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnClearCart) {
         btnClearCart.addEventListener('click', function() {
             window.transferCart = [];
+            saveCartState();
             updateCartBadge();
             renderCartItems();
         });
@@ -230,21 +281,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnConfirmTransfer = document.querySelector('.js-confirm-transfer');
     if (btnConfirmTransfer) {
         btnConfirmTransfer.addEventListener('click', function() {
+            hideModalError();
+            
             if (window.transferCart.length === 0) {
-                alert('Your transfer cart is empty.');
+                showModalError('Your transfer cart is empty.');
                 return;
             }
 
-            const sourceStoreId = document.querySelector('select[name="source_shop_id"]').value;
-            const destStoreId = document.querySelector('select[name="destination_shop_id"]').value;
+            const sourceStoreId = document.getElementById('modal_source_shop_id').value;
+            const destStoreId = document.getElementById('modal_destination_shop_id').value;
 
             if (!sourceStoreId || !destStoreId) {
-                alert('Please select both a Source Store and a Destination Store in the bulk actions area.');
+                showModalError('Please select both a Source Store and a Destination Store.');
                 return;
             }
 
             if (sourceStoreId === destStoreId) {
-                alert('Source and destination stores cannot be the same.');
+                showModalError('Source and destination stores cannot be the same.');
                 return;
             }
 
@@ -268,19 +321,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     btnConfirmTransfer.disabled = false;
 
                     if (response && response.success) {
-                        alert('Transfer created successfully!');
                         window.transferCart = [];
-                        updateCartBadge();
+                        localStorage.removeItem('cst_transfer_cart');
                         cartModal.style.display = 'none';
-                        window.location.reload();
+                        showCustomSuccess('Transfer created successfully!');
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1000);
                     } else {
-                        alert('Error: ' + (response ? response.message : 'Failed to create transfer.'));
+                        showModalError('Error: ' + (response ? response.message : 'Failed to create transfer.'));
                     }
                 },
                 error: function() {
                     btnConfirmTransfer.innerHTML = originalBtnText;
                     btnConfirmTransfer.disabled = false;
-                    alert('A server error occurred while processing the transfer.');
+                    showModalError('A server error occurred while processing the transfer.');
                 }
             });
         });
@@ -294,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function () {
             
             const checkboxes = document.querySelectorAll('.cst-product-checkbox:checked');
             if (checkboxes.length === 0) {
-                alert('Please select at least one product.');
+                showCustomError('Please select at least one product.');
                 return;
             }
 
@@ -337,6 +392,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
+            saveCartState();
             updateCartBadge();
             renderCartItems();
             if (cartModal) {
