@@ -140,49 +140,272 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Modal Open/Close Logic
+    const cartModal = document.getElementById('cst-cart-modal');
+    const btnOpenCart = document.querySelector('.js-view-cart-modal');
+    const btnsCloseCart = document.querySelectorAll('.js-close-cart-modal');
+
+    function renderCartItems() {
+        const container = document.getElementById('cart-items-container');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        if (window.transferCart.length === 0) {
+            container.innerHTML = '<tr><td colspan="2" class="text-center" style="padding: 20px;">Your cart is empty.</td></tr>';
+            return;
+        }
+
+        window.transferCart.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.productName} <br><small class="text-muted">Product ID: ${item.productId}</small></td>
+                <td>
+                    <div class="d-flex align-items-center" style="display: flex !important; align-items: center !important;">
+                        <input type="number" class="form-control cst-input cart-item-qty" 
+                            data-index="${index}" min="1" max="${item.maxQty}" value="${item.qty}" style="width: 80px;">
+                        <button type="button" class="btn btn-danger btn-sm js-remove-cart-item" data-index="${index}" style="margin-left: 10px;">
+                            <i class="icon-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            container.appendChild(tr);
+        });
+    }
+
+    if (btnOpenCart && cartModal) {
+        btnOpenCart.addEventListener('click', function() {
+            renderCartItems();
+            cartModal.style.display = 'flex';
+        });
+    }
+
+    if (btnsCloseCart) {
+        btnsCloseCart.forEach(btn => {
+            btn.addEventListener('click', function() {
+                cartModal.style.display = 'none';
+            });
+        });
+    }
+
+    // Input Validation & Cart State Logic
+    window.transferCart = [];
+
+    function updateCartBadge() {
+        const badge = document.getElementById('cart-item-count');
+        if (badge) {
+            badge.innerText = window.transferCart.length;
+        }
+    }
+
+    const cartContainer = document.getElementById('cart-items-container');
+    if (cartContainer) {
+        cartContainer.addEventListener('input', function(e) {
+            if (e.target.classList.contains('cart-item-qty')) {
+                let val = parseInt(e.target.value, 10);
+                let max = parseInt(e.target.getAttribute('max'), 10);
+                let min = parseInt(e.target.getAttribute('min'), 10) || 1;
+
+                if (isNaN(val) || val < min) {
+                    e.target.value = min;
+                } else if (!isNaN(max) && val > max) {
+                    e.target.value = max;
+                }
+
+                const index = e.target.getAttribute('data-index');
+                if (index !== null && window.transferCart[index]) {
+                    window.transferCart[index].qty = parseInt(e.target.value, 10);
+                }
+            }
+        });
+
+        cartContainer.addEventListener('click', function(e) {
+            const removeBtn = e.target.closest('.js-remove-cart-item');
+            if (removeBtn) {
+                const index = removeBtn.getAttribute('data-index');
+                window.transferCart.splice(index, 1);
+                updateCartBadge();
+                renderCartItems();
+            }
+        });
+    }
+
+    const btnsAddToCart = document.querySelectorAll('.js-add-to-cart');
+    btnsAddToCart.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const productAttributeId = this.getAttribute('data-product-attribute-id') || 0;
+            const productName = this.getAttribute('data-product-name');
+            const maxQty = this.getAttribute('data-max-qty');
+            
+            const parentContainer = this.closest('.d-flex') || this.closest('.d-inline-flex');
+            let qty = 1;
+            if (parentContainer) {
+                const qtyInput = parentContainer.querySelector('input[type="number"]');
+                if (qtyInput) qty = parseInt(qtyInput.value, 10);
+            }
+
+            const existingItemIndex = window.transferCart.findIndex(item => 
+                item.productId === productId && item.productAttributeId === productAttributeId
+            );
+            
+            if (existingItemIndex > -1) {
+                let newQty = window.transferCart[existingItemIndex].qty + qty;
+                let maxAllowed = parseInt(maxQty, 10);
+                if (!isNaN(maxAllowed) && newQty > maxAllowed) {
+                    newQty = maxAllowed;
+                }
+                window.transferCart[existingItemIndex].qty = newQty;
+            } else {
+                window.transferCart.push({
+                    productId: productId,
+                    productAttributeId: productAttributeId,
+                    productName: productName,
+                    maxQty: maxQty,
+                    qty: qty
+                });
+            }
+
+            updateCartBadge();
+            
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<i class="icon-check"></i>';
+            this.classList.replace('cst-btn-primary', 'cst-btn-success');
+            this.classList.replace('btn-primary', 'btn-success');
+            setTimeout(() => {
+                this.innerHTML = originalHtml;
+                this.classList.replace('cst-btn-success', 'cst-btn-primary');
+                this.classList.replace('btn-success', 'btn-primary');
+            }, 1000);
+        });
+    });
+
+    // --- Clear Cart ---
+    const btnClearCart = document.querySelector('.js-clear-cart');
+    if (btnClearCart) {
+        btnClearCart.addEventListener('click', function() {
+            window.transferCart = [];
+            updateCartBadge();
+            renderCartItems();
+        });
+    }
+
+    // --- Confirm Transfer AJAX ---
+    const btnConfirmTransfer = document.querySelector('.js-confirm-transfer');
+    if (btnConfirmTransfer) {
+        btnConfirmTransfer.addEventListener('click', function() {
+            if (window.transferCart.length === 0) {
+                alert('Your transfer cart is empty.');
+                return;
+            }
+
+            const sourceStoreId = document.querySelector('select[name="source_shop_id"]').value;
+            const destStoreId = document.querySelector('select[name="destination_shop_id"]').value;
+
+            if (!sourceStoreId || !destStoreId) {
+                alert('Please select both a Source Store and a Destination Store in the bulk actions area.');
+                return;
+            }
+
+            if (sourceStoreId === destStoreId) {
+                alert('Source and destination stores cannot be the same.');
+                return;
+            }
+
+            const originalBtnText = btnConfirmTransfer.innerHTML;
+            btnConfirmTransfer.innerHTML = '<i class="icon-spinner icon-spin"></i> Processing...';
+            btnConfirmTransfer.disabled = true;
+
+            $.ajax({
+                url: window.cstConfig.ajaxUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    ajax: true,
+                    action: 'confirmCart',
+                    source_shop_id: sourceStoreId,
+                    destination_shop_id: destStoreId,
+                    cart_items: window.transferCart
+                },
+                success: function(response) {
+                    btnConfirmTransfer.innerHTML = originalBtnText;
+                    btnConfirmTransfer.disabled = false;
+
+                    if (response && response.success) {
+                        alert('Transfer created successfully!');
+                        window.transferCart = [];
+                        updateCartBadge();
+                        cartModal.style.display = 'none';
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + (response ? response.message : 'Failed to create transfer.'));
+                    }
+                },
+                error: function() {
+                    btnConfirmTransfer.innerHTML = originalBtnText;
+                    btnConfirmTransfer.disabled = false;
+                    alert('A server error occurred while processing the transfer.');
+                }
+            });
+        });
+    }
+
+    // --- Bulk Action Override ---
     const transferForm = document.getElementById('cst-transfer-form');
     if (transferForm) {
-        transferForm.addEventListener('submit', function (e) {
-            const source = transferForm.querySelector('select[name="source_shop_id"]').value;
-            const dest = transferForm.querySelector('select[name="destination_shop_id"]').value;
-
-            if (!source) {
-                e.preventDefault();
-                showCustomError('Please select a source store.');
-                return;
-            }
-
-            if (!dest) {
-                e.preventDefault();
-                showCustomError('Please select a destination store.');
-                return;
-            }
-
-            if (source === dest) {
-                e.preventDefault();
-                showCustomError('The source and destination stores must be different.');
-                return;
-            }
-
-            const checkboxes = transferForm.querySelectorAll('input[name="bulk_product_ids[]"]:checked');
+        transferForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const checkboxes = document.querySelectorAll('.cst-product-checkbox:checked');
             if (checkboxes.length === 0) {
-                e.preventDefault();
-                showCustomError('Please select at least one product to transfer.');
+                alert('Please select at least one product.');
                 return;
             }
 
-            let validQuantity = true;
-            checkboxes.forEach(function (cb) {
-                const qtyInput = transferForm.querySelector('input[name="bulk_quantities[' + cb.value + ']"]');
-                if (qtyInput && (parseInt(qtyInput.value) <= 0 || isNaN(parseInt(qtyInput.value)))) {
-                    validQuantity = false;
+            checkboxes.forEach(cb => {
+                const container = cb.closest('[data-cst-product-item]');
+                if (container) {
+                    const btnAddToCart = container.querySelector('.js-add-to-cart');
+                    if (btnAddToCart) {
+                        const productId = btnAddToCart.getAttribute('data-product-id');
+                        const productAttributeId = btnAddToCart.getAttribute('data-product-attribute-id') || 0;
+                        const productName = btnAddToCart.getAttribute('data-product-name');
+                        const maxQty = btnAddToCart.getAttribute('data-max-qty');
+                        
+                        const qtyInput = container.querySelector('input[name="bulk_quantities[' + productId + ']"]');
+                        let qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+                        
+                        const existingItemIndex = window.transferCart.findIndex(item => 
+                            item.productId === productId && item.productAttributeId === productAttributeId
+                        );
+                        
+                        if (existingItemIndex > -1) {
+                            let newQty = window.transferCart[existingItemIndex].qty + qty;
+                            let maxAllowed = parseInt(maxQty, 10);
+                            if (!isNaN(maxAllowed) && newQty > maxAllowed) {
+                                newQty = maxAllowed;
+                            }
+                            window.transferCart[existingItemIndex].qty = newQty;
+                        } else {
+                            window.transferCart.push({
+                                productId: productId,
+                                productAttributeId: productAttributeId,
+                                productName: productName,
+                                maxQty: maxQty,
+                                qty: qty
+                            });
+                        }
+                        
+                        cb.checked = false;
+                    }
                 }
             });
 
-            if (!validQuantity) {
-                e.preventDefault();
-                showCustomError('Quantities for selected products must be greater than zero.');
-                return;
+            updateCartBadge();
+            renderCartItems();
+            if (cartModal) {
+                cartModal.style.display = 'flex';
             }
         });
     }
