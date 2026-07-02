@@ -49,10 +49,9 @@
 
                 </div>
 
-                <div class="cst-view-switch d-flex align-items-center" style="gap: 15px;">
+                <div class="cst-view-switch cst-view-switch-wrapper d-flex align-items-center">
 
-                    <button type="button" class="js-view-cart-modal d-flex align-items-center justify-content-between"
-                        style="background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: var(--cst-radius-sm); cursor: pointer; transition: background var(--cst-transition); gap: 10px;">
+                    <button type="button" class="js-view-cart-modal cst-btn-cart-toggle d-flex align-items-center justify-content-between">
                         <i class="icon-shopping-cart"></i> View Cart <span class="badge badge-light text-dark"
                             id="cart-item-count">0</span>
                     </button>
@@ -394,13 +393,11 @@
                                                     {if $product.total_stock == 0}disabled="disabled" {/if}>
                                                 Select
                                             </label>
-                                            <div class="d-flex align-items-center"
-                                                style="display: flex !important; flex-direction: row !important; gap: 10px;">
-                                                <input type="number" class="form-control cst-input" style="width: 80px;"
+                                            <div class="d-flex align-items-center cst-add-to-cart-wrapper">
+                                                <input type="number" class="form-control cst-input cst-qty-input"
                                                     name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
                                                     {if $product.total_stock == 0}disabled="disabled" {/if}>
-                                                <button type="button" class="btn btn-primary cst-btn-primary js-add-to-cart"
-                                                    style="padding: 0.5em 0.8em;" data-product-id="{$product.id_product|intval}"
+                                                <button type="button" class="btn btn-primary cst-btn-primary js-add-to-cart cst-btn-add-cart"
                                                     data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
                                                     data-max-qty="{$product.total_stock|intval}" title="Add to Transfer Cart">
@@ -574,12 +571,11 @@
                                                 </div>
                                             {/if}
 
-                                            <div class="d-inline-flex align-items-center" style="gap: 10px;">
-                                                <input type="number" class="form-control cst-input" style="width: 80px;"
+                                            <div class="d-inline-flex align-items-center cst-add-to-cart-wrapper">
+                                                <input type="number" class="form-control cst-input cst-qty-input"
                                                     name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
                                                     {if $product.total_stock == 0}disabled="disabled" {/if}>
-                                                <button type="button" class="btn btn-primary cst-btn-primary js-add-to-cart"
-                                                    style="padding: 0.5em 0.8em;" data-product-id="{$product.id_product|intval}"
+                                                <button type="button" class="btn btn-primary cst-btn-primary js-add-to-cart cst-btn-add-cart"
                                                     data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
                                                     data-max-qty="{$product.total_stock|intval}" title="Add to Transfer Cart">
@@ -602,8 +598,8 @@
                 </div>
             </form>
 
-            <div class="row mt-4 mb-4" style="align-items: center;">
-                <div class="col-md-6" style="display: flex; align-items: center; gap: 15px;">
+            <div class="row mt-4 mb-4 cst-pagination-row">
+                <div class="col-md-6 cst-pagination-info">
                     <div>
                         Showing
                         {if isset($total_products) && $total_products == 0}0{else}{(($current_page - 1) * $limit) + 1}{/if}
@@ -611,7 +607,7 @@
                         {if $current_page * $limit > $total_products}{$total_products}{else}{$current_page * $limit}{/if} of
                         {$total_products} products
                     </div>
-                    <select class="form-control cst-input" style="width: auto; height: 42px; padding: 0 15px;"
+                    <select class="form-control cst-input cst-limit-select"
                         onchange="window.location.href='{$form_action|escape:'htmlall':'UTF-8'}&page=1&limit='+this.value+'&product_search={$product_search|escape:'url':'UTF-8'}';">
                         <option value="10" {if $limit == 10}selected{/if}>10 per page</option>
                         <option value="20" {if $limit == 20}selected{/if}>20 per page</option>
@@ -673,12 +669,12 @@
     <!-- Cart Modal -->
     <div id="cst-cart-modal" class="cst-modal" style="display: none;">
         <div class="cst-modal-overlay js-close-cart-modal"></div>
-        <div class="cst-modal-content" style="max-width: 800px; width: 90%;">
+        <div class="cst-modal-content cst-cart-modal-content">
             <div class="cst-modal-header">
                 <h3 class="cst-modal-title">Pending Transfer Cart</h3>
                 <button type="button" class="cst-modal-close js-close-cart-modal">&times;</button>
             </div>
-            <div class="cst-modal-body" style="max-height: 60vh; overflow-y: auto;">
+            <div class="cst-modal-body cst-cart-modal-body">
                 <div class="alert alert-danger js-modal-error" style="display: none;"></div>
 
                 <div class="row mb-4 align-items-end" id="modal-store-selection">
@@ -719,7 +715,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="cst-modal-footer d-flex justify-content-end align-items-center mt-4" style="gap: 10px;">
+            <div class="cst-modal-footer d-flex justify-content-end align-items-center mt-4 cst-modal-footer-flex">
                 <button type="button" class="btn btn-default cst-btn-outline js-close-cart-modal">Cancel</button>
                 <button type="button" class="btn btn-danger cst-btn-danger js-clear-cart">Clear Cart</button>
                 <button type="button" class="btn btn-primary cst-btn-primary js-confirm-transfer">Confirm
