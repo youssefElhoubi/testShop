@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const productId = this.getAttribute('data-product-id');
             const productAttributeId = this.getAttribute('data-product-attribute-id') || 0;
             const productName = this.getAttribute('data-product-name');
-            const maxQty = this.getAttribute('data-max-qty');
+            const maxQty = this.getAttribute('data-max-qty');            
 
             const parentContainer = this.closest('.d-flex') || this.closest('.d-inline-flex');
             let qty = 1;
@@ -235,8 +235,11 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
             if (existingItemIndex > -1) {
+                // OVERWRITE logic: Replace existing quantity with the newly submitted quantity
                 let newQty = qty;
                 let maxAllowed = parseInt(maxQty, 10);
+
+                // Still check against the max available stock limit
                 if (!isNaN(maxAllowed) && newQty > maxAllowed) {
                     newQty = maxAllowed;
                 }
@@ -251,6 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
 
+            // Sync the updated state to localStorage and update the UI counter
             saveCartState();
             updateCartBadge();
 

@@ -51,7 +51,8 @@
 
                 <div class="cst-view-switch cst-view-switch-wrapper d-flex align-items-center">
 
-                    <button type="button" class="js-view-cart-modal cst-btn-cart-toggle d-flex align-items-center justify-content-between">
+                    <button type="button"
+                        class="js-view-cart-modal cst-btn-cart-toggle d-flex align-items-center justify-content-between">
                         <i class="icon-shopping-cart"></i> View Cart <span class="badge badge-light text-dark"
                             id="cart-item-count">0</span>
                     </button>
@@ -397,7 +398,9 @@
                                                 <input type="number" class="form-control cst-input cst-qty-input"
                                                     name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
                                                     {if $product.total_stock == 0}disabled="disabled" {/if}>
-                                                <button type="button" class="btn btn-primary cst-btn-primary js-add-to-cart cst-btn-add-cart"
+                                                <button type="button"
+                                                    class="btn btn-primary cst-btn-primary js-add-to-cart cst-btn-add-cart"
+                                                    data-product-id="{$product.id_product|intval}"
                                                     data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
                                                     data-max-qty="{$product.total_stock|intval}" title="Add to Transfer Cart">
@@ -575,7 +578,8 @@
                                                 <input type="number" class="form-control cst-input cst-qty-input"
                                                     name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
                                                     {if $product.total_stock == 0}disabled="disabled" {/if}>
-                                                <button type="button" class="btn btn-primary cst-btn-primary js-add-to-cart cst-btn-add-cart"
+                                                <button type="button"
+                                                    class="btn btn-primary cst-btn-primary js-add-to-cart cst-btn-add-cart"
                                                     data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
                                                     data-max-qty="{$product.total_stock|intval}" title="Add to Transfer Cart">
