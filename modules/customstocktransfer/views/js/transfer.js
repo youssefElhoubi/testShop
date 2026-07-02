@@ -31,72 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // 2. Open Transfer Modal (Legacy)
-        const openTransferBtn = e.target.closest('.js-open-transfer-modal');
-        if (openTransferBtn) {
-            e.preventDefault();
-            const productId = openTransferBtn.getAttribute('data-product-id');
-            const productName = openTransferBtn.getAttribute('data-product-name');
-            const form = document.getElementById('customstocktransfer-transfer-form');
-            if (form) form.reset();
-            const idProductInput = document.querySelector('input[name="id_product"]');
-            if (idProductInput) idProductInput.value = productId;
-            const titleElement = document.querySelector('.js-transfer-modal-title');
-            if (titleElement) titleElement.textContent = 'Transfer: ' + productName;
-            return;
-        }
 
-        // 3. Open Edit/Transfer Modal
-        const openEditBtn = e.target.closest('.js-open-edit-modal');
-        if (openEditBtn) {
-            e.preventDefault();
-            const productId = openEditBtn.getAttribute('data-product-id');
-            const productName = openEditBtn.getAttribute('data-product-name');
-            const currentQty = openEditBtn.getAttribute('data-current-qty');
-            const maxQty = openEditBtn.getAttribute('data-max-qty');
-            
-            if (editForm) {
-                editForm.reset();
-                const idProductInput = editForm.querySelector('input[name="id_product"]');
-                if (idProductInput) idProductInput.value = productId;
-                const maxQuantityInput = editForm.querySelector('input[name="max_quantity"]');
-                if (maxQuantityInput) maxQuantityInput.value = maxQty;
-                const newQuantityInput = editForm.querySelector('input[name="new_quantity"]');
-                if (newQuantityInput) newQuantityInput.value = currentQty;
-                
-                const titleElement = document.querySelector('.js-edit-modal-title');
-                if (titleElement) titleElement.textContent = 'Transfer Stock: ' + productName;
-                const errorElement = document.querySelector('.js-edit-modal-error');
-                if (errorElement) errorElement.style.display = 'none';
-            }
-            if (editModal) {
-                editModal.style.display = 'flex';
-            }
-            return;
-        }
-
-        // 4. Close Edit Modal
-        if (e.target.matches('.js-close-edit-modal') || (e.target.closest('.cst-modal-close') && e.target.closest('#cst-edit-modal'))) {
-            e.preventDefault();
-            if (editModal) editModal.style.display = 'none';
-            return;
-        }
-
-        // 5. Open History Modal
-        const openHistoryBtn = e.target.closest('.js-open-history-modal');
-        if (openHistoryBtn) {
-            e.preventDefault();
-            console.log("button clicked ");
-            if (historyModal) historyModal.style.display = 'flex';
-            return;
-        }
-
-        // 6. Close History Modal
-        if (e.target.matches('.js-close-history-modal') || (e.target.closest('.cst-modal-close') && e.target.closest('#cst-history-modal'))) {
-            e.preventDefault();
-            if (historyModal) historyModal.style.display = 'none';
-            return;
-        }
 
     });
 
@@ -410,60 +345,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 4. Edit Quantity Modal Logic
-    const editModal = document.getElementById('cst-edit-modal');
-    const editForm = document.getElementById('cst-edit-form');
 
-
-
-
-    if (editForm) {
-        editForm.addEventListener('submit', function (e) {
-            const qtyInput = editForm.querySelector('input[name="new_quantity"]');
-            const maxInput = editForm.querySelector('input[name="max_quantity"]');
-            const storeFromInput = editForm.querySelector('select[name="id_store_from"]');
-            const storeToInput = editForm.querySelector('select[name="id_store_to"]');
-
-            const newQty = parseInt(qtyInput.value);
-            const maxQty = parseInt(maxInput.value);
-            const storeFrom = storeFromInput ? storeFromInput.value : '';
-            const storeTo = storeToInput ? storeToInput.value : '';
-            
-            const errorBox = editForm.querySelector('.js-edit-modal-error');
-            const errorText = errorBox.querySelector('.error-text');
-
-            if (!storeFrom || !storeTo) {
-                e.preventDefault();
-                errorText.innerText = 'Please select both Store From and Store To.';
-                errorBox.style.display = 'flex';
-                return;
-            }
-
-            if (storeFrom === storeTo) {
-                e.preventDefault();
-                errorText.innerText = 'Store From and Store To cannot be the same.';
-                errorBox.style.display = 'flex';
-                return;
-            }
-
-            if (isNaN(newQty) || newQty <= 0) {
-                e.preventDefault();
-                errorText.innerText = 'Quantity must be greater than 0.';
-                errorBox.style.display = 'flex';
-                return;
-            }
-
-            if (newQty > maxQty) {
-                e.preventDefault();
-                errorText.innerText = 'Quantity cannot exceed the maximum allowed value (' + maxQty + ').';
-                errorBox.style.display = 'flex';
-                return;
-            }
-        });
-    }
-
-    // 5. History Modal Logic
-    const historyModal = document.getElementById('cst-history-modal');
     
 
 

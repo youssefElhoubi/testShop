@@ -28,48 +28,6 @@
 
         public function postProcess()
         {
-            if (Tools::isSubmit('submitApproveTransfer')) {
-                $id_transfer = (int) Tools::getValue('id_transfer');
-                $transfer = new StockTransfer($id_transfer);
-
-                if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
-                    $qtyFrom = StockAvailable::getQuantityAvailableByProduct($transfer->id_product, 0, $transfer->id_store_from);
-                    StockAvailable::setQuantity($transfer->id_product, 0, $qtyFrom - $transfer->quantity, $transfer->id_store_from);
-
-                    $qtyTo = StockAvailable::getQuantityAvailableByProduct($transfer->id_product, 0, $transfer->id_store_to);
-                    StockAvailable::setQuantity($transfer->id_product, 0, $qtyTo + $transfer->quantity, $transfer->id_store_to);
-
-                    $transfer->status = 'approved';
-                    $transfer->update();
-
-                    $this->setFlashMessage(true, $this->trans('Transfer approved successfully.', [], 'Modules.Customstocktransfer.Admin'));
-                } else {
-                    $this->setFlashMessage(false, $this->trans('Invalid transfer or already processed.', [], 'Modules.Customstocktransfer.Admin'));
-                }
-
-                $this->redirectToDashboard();
-                return false;
-            }
-
-            if (Tools::isSubmit('submitDeclineTransfer')) {
-                $id_transfer = (int) Tools::getValue('id_transfer');
-                $transfer = new StockTransfer($id_transfer);
-
-                if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
-                    $transfer->status = 'declined';
-                    $transfer->reason = Tools::getValue('decline_reason');
-                    $transfer->update();
-
-                    $this->setFlashMessage(true, $this->trans('Transfer declined.', [], 'Modules.Customstocktransfer.Admin'));
-                } else {
-                    $this->setFlashMessage(false, $this->trans('Invalid transfer or already processed.', [], 'Modules.Customstocktransfer.Admin'));
-                }
-
-                $this->redirectToDashboard();
-                return false;
-            }
-
-
             return parent::postProcess();
         }
 
@@ -197,11 +155,6 @@
 
             $products = $this->getProductsDashboardData($shops, $page, $limit, $productSearch, $filter);
 
-            $transferHistory = Db::getInstance()->executeS('SELECT * FROM `' . _DB_PREFIX_ . 'transfers`');
-            if (!is_array($transferHistory)) {
-                $transferHistory = [];
-            }
-
             $this->applyFlashMessage();
 
             $this->context->smarty->assign([
@@ -217,7 +170,6 @@
                 'limit' => $limit,
                 'total_products' => $totalProducts,
                 'total_pages' => $totalPages,
-                'transfer_history' => $transferHistory,
             ]);
 
             $this->setTemplate('transfer_dashboard.tpl');
@@ -361,17 +313,6 @@
             }
 
             return $products;
-        }
-
-        protected function productExists($idProduct)
-        {
-            $sql = new DbQuery();
-            $sql->select('p.id_product');
-            $sql->from('product', 'p');
-            $sql->innerJoin('product_shop', 'ps', 'ps.id_product = p.id_product AND ps.active = 1');
-            $sql->where('p.id_product = ' . (int) $idProduct);
-
-            return (bool) Db::getInstance()->getValue($sql);
         }
 
         protected function getStockBadgeClass($quantity)

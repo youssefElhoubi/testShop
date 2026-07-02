@@ -45,18 +45,58 @@
 
                     <p>
                         Manage stock across all stores with a modern inventory workflow.
+<div class="custom-transfer-wrapper">
+    {if isset($confirmations) && $confirmations}
+        <div class="cst-alert cst-alert-success mb-4">
+            <div class="cst-alert-icon">
+                <i class="icon-check"></i>
+            </div>
+
+            <div class="cst-alert-content">
+                {foreach from=$confirmations item=confirmation}
+                    <p>{$confirmation|escape:'htmlall':'UTF-8'}</p>
+                {/foreach}
+            </div>
+        </div>
+    {/if}
+
+    {if isset($errors) && $errors}
+        <div class="cst-alert cst-alert-danger mb-4">
+            <div class="cst-alert-icon">
+                <i class="icon-warning"></i>
+            </div>
+
+            <div class="cst-alert-content">
+                {foreach from=$errors item=error}
+                    <p>{$error|escape:'htmlall':'UTF-8'}</p>
+                {/foreach}
+            </div>
+        </div>
+    {/if}
+
+    <div class="cst-dashboard">
+
+        <div class="cst-hero">
+
+            <div class="cst-hero-content">
+
+                <div>
+
+                    <span class="cst-hero-badge">
+                        Inventory Management
+                    </span>
+
+                    <h1>
+                        Stock Transfer Dashboard
+                    </h1>
+
+                    <p>
+                        Manage stock across all stores with a modern inventory workflow.
                     </p>
 
                 </div>
 
                 <div class="cst-view-switch">
-
-                    {if isset($transfer_history) && $transfer_history|@count > 0}
-                        <button type="button" class="js-open-history-modal"
-                            style="margin-right: 15px; background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: var(--cst-radius-sm); cursor: pointer; transition: background var(--cst-transition);">
-                            <i class="icon-history"></i> History
-                        </button>
-                    {/if}
 
                     <button type="button" class="js-view-cart-modal"
                         style="margin-right: 15px; background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: var(--cst-radius-sm); cursor: pointer; transition: background var(--cst-transition);">
@@ -711,131 +751,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Edit Quantity Modal -->
-    <div id="cst-edit-modal" class="cst-modal" style="display: none;">
-        <div class="cst-modal-overlay js-close-edit-modal"></div>
-        <div class="cst-modal-content">
-            <div class="cst-modal-header">
-                <h3 class="cst-modal-title js-edit-modal-title">Transfer Stock</h3>
-                <button type="button" class="cst-modal-close js-close-edit-modal">&times;</button>
-            </div>
-            <form id="cst-edit-form" method="post" action="{$form_action|escape:'htmlall':'UTF-8'}">
-                <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
-                <input type="hidden" name="id_product" value="">
-                <input type="hidden" name="max_quantity" value="">
-                <div class="cst-modal-body">
-                    <div class="cst-alert cst-alert-danger js-edit-modal-error" style="display: none;">
-                        <div class="cst-alert-icon"><i class="icon-warning"></i></div>
-                        <div class="cst-alert-content error-text"></div>
-                    </div>
-                    <div class="cst-filter-group" style="text-align: left; margin-bottom: 15px;">
-                        <label>Store From</label>
-                        <select name="id_store_from" class="form-control cst-input" required>
-                            <option value="">-- Select Store From --</option>
-                            {if isset($shops)}
-                                {foreach from=$shops item=shop}
-                                    <option value="{$shop.id_shop|escape:'htmlall':'UTF-8'}">
-                                        {$shop.shop_name|escape:'htmlall':'UTF-8'}
-                                    </option>
-                                {/foreach}
-                            {/if}
-                        </select>
-                    </div>
-                    <div class="cst-filter-group" style="text-align: left; margin-bottom: 15px;">
-                        <label>Store To</label>
-                        <select name="id_store_to" class="form-control cst-input" required>
-                            <option value="">-- Select Store To --</option>
-                            {if isset($shops)}
-                                {foreach from=$shops item=shop}
-                                    <option value="{$shop.id_shop|escape:'htmlall':'UTF-8'}">
-                                        {$shop.shop_name|escape:'htmlall':'UTF-8'}
-                                    </option>
-                                {/foreach}
-                            {/if}
-                        </select>
-                    </div>
-                    <div class="cst-filter-group" style="text-align: left;">
-                        <label>New Quantity</label>
-                        <input type="number" class="form-control cst-input js-edit-modal-qty" name="new_quantity"
-                            value="" min="1" required>
-                    </div>
-                </div>
-                <div class="cst-modal-footer text-right mt-4">
-                    <button type="button" class="btn btn-default cst-btn-outline js-close-edit-modal">Cancel</button>
-                    <button type="submit" name="submitEditQuantity" value="1"
-                        class="btn btn-primary cst-btn-primary ml-2">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- History Modal -->
-    
-        <div id="cst-history-modal" class="cst-modal" style="display: none;">
-            <div class="cst-modal-overlay js-close-history-modal"></div>
-            <div class="cst-modal-content" style="max-width: 800px; width: 90%;">
-                <div class="cst-modal-header">
-                    <h3 class="cst-modal-title">Transfer History</h3>
-                    <button type="button" class="cst-modal-close js-close-history-modal">&times;</button>
-                </div>
-                <div class="cst-modal-body" style="max-height: 60vh; overflow-y: auto;">
-                    <table class="table table-striped table-bordered cst-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Product ID</th>
-                                <th>From Store</th>
-                                <th>To Store</th>
-                                <th>Quantity</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Reason</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {foreach from=$transfer_history item=transfer}
-                                <tr>
-                                    <td>{$transfer.id_transfer|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.id_product|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.id_store_from|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.id_store_to|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.quantity|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
-                                    <td>
-                                        {if isset($transfer.status) && $transfer.status|strtolower == 'approved'}
-                                            <span class="badge badge-success">Approved</span>
-                                        {elseif isset($transfer.status) && $transfer.status|strtolower == 'declined'}
-                                            <span class="badge badge-danger">Declined</span>
-                                        {elseif isset($transfer.status)}
-                                            <span class="badge badge-warning">{$transfer.status|escape:'htmlall':'UTF-8'}</span>
-                                        {else}
-                                            <span class="badge badge-secondary">Pending</span>
-                                        {/if}
-                                    </td>
-                                    <td>
-                                        {if isset($transfer.status) && $transfer.status|strtolower == 'declined'}
-                                            {$transfer.reason|escape:'htmlall':'UTF-8'}
-                                        {else}
-                                            -
-                                        {/if}
-                                    </td>
-                                </tr>
-                            {foreachelse}
-                                <tr>
-                                    <td colspan="9" class="text-center" style="padding: 20px;">
-                                        <strong>No transfers found.</strong>
-                                    </td>
-                                </tr>
-                            {/foreach}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="cst-modal-footer text-right mt-4">
-                    <button type="button" class="btn btn-default cst-btn-outline js-close-history-modal">Close</button>
-                </div>
-            </div>
-        </div>
 
 </div>
 
