@@ -45,62 +45,16 @@
 
                     <p>
                         Manage stock across all stores with a modern inventory workflow.
-<div class="custom-transfer-wrapper">
-    {if isset($confirmations) && $confirmations}
-        <div class="cst-alert cst-alert-success mb-4">
-            <div class="cst-alert-icon">
-                <i class="icon-check"></i>
-            </div>
-
-            <div class="cst-alert-content">
-                {foreach from=$confirmations item=confirmation}
-                    <p>{$confirmation|escape:'htmlall':'UTF-8'}</p>
-                {/foreach}
-            </div>
-        </div>
-    {/if}
-
-    {if isset($errors) && $errors}
-        <div class="cst-alert cst-alert-danger mb-4">
-            <div class="cst-alert-icon">
-                <i class="icon-warning"></i>
-            </div>
-
-            <div class="cst-alert-content">
-                {foreach from=$errors item=error}
-                    <p>{$error|escape:'htmlall':'UTF-8'}</p>
-                {/foreach}
-            </div>
-        </div>
-    {/if}
-
-    <div class="cst-dashboard">
-
-        <div class="cst-hero">
-
-            <div class="cst-hero-content">
-
-                <div>
-
-                    <span class="cst-hero-badge">
-                        Inventory Management
-                    </span>
-
-                    <h1>
-                        Stock Transfer Dashboard
-                    </h1>
-
-                    <p>
-                        Manage stock across all stores with a modern inventory workflow.
                     </p>
 
                 </div>
 
-                <div class="cst-view-switch">
+                <div class="cst-view-switch d-flex align-items-center" style="gap: 15px;">
 
-                    <button type="button" class="js-view-cart-modal"
-                        style="margin-right: 15px; background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: var(--cst-radius-sm); cursor: pointer; transition: background var(--cst-transition);">
-                        <i class="icon-shopping-cart"></i> View Cart <span class="badge badge-light text-dark" id="cart-item-count" style="margin-left: 5px;">0</span>
+                    <button type="button" class="js-view-cart-modal d-flex align-items-center justify-content-between"
+                        style="background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: var(--cst-radius-sm); cursor: pointer; transition: background var(--cst-transition); gap: 10px;">
+                        <i class="icon-shopping-cart"></i> View Cart <span class="badge badge-light text-dark"
+                            id="cart-item-count">0</span>
                     </button>
 
                     <button type="button" class="js-stock-view-toggle active" data-view="grid">
@@ -298,18 +252,22 @@
                         <label>Source Store</label>
                         <select class="form-control cst-input" name="source_shop_id">
                             <option value="">Select source</option>
-                            {foreach from=$shops item=shop}
-                                <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
-                            {/foreach}
+                            {if isset($shops)}
+                                {foreach from=$shops item=shop}
+                                    <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
+                                {/foreach}
+                            {/if}
                         </select>
                     </div>
                     <div class="col-md-4">
                         <label>Destination Store</label>
                         <select class="form-control cst-input" name="destination_shop_id">
                             <option value="">Select destination</option>
-                            {foreach from=$shops item=shop}
-                                <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
-                            {/foreach}
+                            {if isset($shops)}
+                                {foreach from=$shops item=shop}
+                                    <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
+                                {/foreach}
+                            {/if}
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -437,7 +395,7 @@
                                                 Select
                                             </label>
                                             <div class="d-flex align-items-center"
-                                                style="display: flex !important; flex-direction: row !important; justify-content: space-between !important;">
+                                                style="display: flex !important; flex-direction: row !important; gap: 10px;">
                                                 <input type="number" class="form-control cst-input" style="width: 80px;"
                                                     name="bulk_quantities[{$product.id_product|intval}]" value="1" min="1"
                                                     {if $product.total_stock == 0}disabled="disabled" {/if}>
@@ -445,8 +403,7 @@
                                                     style="padding: 0.5em 0.8em;" data-product-id="{$product.id_product|intval}"
                                                     data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
-                                                    data-max-qty="{$product.total_stock|intval}"
-                                                    title="Add to Transfer Cart">
+                                                    data-max-qty="{$product.total_stock|intval}" title="Add to Transfer Cart">
                                                     <i class="icon-cart-plus"></i>
                                                 </button>
                                             </div>
@@ -625,8 +582,7 @@
                                                     style="padding: 0.5em 0.8em;" data-product-id="{$product.id_product|intval}"
                                                     data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
-                                                    data-max-qty="{$product.total_stock|intval}"
-                                                    title="Add to Transfer Cart">
+                                                    data-max-qty="{$product.total_stock|intval}" title="Add to Transfer Cart">
                                                     <i class="icon-cart-plus"></i>
                                                 </button>
                                             </div>
@@ -723,6 +679,34 @@
                 <button type="button" class="cst-modal-close js-close-cart-modal">&times;</button>
             </div>
             <div class="cst-modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <div class="alert alert-danger js-modal-error" style="display: none;"></div>
+
+                <div class="row mb-4 align-items-end" id="modal-store-selection">
+                    <div class="col-md-6">
+                        <label>Source Store</label>
+                        <select class="form-control cst-input" name="modal_source_shop_id" id="modal_source_shop_id">
+                            <option value="">Select source</option>
+                            {if isset($shops)}
+                                {foreach from=$shops item=shop}
+                                    <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Destination Store</label>
+                        <select class="form-control cst-input" name="modal_destination_shop_id"
+                            id="modal_destination_shop_id">
+                            <option value="">Select destination</option>
+                            {if isset($shops)}
+                                {foreach from=$shops item=shop}
+                                    <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'htmlall':'UTF-8'}</option>
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </div>
+                </div>
+
                 <table class="table table-striped table-bordered cst-table" id="cart-items-table">
                     <thead>
                         <tr>
@@ -732,29 +716,20 @@
                     </thead>
                     <tbody id="cart-items-container">
                         <!-- Selected products will be injected here via AJAX -->
-                        <!-- 
-                        Layout expectation for each row:
-                        <tr>
-                            <td>Product Name Placeholder</td>
-                            <td>
-                                <input type="number" class="form-control cst-input cart-item-qty" min="1" max="999" value="1">
-                            </td>
-                        </tr>
-                        -->
                     </tbody>
                 </table>
             </div>
-            <div class="cst-modal-footer text-right mt-4">
+            <div class="cst-modal-footer d-flex justify-content-end align-items-center mt-4" style="gap: 10px;">
                 <button type="button" class="btn btn-default cst-btn-outline js-close-cart-modal">Cancel</button>
-                <button type="button" class="btn btn-danger cst-btn-danger ml-2 js-clear-cart">Clear Cart</button>
-                <button type="button" class="btn btn-primary cst-btn-primary ml-2 js-confirm-transfer">Confirm Transfer</button>
+                <button type="button" class="btn btn-danger cst-btn-danger js-clear-cart">Clear Cart</button>
+                <button type="button" class="btn btn-primary cst-btn-primary js-confirm-transfer">Confirm
+                    Transfer</button>
             </div>
         </div>
     </div>
 
 </div>
 
-    <script>
+<script>
     window.cstConfig = { ajaxUrl: '{$form_action|escape:"javascript":"UTF-8"}' };
 </script>
-</div>
