@@ -194,9 +194,7 @@
     gap: 0.5em;
 }
 
-.cst-btn-primary {
-    margin-top: 1.6rem !important;
-}
+
 
 .custom-transfer-wrapper .cst-btn-primary:hover {
     transform: translateY(-0.125rem);
@@ -674,6 +672,7 @@
 
 .cst-add-to-cart-wrapper {
     display: flex !important;
+    justify-content: center;
     flex-direction: row !important;
     gap: 10px;
 }
