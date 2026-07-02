@@ -1,105 +1,220 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Global variable to track which transfer is being reviewed
+    window.currentApprovalId = null;
 
-    // === UNIFIED EVENT DELEGATION ===
+    const modal = $('#cst-approval-modal');
+    const itemsContainer = document.getElementById('approval-items-container');
+    const errorAlert = document.querySelector('.js-modal-error');
+    
+    const declineContainer = document.querySelector('.js-decline-reason-container');
+    const declineInput = document.getElementById('decline_reason_input');
+
+    function showModalError(msg) {
+        if (errorAlert) {
+            errorAlert.innerHTML = msg;
+            errorAlert.style.display = 'block';
+        }
+    }
+    
+    function hideModalError() {
+        if (errorAlert) {
+            errorAlert.style.display = 'none';
+            errorAlert.innerHTML = '';
+        }
+    }
+
+    function showCustomSuccess(message) {
+        // Use PrestaShop's native growl if available
+        if (typeof $.growl !== 'undefined' && $.growl.notice) {
+            $.growl.notice({ title: '', message: message });
+        } else {
+            const container = document.querySelector('.panel');
+            if (container) {
+                const alertBox = document.createElement('div');
+                alertBox.className = 'alert alert-success';
+                alertBox.innerHTML = message;
+                container.parentNode.insertBefore(alertBox, container);
+            }
+        }
+    }
+
+    // === 1. EVENT DELEGATION FOR REVIEW BUTTONS ===
     document.addEventListener('click', function (e) {
-        
-        // --- 0. Modal Toggle Logic ---
-        
-        // Open Modal
-        const openActionBtn = e.target.closest('.js-open-action-modal');
-        if (openActionBtn) {
+        const reviewBtn = e.target.closest('.js-review-transfer');
+        if (reviewBtn) {
             e.preventDefault();
-            const transferId = openActionBtn.getAttribute('data-transfer-id');
-            const modal = document.getElementById('cst-action-modal');
+            const transferId = reviewBtn.getAttribute('data-id-transfer');
             
-            if (modal) {
-                // Populate all hidden transfer ID inputs in the modal forms
-                const hiddenInputs = modal.querySelectorAll('.modal-transfer-id');
-                hiddenInputs.forEach(input => {
-                    input.value = transferId;
-                });
-                
-                // Clear any previous validation errors or input values
-                const reasonInput = modal.querySelector('input[name="decline_reason"]');
-                if (reasonInput) {
-                    reasonInput.value = '';
-                    reasonInput.style.borderColor = '';
-                    reasonInput.style.boxShadow = '';
+            if (!transferId) return;
+            
+            // Store ID globally
+            window.currentApprovalId = transferId;
+            hideModalError();
+            
+            // Reset modal UI states
+            if (declineContainer) declineContainer.style.display = 'none';
+            if (declineInput) declineInput.value = '';
+            
+            const originalHtml = reviewBtn.innerHTML;
+            reviewBtn.innerHTML = '<i class="icon-spinner icon-spin"></i>';
+            reviewBtn.disabled = true;
+
+            // Fetch Transfer Details via AJAX
+            $.ajax({
+                url: window.location.href, // Sends to the current controller
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    ajax: true,
+                    action: 'getTransferDetails',
+                    id_transfer: transferId
+                },
+                success: function(response) {
+                    reviewBtn.innerHTML = originalHtml;
+                    reviewBtn.disabled = false;
+                    
+                    if (response && response.success) {
+                        itemsContainer.innerHTML = '';
+                        
+                        if (response.details && response.details.length > 0) {
+                            response.details.forEach(function(item) {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `
+                                    <td>${item.id_product}</td>
+                                    <td>${item.id_product_attribute}</td>
+                                    <td>${item.product_name}</td>
+                                    <td class="text-right"><strong>${item.quantity}</strong></td>
+                                `;
+                                itemsContainer.appendChild(tr);
+                            });
+                        } else {
+                            itemsContainer.innerHTML = '<tr><td colspan="4" class="text-center">No items found for this transfer.</td></tr>';
+                        }
+                        
+                        // Check if the current row is in the "Pending" tab by looking for approve/decline actions.
+                        // If it's already approved/shipped, we should hide the approve/decline buttons in the modal.
+                        const isPending = reviewBtn.closest('#tab-pending') !== null;
+                        const btnApprove = document.querySelector('.js-btn-approve-transfer');
+                        const btnDecline = document.querySelector('.js-btn-decline-transfer');
+                        
+                        if (btnApprove) btnApprove.style.display = isPending ? 'inline-block' : 'none';
+                        if (btnDecline) btnDecline.style.display = isPending ? 'inline-block' : 'none';
+                        
+                        // Open the modal
+                        modal.modal('show');
+                    } else {
+                        showCustomSuccess('Failed to fetch details: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function() {
+                    reviewBtn.innerHTML = originalHtml;
+                    reviewBtn.disabled = false;
+                    showCustomSuccess('A server error occurred while fetching details.');
                 }
-                
-                // Show modal (we use flex for centering)
-                modal.style.display = 'flex';
-            }
-            return;
+            });
         }
 
-        // Close Modal
-        if (e.target.matches('.js-close-modal') || e.target.closest('.js-close-modal')) {
-            e.preventDefault();
-            const modal = document.getElementById('cst-action-modal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-            return;
-        }
-
-        // --- 1. Approve Button Handler ---
-        const approveBtn = e.target.closest('button[name="submitApproveTransfer"]');
-        if (approveBtn) {
-            // Show native confirmation prompt
-            const confirmApprove = window.confirm('Are you sure you want to approve this stock transfer? This action will immediately adjust inventory quantities.');
-            
-            // If the user clicks "Cancel", prevent the form submission.
-            // If they click "OK", we do nothing and let the native submit proceed.
-            // This ensures $_POST['submitApproveTransfer'] is correctly sent to the backend.
-            if (!confirmApprove) {
-                e.preventDefault();
-            }
-            return;
-        }
-
-    });
-
-    // === FORM SUBMIT INTERCEPTION ===
-    document.addEventListener('submit', function (e) {
-        if (e.target.matches('.js-decline-form')) {
-            const reasonInput = e.target.querySelector('input[name="decline_reason"]');
-            
-            if (reasonInput && reasonInput.value.trim() === '') {
-                e.preventDefault(); // Stop form submission
-                
-                // Show warning using showToast if available, otherwise fallback to native alert
-                if (typeof showToast === 'function') {
-                    showToast('You must provide a reason to decline this request.', 'error');
-                } else {
-                }
-                
-                // Highlight the input in red and focus it for UX
-                reasonInput.style.borderColor = '#dc3545';
-                reasonInput.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
-                reasonInput.focus();
-            }
-        } else if (
-            e.target.querySelector('button[name="submitMarkPrepared"]') ||
-            e.target.querySelector('button[name="submitMarkShipped"]') ||
-            e.target.querySelector('button[name="submitMarkCompleted"]')
-        ) {
-            const confirmAdvance = window.confirm('Are you sure you want to advance this transfer to the next stage?');
-            if (!confirmAdvance) {
+        // Handle native confirmations for the other workflow stages (Prepare, Ship, Complete)
+        const advanceBtn = e.target.closest('button[name="submitMarkPrepared"], button[name="submitMarkShipped"], button[name="submitMarkCompleted"]');
+        if (advanceBtn) {
+            if (!window.confirm('Are you sure you want to advance this transfer to the next stage?')) {
                 e.preventDefault();
             }
         }
     });
 
-    // === UX IMPROVEMENT: Reset error styles on typing ===
-    document.addEventListener('input', function (e) {
-        if (e.target.matches('input[name="decline_reason"]')) {
-            if (e.target.value.trim() !== '') {
-                // Revert to original CSS when the user types
-                e.target.style.borderColor = '';
-                e.target.style.boxShadow = '';
+    // === 2. APPROVE BUTTON CLICK ===
+    const btnApprove = document.querySelector('.js-btn-approve-transfer');
+    if (btnApprove) {
+        btnApprove.addEventListener('click', function() {
+            if (!window.currentApprovalId) {
+                showModalError('No transfer ID selected.');
+                return;
             }
-        }
-    });
 
+            hideModalError();
+            const originalHtml = btnApprove.innerHTML;
+            btnApprove.innerHTML = '<i class="icon-spinner icon-spin"></i> Approving...';
+            btnApprove.disabled = true;
+
+            // Submit approve via AJAX POST to the native postProcess logic
+            $.ajax({
+                url: window.location.href,
+                type: 'POST',
+                data: {
+                    id_transfer: window.currentApprovalId,
+                    submitApproveTransfer: 1
+                },
+                success: function() {
+                    modal.modal('hide');
+                    showCustomSuccess('Transfer approved successfully.');
+                    setTimeout(() => window.location.reload(), 1000);
+                },
+                error: function() {
+                    btnApprove.innerHTML = originalHtml;
+                    btnApprove.disabled = false;
+                    showModalError('A server error occurred while processing the approval.');
+                }
+            });
+        });
+    }
+
+    // === 3. DECLINE BUTTON CLICK ===
+    const btnDecline = document.querySelector('.js-btn-decline-transfer');
+    if (btnDecline) {
+        btnDecline.addEventListener('click', function() {
+            if (!window.currentApprovalId) {
+                showModalError('No transfer ID selected.');
+                return;
+            }
+
+            // Step 1: Reveal the reason input if it's hidden
+            if (declineContainer && declineContainer.style.display === 'none') {
+                declineContainer.style.display = 'block';
+                declineInput.focus();
+                return;
+            }
+            
+            // Step 2: Validate the reason if it is visible
+            if (declineInput && declineInput.value.trim() === '') {
+                showModalError('Please provide a reason for declining this request.');
+                declineInput.style.borderColor = '#dc3545';
+                return;
+            }
+
+            hideModalError();
+            const originalHtml = btnDecline.innerHTML;
+            btnDecline.innerHTML = '<i class="icon-spinner icon-spin"></i> Declining...';
+            btnDecline.disabled = true;
+
+            // Submit decline via AJAX POST
+            $.ajax({
+                url: window.location.href,
+                type: 'POST',
+                data: {
+                    id_transfer: window.currentApprovalId,
+                    decline_reason: declineInput.value.trim(),
+                    submitDeclineTransfer: 1
+                },
+                success: function() {
+                    modal.modal('hide');
+                    showCustomSuccess('Transfer declined successfully.');
+                    setTimeout(() => window.location.reload(), 1000);
+                },
+                error: function() {
+                    btnDecline.innerHTML = originalHtml;
+                    btnDecline.disabled = false;
+                    showModalError('A server error occurred while declining the transfer.');
+                }
+            });
+        });
+    }
+
+    // Cleanup error styles on typing
+    if (declineInput) {
+        declineInput.addEventListener('input', function() {
+            this.style.borderColor = '';
+            hideModalError();
+        });
+    }
 });
