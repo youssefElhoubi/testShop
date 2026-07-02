@@ -58,6 +58,11 @@
                         </button>
                     {/if}
 
+                    <button type="button" class="js-view-cart-modal"
+                        style="margin-right: 15px; background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: var(--cst-radius-sm); cursor: pointer; transition: background var(--cst-transition);">
+                        <i class="icon-shopping-cart"></i> View Cart <span class="badge badge-light text-dark" id="cart-item-count" style="margin-left: 5px;">0</span>
+                    </button>
+
                     <button type="button" class="js-stock-view-toggle active" data-view="grid">
 
                         <i class="icon-th"></i>
@@ -667,6 +672,44 @@
         {/if}
     </div>
 
+    <!-- Cart Modal -->
+    <div id="cst-cart-modal" class="cst-modal" style="display: none;">
+        <div class="cst-modal-overlay js-close-cart-modal"></div>
+        <div class="cst-modal-content" style="max-width: 800px; width: 90%;">
+            <div class="cst-modal-header">
+                <h3 class="cst-modal-title">Pending Transfer Cart</h3>
+                <button type="button" class="cst-modal-close js-close-cart-modal">&times;</button>
+            </div>
+            <div class="cst-modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <table class="table table-striped table-bordered cst-table" id="cart-items-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-items-container">
+                        <!-- Selected products will be injected here via AJAX -->
+                        <!-- 
+                        Layout expectation for each row:
+                        <tr>
+                            <td>Product Name Placeholder</td>
+                            <td>
+                                <input type="number" class="form-control cst-input cart-item-qty" min="1" max="999" value="1">
+                            </td>
+                        </tr>
+                        -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="cst-modal-footer text-right mt-4">
+                <button type="button" class="btn btn-default cst-btn-outline js-close-cart-modal">Cancel</button>
+                <button type="button" class="btn btn-danger cst-btn-danger ml-2 js-clear-cart">Clear Cart</button>
+                <button type="button" class="btn btn-primary cst-btn-primary ml-2 js-confirm-transfer">Confirm Transfer</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit Quantity Modal -->
     <div id="cst-edit-modal" class="cst-modal" style="display: none;">
         <div class="cst-modal-overlay js-close-edit-modal"></div>
@@ -793,4 +836,45 @@
         </div>
 
 </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal Open/Close Logic
+            const cartModal = document.getElementById('cst-cart-modal');
+            const btnOpenCart = document.querySelector('.js-view-cart-modal');
+            const btnsCloseCart = document.querySelectorAll('.js-close-cart-modal');
+
+            if (btnOpenCart && cartModal) {
+                btnOpenCart.addEventListener('click', function() {
+                    cartModal.style.display = 'flex';
+                });
+            }
+
+            if (btnsCloseCart) {
+                btnsCloseCart.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        cartModal.style.display = 'none';
+                    });
+                });
+            }
+
+            // Input Validation Logic (Event Delegation for dynamically added items)
+            const cartContainer = document.getElementById('cart-items-container');
+            if (cartContainer) {
+                cartContainer.addEventListener('input', function(e) {
+                    if (e.target.classList.contains('cart-item-qty')) {
+                        let val = parseInt(e.target.value, 10);
+                        let max = parseInt(e.target.getAttribute('max'), 10);
+                        let min = parseInt(e.target.getAttribute('min'), 10) || 1;
+
+                        if (isNaN(val) || val < min) {
+                            e.target.value = min;
+                        } else if (!isNaN(max) && val > max) {
+                            e.target.value = max;
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </div>
