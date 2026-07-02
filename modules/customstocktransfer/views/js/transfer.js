@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
             );
             
             if (existingItemIndex > -1) {
-                let newQty = window.transferCart[existingItemIndex].qty + qty;
+                let newQty = qty;
                 let maxAllowed = parseInt(maxQty, 10);
                 if (!isNaN(maxAllowed) && newQty > maxAllowed) {
                     newQty = maxAllowed;
@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         );
                         
                         if (existingItemIndex > -1) {
-                            let newQty = window.transferCart[existingItemIndex].qty + qty;
+                            let newQty = qty;
                             let maxAllowed = parseInt(maxQty, 10);
                             if (!isNaN(maxAllowed) && newQty > maxAllowed) {
                                 newQty = maxAllowed;
