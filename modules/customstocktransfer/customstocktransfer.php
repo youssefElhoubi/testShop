@@ -27,11 +27,9 @@ class CustomStockTransfer extends Module
 
     public function install()
     {
-        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'transfers` (
+        // Table 1: The main transfer cart (Header)
+        $sqlTransfers = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'transfers` (
                 `id_transfer` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-
-                `id_product` INT(10) UNSIGNED NOT NULL,
-                `quantity` INT(10) UNSIGNED NOT NULL,
 
                 -- Stores
                 `id_store_from` INT(10) UNSIGNED NOT NULL,
@@ -76,7 +74,6 @@ class CustomStockTransfer extends Module
 
                 PRIMARY KEY (`id_transfer`),
 
-                INDEX (`id_product`),
                 INDEX (`id_store_from`),
                 INDEX (`id_store_to`),
                 INDEX (`status`),
@@ -84,14 +81,33 @@ class CustomStockTransfer extends Module
 
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
+        // Table 2: The transfer details (Products/Items)
+        $sqlDetails = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'transfer_details` (
+                `id_transfer_detail` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                
+                `id_transfer` INT(10) UNSIGNED NOT NULL,
+                `id_product` INT(10) UNSIGNED NOT NULL,
+                `id_product_attribute` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+                `quantity` INT(10) UNSIGNED NOT NULL,
+
+                PRIMARY KEY (`id_transfer_detail`),
+                
+                INDEX (`id_transfer`),
+                INDEX (`id_product`),
+                INDEX (`id_product_attribute`)
+
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
         return parent::install() &&
-            Db::getInstance()->execute($sql) &&
+            Db::getInstance()->execute($sqlTransfers) &&
+            Db::getInstance()->execute($sqlDetails) &&
             $this->installTab() &&
             $this->registerHook('displayAdminNavBarBeforeEnd');
     }
 
     public function hookDisplayAdminNavBarBeforeEnd($params)
     {
+        // This query remains untouched because status is still on the main transfers table
         $count = (int) Db::getInstance()->getValue(
             'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'transfers` WHERE `status` = \'pending\''
         );
@@ -110,8 +126,12 @@ class CustomStockTransfer extends Module
 
     public function uninstall()
     {
-        $sql = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'transfers`';
-        return Db::getInstance()->execute($sql) &&
+        // Make sure to drop both tables on uninstall
+        $sqlTransfers = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'transfers`';
+        $sqlDetails = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'transfer_details`';
+
+        return Db::getInstance()->execute($sqlTransfers) &&
+            Db::getInstance()->execute($sqlDetails) &&
             $this->uninstallTab() &&
             parent::uninstall();
     }
