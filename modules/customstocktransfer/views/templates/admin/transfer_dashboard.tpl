@@ -351,6 +351,12 @@
 
                                         </h3>
 
+                                        {if !empty($product.ean13) && $product.ean13 != '0'}
+                                            <div class="mb-2" style="font-size: 0.85rem;">
+                                                <span class="text-muted"><i class="icon-barcode"></i> EAN: {$product.ean13|escape:'htmlall':'UTF-8'}</span>
+                                            </div>
+                                        {/if}
+
                                         <div class="cst-divider"></div>
 
                                         <div class="cst-stock-list">
@@ -514,6 +520,12 @@
                                                         {$product.id_product|intval}
 
                                                     </div>
+
+                                                    {if !empty($product.ean13) && $product.ean13 != '0'}
+                                                        <div class="cst-table-subtitle" style="margin-top: 2px;">
+                                                            <i class="icon-barcode"></i> EAN: {$product.ean13|escape:'htmlall':'UTF-8'}
+                                                        </div>
+                                                    {/if}
 
                                                 </div>
 

@@ -280,7 +280,7 @@
             }
 
             $query = new DbQuery();
-            $query->select('p.id_product, pl.name, pl.link_rewrite');
+            $query->select('p.id_product, pl.name, pl.link_rewrite, p.ean13');
             $query->from('product', 'p');
 
             $statusCondition = ($filter['status'] !== null) ? ' AND ps.active = ' . (int)$filter['status'] : ' AND ps.active = 1';
@@ -302,7 +302,7 @@
                 $query->where('pl.name LIKE \'%' . $productSearchEscaped . '%\' OR p.reference LIKE \'%' . $productSearchEscaped . '%\'');
             }
 
-            $query->groupBy('p.id_product, pl.name, pl.link_rewrite');
+            $query->groupBy('p.id_product, pl.name, pl.link_rewrite, p.ean13');
             $query->orderBy('pl.name ASC');
 
             $offset = (int) (($page - 1) * $limit);
@@ -345,6 +345,7 @@
                 $products[] = [
                     'id_product' => $productId,
                     'name' => (string) $row['name'],
+                    'ean13' => (string) $row['ean13'],
                     'link_rewrite' => (string) $row['link_rewrite'],
                     'cover_url' => $coverUrl,
                     'total_stock' => $totalStock,
