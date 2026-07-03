@@ -102,6 +102,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         
                         // Open the modal
                         modal.modal('show');
+                        
+                        if (typeof JsBarcode !== 'undefined') { JsBarcode(".cst-barcode").init(); }
                     } else {
                         showCustomSuccess('Failed to fetch details: ' + (response.message || 'Unknown error'));
                     }
@@ -219,19 +221,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // === 4. INITIALIZE JSBARCODE ===
-    if (typeof JsBarcode !== 'undefined') {
-        document.querySelectorAll('.js-barcode').forEach(function (svg) {
-            const barcodeValue = svg.getAttribute('data-barcode');
-            if (barcodeValue) {
-                JsBarcode(svg, barcodeValue, {
-                    format: "CODE128",
-                    width: 1.5,
-                    height: 40,
-                    displayValue: true,
-                    fontSize: 12,
-                    margin: 0
-                });
-            }
-        });
-    }
+    if (typeof JsBarcode !== 'undefined') { JsBarcode(".cst-barcode").init(); }
 });

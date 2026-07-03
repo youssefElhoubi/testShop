@@ -52,7 +52,7 @@
                                     <td><span class="badge badge-warning">Pending</span></td>
                                     <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
                                     <td>
-                                        <svg class="js-barcode" data-barcode="{$transfer.barcode|escape:'htmlall':'UTF-8'}"></svg>
+                                        <svg class="cst-barcode" jsbarcode-format="CODE128" jsbarcode-value="{$transfer.barcode|escape:'htmlall':'UTF-8'}" jsbarcode-height="40" jsbarcode-displayValue="true"></svg>
                                     </td>
                                     <td class="text-right">
                                         <button type="button" class="btn btn-primary js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
@@ -96,7 +96,7 @@
                                     <td><span class="badge badge-success">Approved</span></td>
                                     <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
                                     <td>
-                                        <svg class="js-barcode" data-barcode="{$transfer.barcode|escape:'htmlall':'UTF-8'}"></svg>
+                                        <svg class="cst-barcode" jsbarcode-format="CODE128" jsbarcode-value="{$transfer.barcode|escape:'htmlall':'UTF-8'}" jsbarcode-height="40" jsbarcode-displayValue="true"></svg>
                                     </td>
                                     <td class="text-right">
                                         <button type="button" class="btn btn-default js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
@@ -145,7 +145,7 @@
                                     <td><span class="badge badge-warning">Prepared</span></td>
                                     <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
                                     <td>
-                                        <svg class="js-barcode" data-barcode="{$transfer.barcode|escape:'htmlall':'UTF-8'}"></svg>
+                                        <svg class="cst-barcode" jsbarcode-format="CODE128" jsbarcode-value="{$transfer.barcode|escape:'htmlall':'UTF-8'}" jsbarcode-height="40" jsbarcode-displayValue="true"></svg>
                                     </td>
                                     <td class="text-right">
                                         <button type="button" class="btn btn-default js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
@@ -192,7 +192,7 @@
                                     <td><span class="badge badge-info">In Transit</span></td>
                                     <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
                                     <td>
-                                        <svg class="js-barcode" data-barcode="{$transfer.barcode|escape:'htmlall':'UTF-8'}"></svg>
+                                        <svg class="cst-barcode" jsbarcode-format="CODE128" jsbarcode-value="{$transfer.barcode|escape:'htmlall':'UTF-8'}" jsbarcode-height="40" jsbarcode-displayValue="true"></svg>
                                     </td>
                                     <td class="text-right">
                                         <button type="button" class="btn btn-default js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
