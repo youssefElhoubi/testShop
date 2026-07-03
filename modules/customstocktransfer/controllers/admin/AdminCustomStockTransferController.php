@@ -22,6 +22,7 @@
             parent::setMedia($isNewTheme);
 
             $baseUri = $this->module->getPathUri();
+            $this->addJS('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js', false);
             $this->addCSS($baseUri . 'views/css/transfer.css');
             $this->addJS($baseUri . 'views/js/transfer.js');
         }

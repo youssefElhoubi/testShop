@@ -51,7 +51,9 @@
                                     <td>{$transfer.store_to_name|escape:'htmlall':'UTF-8'} (ID: {$transfer.id_store_to|intval})</td>
                                     <td><span class="badge badge-warning">Pending</span></td>
                                     <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.barcode|escape:'htmlall':'UTF-8'}</td>
+                                    <td>
+                                        <svg class="js-barcode" data-barcode="{$transfer.barcode|escape:'htmlall':'UTF-8'}"></svg>
+                                    </td>
                                     <td class="text-right">
                                         <button type="button" class="btn btn-primary js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
                                             <i class="icon-search"></i> Review Transfer
@@ -93,7 +95,9 @@
                                     <td>{$transfer.store_to_name|escape:'htmlall':'UTF-8'} (ID: {$transfer.id_store_to|intval})</td>
                                     <td><span class="badge badge-success">Approved</span></td>
                                     <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.barcode|escape:'htmlall':'UTF-8'}</td>
+                                    <td>
+                                        <svg class="js-barcode" data-barcode="{$transfer.barcode|escape:'htmlall':'UTF-8'}"></svg>
+                                    </td>
                                     <td class="text-right">
                                         <button type="button" class="btn btn-default js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
                                             <i class="icon-eye"></i> View Details
@@ -140,7 +144,9 @@
                                     <td>{$transfer.store_to_name|escape:'htmlall':'UTF-8'} (ID: {$transfer.id_store_to|intval})</td>
                                     <td><span class="badge badge-warning">Prepared</span></td>
                                     <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.barcode|escape:'htmlall':'UTF-8'}</td>
+                                    <td>
+                                        <svg class="js-barcode" data-barcode="{$transfer.barcode|escape:'htmlall':'UTF-8'}"></svg>
+                                    </td>
                                     <td class="text-right">
                                         <button type="button" class="btn btn-default js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
                                             <i class="icon-eye"></i> View Details
@@ -185,7 +191,9 @@
                                     <td>{$transfer.store_to_name|escape:'htmlall':'UTF-8'} (ID: {$transfer.id_store_to|intval})</td>
                                     <td><span class="badge badge-info">In Transit</span></td>
                                     <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.barcode|escape:'htmlall':'UTF-8'}</td>
+                                    <td>
+                                        <svg class="js-barcode" data-barcode="{$transfer.barcode|escape:'htmlall':'UTF-8'}"></svg>
+                                    </td>
                                     <td class="text-right">
                                         <button type="button" class="btn btn-default js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
                                             <i class="icon-eye"></i> View Details
@@ -230,7 +238,9 @@
                                     <td>{$transfer.store_to_name|escape:'htmlall':'UTF-8'} (ID: {$transfer.id_store_to|intval})</td>
                                     <td><span class="badge badge-success">Completed</span></td>
                                     <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
-                                    <td>{$transfer.barcode|escape:'htmlall':'UTF-8'}</td>
+                                    <td>
+                                        <svg class="js-barcode" data-barcode="{$transfer.barcode|escape:'htmlall':'UTF-8'}"></svg>
+                                    </td>
                                     <td class="text-right">
                                         <button type="button" class="btn btn-default js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
                                             <i class="icon-eye"></i> View Details

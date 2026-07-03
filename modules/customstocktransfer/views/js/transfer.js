@@ -405,8 +405,21 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-
-
-
+    // --- Initialize JsBarcode ---
+    if (typeof JsBarcode !== 'undefined') {
+        document.querySelectorAll('.js-barcode').forEach(function (svg) {
+            const barcodeValue = svg.getAttribute('data-barcode');
+            if (barcodeValue) {
+                JsBarcode(svg, barcodeValue, {
+                    format: "CODE128",
+                    width: 1.5,
+                    height: 40,
+                    displayValue: true,
+                    fontSize: 12,
+                    margin: 0
+                });
+            }
+        });
+    }
 
 });
