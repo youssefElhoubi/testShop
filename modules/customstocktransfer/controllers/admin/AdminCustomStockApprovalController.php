@@ -70,97 +70,7 @@ class AdminCustomStockApprovalController extends ModuleAdminController
     }
     public function postProcess()
     {
-        if (Tools::isSubmit('submitApproveTransfer')) {
-            $id_transfer = (int) Tools::getValue('id_transfer');
-            $transfer = new StockTransfer($id_transfer);
-
-            if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
-                $id_store_from = (int) $transfer->id_store_from;
-                $id_store_to = (int) $transfer->id_store_to;
-
-                $sqlDetails = 'SELECT id_product, id_product_attribute, quantity FROM `' . _DB_PREFIX_ . 'transfer_details` WHERE id_transfer = ' . (int)$transfer->id;
-                $details = Db::getInstance()->executeS($sqlDetails);
-
-                if (!empty($details)) {
-                    $hasEnoughStock = true;
-                    // First check stock for all items
-                    foreach ($details as $item) {
-                        $qty = (int) $item['quantity'];
-                        $id_product = (int) $item['id_product'];
-                        $id_product_attribute = (int) $item['id_product_attribute'];
-                        
-                        $qty_from = StockAvailable::getQuantityAvailableByProduct($id_product, $id_product_attribute, $id_store_from);
-                        if ($qty_from < $qty) {
-                            $hasEnoughStock = false;
-                            break;
-                        }
-                    }
-
-                    if ($hasEnoughStock) {
-                        $originalContext = Shop::getContext();
-                        $originalShopId = Shop::getContextShopID();
-                        
-                        try {
-                            foreach ($details as $item) {
-                                $qty = (int) $item['quantity'];
-                                $id_product = (int) $item['id_product'];
-                                $id_product_attribute = (int) $item['id_product_attribute'];
-
-                                // Force context to the source store
-                                Shop::setContext(Shop::CONTEXT_SHOP, $id_store_from);
-                                $current_qty_from = StockAvailable::getQuantityAvailableByProduct($id_product, $id_product_attribute, $id_store_from);
-                                StockAvailable::setQuantity($id_product, $id_product_attribute, $current_qty_from - $qty, $id_store_from);
-                                
-                                // Force context to the destination store
-                                Shop::setContext(Shop::CONTEXT_SHOP, $id_store_to);
-                                $current_qty_to = StockAvailable::getQuantityAvailableByProduct($id_product, $id_product_attribute, $id_store_to);
-                                StockAvailable::setQuantity($id_product, $id_product_attribute, $current_qty_to + $qty, $id_store_to);
-                            }
-                            
-                            $transfer->status = 'approved';
-                            $transfer->date_upd = date('Y-m-d H:i:s');
-                            if ($transfer->update()) {
-                                $this->confirmations[] = $this->trans('Transfer approved successfully and stock updated.', [], 'Admin.Notifications.Success');
-                            } else {
-                                $this->errors[] = $this->trans('Failed to update transfer status.', [], 'Admin.Notifications.Error');
-                            }
-                        } catch (Exception $e) {
-                            $this->errors[] = $e->getMessage();
-                        } finally {
-                            // Unconditionally restore original context
-                            Shop::setContext($originalContext, $originalShopId);
-                        }
-                    } else {
-                        $this->errors[] = $this->trans('Not enough stock in the source store for one or more items.', [], 'Admin.Notifications.Error');
-                    }
-                } else {
-                    $this->errors[] = $this->trans('Transfer has no items.', [], 'Admin.Notifications.Error');
-                }
-            } else {
-                $this->errors[] = $this->trans('Invalid transfer or already processed.', [], 'Admin.Notifications.Error');
-            }
-        } elseif (Tools::isSubmit('submitDeclineTransfer')) {
-            $id_transfer = (int) Tools::getValue('id_transfer');
-            $reason = pSQL(Tools::getValue('decline_reason'));
-            $transfer = new StockTransfer($id_transfer);
-
-            if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
-                if (!empty($reason)) {
-                    $transfer->status = 'declined';
-                    $transfer->reason = $reason;
-                    $transfer->date_upd = date('Y-m-d H:i:s');
-                    if ($transfer->update()) {
-                        $this->confirmations[] = $this->trans('Transfer declined successfully.', [], 'Admin.Notifications.Success');
-                    } else {
-                        $this->errors[] = $this->trans('Failed to decline transfer.', [], 'Admin.Notifications.Error');
-                    }
-                } else {
-                    $this->errors[] = $this->trans('Decline reason is required.', [], 'Admin.Notifications.Error');
-                }
-            } else {
-                $this->errors[] = $this->trans('Invalid transfer or already processed.', [], 'Admin.Notifications.Error');
-            }
-        } elseif (Tools::isSubmit('submitMarkCompleted')) {
+        if (Tools::isSubmit('submitMarkCompleted')) {
             $id_transfer = (int) Tools::getValue('id_transfer');
             $transfer = new StockTransfer($id_transfer);
 
@@ -199,5 +109,100 @@ class AdminCustomStockApprovalController extends ModuleAdminController
         $details = Db::getInstance()->executeS($sql);
 
         die(json_encode(['success' => true, 'details' => $details]));
+    }
+
+    public function ajaxProcessApprove()
+    {
+        $id_transfer = (int) Tools::getValue('id_transfer');
+        $transfer = new StockTransfer($id_transfer);
+
+        if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
+            $id_store_from = (int) $transfer->id_store_from;
+            $id_store_to = (int) $transfer->id_store_to;
+
+            $sqlDetails = 'SELECT id_product, id_product_attribute, quantity FROM `' . _DB_PREFIX_ . 'transfer_details` WHERE id_transfer = ' . (int)$transfer->id;
+            $details = Db::getInstance()->executeS($sqlDetails);
+
+            if (!empty($details)) {
+                $hasEnoughStock = true;
+                foreach ($details as $item) {
+                    $qty = (int) $item['quantity'];
+                    $id_product = (int) $item['id_product'];
+                    $id_product_attribute = (int) $item['id_product_attribute'];
+                    
+                    $qty_from = StockAvailable::getQuantityAvailableByProduct($id_product, $id_product_attribute, $id_store_from);
+                    if ($qty_from < $qty) {
+                        $hasEnoughStock = false;
+                        break;
+                    }
+                }
+
+                if ($hasEnoughStock) {
+                    $originalContext = Shop::getContext();
+                    $originalShopId = Shop::getContextShopID();
+                    
+                    try {
+                        foreach ($details as $item) {
+                            $qty = (int) $item['quantity'];
+                            $id_product = (int) $item['id_product'];
+                            $id_product_attribute = (int) $item['id_product_attribute'];
+
+                            Shop::setContext(Shop::CONTEXT_SHOP, $id_store_from);
+                            $current_qty_from = StockAvailable::getQuantityAvailableByProduct($id_product, $id_product_attribute, $id_store_from);
+                            StockAvailable::setQuantity($id_product, $id_product_attribute, $current_qty_from - $qty, $id_store_from);
+                            
+                            Shop::setContext(Shop::CONTEXT_SHOP, $id_store_to);
+                            $current_qty_to = StockAvailable::getQuantityAvailableByProduct($id_product, $id_product_attribute, $id_store_to);
+                            StockAvailable::setQuantity($id_product, $id_product_attribute, $current_qty_to + $qty, $id_store_to);
+                        }
+                        
+                        $sqlApprove = 'UPDATE `' . _DB_PREFIX_ . 'transfers` 
+                                       SET `status` = \'approved\', `date_upd` = NOW() 
+                                       WHERE `id_transfer` = ' . (int)$transfer->id;
+
+                        if (Db::getInstance()->execute($sqlApprove)) {
+                            die(json_encode(['success' => true, 'message' => $this->trans('Transfer approved successfully and stock updated.', [], 'Admin.Notifications.Success')]));
+                        } else {
+                            die(json_encode(['success' => false, 'message' => $this->trans('Failed to update transfer status.', [], 'Admin.Notifications.Error')]));
+                        }
+                    } catch (Exception $e) {
+                        die(json_encode(['success' => false, 'message' => $e->getMessage()]));
+                    } finally {
+                        Shop::setContext($originalContext, $originalShopId);
+                    }
+                } else {
+                    die(json_encode(['success' => false, 'message' => $this->trans('Not enough stock in the source store for one or more items.', [], 'Admin.Notifications.Error')]));
+                }
+            } else {
+                die(json_encode(['success' => false, 'message' => $this->trans('Transfer has no items.', [], 'Admin.Notifications.Error')]));
+            }
+        } else {
+            die(json_encode(['success' => false, 'message' => $this->trans('Invalid transfer or already processed.', [], 'Admin.Notifications.Error')]));
+        }
+    }
+
+    public function ajaxProcessDecline()
+    {
+        $id_transfer = (int) Tools::getValue('id_transfer');
+        $reason = pSQL(Tools::getValue('decline_reason'));
+        $transfer = new StockTransfer($id_transfer);
+
+        if (Validate::isLoadedObject($transfer) && $transfer->status === 'pending') {
+            if (!empty($reason)) {
+                $sqlDecline = 'UPDATE `' . _DB_PREFIX_ . 'transfers` 
+                               SET `status` = \'declined\', `reason` = \'' . pSQL($reason, true) . '\', `date_upd` = NOW() 
+                               WHERE `id_transfer` = ' . (int)$transfer->id;
+
+                if (Db::getInstance()->execute($sqlDecline)) {
+                    die(json_encode(['success' => true, 'message' => $this->trans('Transfer declined successfully.', [], 'Admin.Notifications.Success')]));
+                } else {
+                    die(json_encode(['success' => false, 'message' => $this->trans('Failed to decline transfer.', [], 'Admin.Notifications.Error')]));
+                }
+            } else {
+                die(json_encode(['success' => false, 'message' => $this->trans('Decline reason is required.', [], 'Admin.Notifications.Error')]));
+            }
+        } else {
+            die(json_encode(['success' => false, 'message' => $this->trans('Invalid transfer or already processed.', [], 'Admin.Notifications.Error')]));
+        }
     }
 }

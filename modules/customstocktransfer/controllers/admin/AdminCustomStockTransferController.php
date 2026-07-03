@@ -114,6 +114,50 @@
             }
         }
 
+        public function ajaxProcessScanBarcode()
+        {
+            $barcode = pSQL(trim(Tools::getValue('barcode')));
+            $idLang = (int) $this->context->language->id;
+            $sourceStoreId = (int) Tools::getValue('source_shop_id', 0);
+
+            if (empty($barcode)) {
+                die(json_encode(['success' => false, 'message' => 'Barcode is empty.']));
+            }
+
+            // Search product table first
+            $sql = 'SELECT p.id_product, 0 AS id_product_attribute, pl.name, p.ean13
+                    FROM `' . _DB_PREFIX_ . 'product` p
+                    LEFT JOIN `' . _DB_PREFIX_ . 'product_lang` pl ON (p.id_product = pl.id_product AND pl.id_lang = ' . $idLang . ')
+                    WHERE p.ean13 = \'' . $barcode . '\'';
+            
+            $product = Db::getInstance()->getRow($sql);
+
+            // If not found in product, search product_attribute
+            if (!$product) {
+                $sqlAttr = 'SELECT pa.id_product, pa.id_product_attribute, pl.name, pa.ean13
+                            FROM `' . _DB_PREFIX_ . 'product_attribute` pa
+                            LEFT JOIN `' . _DB_PREFIX_ . 'product_lang` pl ON (pa.id_product = pl.id_product AND pl.id_lang = ' . $idLang . ')
+                            WHERE pa.ean13 = \'' . $barcode . '\'';
+                $product = Db::getInstance()->getRow($sqlAttr);
+            }
+
+            if ($product) {
+                $maxQty = StockAvailable::getQuantityAvailableByProduct((int)$product['id_product'], (int)$product['id_product_attribute'], $sourceStoreId);
+
+                die(json_encode([
+                    'success' => true,
+                    'product' => [
+                        'id_product' => (int)$product['id_product'],
+                        'id_product_attribute' => (int)$product['id_product_attribute'],
+                        'name' => $product['name'],
+                        'max_qty' => (int)$maxQty
+                    ]
+                ]));
+            } else {
+                die(json_encode(['success' => false, 'message' => 'Product not found for this barcode.']));
+            }
+        }
+
         public function initContent()
         {
             parent::initContent();

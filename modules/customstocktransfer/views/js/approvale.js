@@ -139,18 +139,26 @@ document.addEventListener('DOMContentLoaded', function () {
             btnApprove.innerHTML = '<i class="icon-spinner icon-spin"></i> Approving...';
             btnApprove.disabled = true;
 
-            // Submit approve via AJAX POST to the native postProcess logic
+            // Submit approve via AJAX POST to the native ajaxProcess logic
             $.ajax({
                 url: window.location.href,
                 type: 'POST',
+                dataType: 'json',
                 data: {
-                    id_transfer: window.currentApprovalId,
-                    submitApproveTransfer: 1
+                    ajax: true,
+                    action: 'Approve',
+                    id_transfer: window.currentApprovalId
                 },
-                success: function() {
-                    modal.modal('hide');
-                    showCustomSuccess('Transfer approved successfully.');
-                    setTimeout(() => window.location.reload(), 1000);
+                success: function(response) {
+                    if (response && response.success) {
+                        modal.modal('hide');
+                        showCustomSuccess(response.message || 'Transfer approved successfully.');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        btnApprove.innerHTML = originalHtml;
+                        btnApprove.disabled = false;
+                        showModalError(response ? response.message : 'Failed to approve transfer.');
+                    }
                 },
                 error: function() {
                     btnApprove.innerHTML = originalHtml;
@@ -193,15 +201,23 @@ document.addEventListener('DOMContentLoaded', function () {
             $.ajax({
                 url: window.location.href,
                 type: 'POST',
+                dataType: 'json',
                 data: {
+                    ajax: true,
+                    action: 'Decline',
                     id_transfer: window.currentApprovalId,
-                    decline_reason: declineInput.value.trim(),
-                    submitDeclineTransfer: 1
+                    decline_reason: declineInput.value.trim()
                 },
-                success: function() {
-                    modal.modal('hide');
-                    showCustomSuccess('Transfer declined successfully.');
-                    setTimeout(() => window.location.reload(), 1000);
+                success: function(response) {
+                    if (response && response.success) {
+                        modal.modal('hide');
+                        showCustomSuccess(response.message || 'Transfer declined successfully.');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        btnDecline.innerHTML = originalHtml;
+                        btnDecline.disabled = false;
+                        showModalError(response ? response.message : 'Failed to decline transfer.');
+                    }
                 },
                 error: function() {
                     btnDecline.innerHTML = originalHtml;

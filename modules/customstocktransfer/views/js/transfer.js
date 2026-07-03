@@ -408,4 +408,87 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Initialize JsBarcode ---
     if (typeof JsBarcode !== 'undefined') { JsBarcode(".cst-barcode").init(); }
 
+    // --- Barcode Scanner Logic ---
+    const barcodeScanner = document.getElementById('cst-barcode-scanner');
+    if (barcodeScanner) {
+        barcodeScanner.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                
+                const scannedValue = this.value.trim();
+                if (!scannedValue) return;
+
+                // Disable input temporarily while scanning
+                this.disabled = true;
+                
+                // Get source store selection
+                const sourceStoreElement = document.getElementById('cst-main-source-store');
+                const sourceStoreId = sourceStoreElement ? sourceStoreElement.value : 0;
+
+                $.ajax({
+                    url: window.cstConfig.ajaxUrl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        ajax: true,
+                        action: 'ScanBarcode',
+                        barcode: scannedValue,
+                        source_shop_id: sourceStoreId
+                    },
+                    success: (response) => {
+                        this.disabled = false;
+                        
+                        if (response && response.success && response.product) {
+                            const p = response.product;
+                            const productId = p.id_product.toString();
+                            const productAttributeId = p.id_product_attribute.toString();
+                            const productName = p.name;
+                            const maxQty = p.max_qty;
+
+                            const existingItemIndex = window.transferCart.findIndex(item =>
+                                item.productId === productId && item.productAttributeId === productAttributeId
+                            );
+
+                            if (existingItemIndex > -1) {
+                                let newQty = window.transferCart[existingItemIndex].qty + 1;
+                                let maxAllowed = parseInt(maxQty, 10);
+                                if (!isNaN(maxAllowed) && newQty > maxAllowed) {
+                                    newQty = maxAllowed;
+                                    showCustomError('Maximum stock reached for ' + productName);
+                                } else {
+                                    showCustomSuccess('Increased quantity for ' + productName);
+                                }
+                                window.transferCart[existingItemIndex].qty = newQty;
+                            } else {
+                                window.transferCart.push({
+                                    productId: productId,
+                                    productAttributeId: productAttributeId,
+                                    productName: productName,
+                                    maxQty: maxQty,
+                                    qty: 1
+                                });
+                                showCustomSuccess('Added ' + productName + ' to cart');
+                            }
+
+                            saveCartState();
+                            updateCartBadge();
+                            renderCartItems();
+                        } else {
+                            showCustomError(response ? response.message : 'Barcode not found.');
+                        }
+
+                        this.value = '';
+                        this.focus();
+                    },
+                    error: () => {
+                        this.disabled = false;
+                        showCustomError('A server error occurred while processing the barcode.');
+                        this.value = '';
+                        this.focus();
+                    }
+                });
+            }
+        });
+    }
+
 });

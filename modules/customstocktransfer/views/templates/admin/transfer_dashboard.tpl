@@ -250,7 +250,7 @@
                 <div class="cst-bulk-actions row mb-4 align-items-end">
                     <div class="col-md-4">
                         <label>Source Store</label>
-                        <select class="form-control cst-input" name="source_shop_id">
+                        <select class="form-control cst-input" name="source_shop_id" id="cst-main-source-store">
                             <option value="">Select source</option>
                             {if isset($shops)}
                                 {foreach from=$shops item=shop}
@@ -275,6 +275,17 @@
                             class="btn btn-primary cst-btn-primary w-100">
                             <i class="icon-exchange"></i> Submit Bulk Transfer
                         </button>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="input-group cst-scanner-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" style="background: #fff; border-right: none; font-size: 1.5rem;"><i class="icon-barcode"></i></span>
+                            </div>
+                            <input type="text" class="form-control form-control-lg cst-input" id="cst-barcode-scanner" placeholder="Scan EAN-13 Barcode here..." autofocus style="border-left: none; padding-left: 0;">
+                        </div>
                     </div>
                 </div>
 
