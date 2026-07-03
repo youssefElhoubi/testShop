@@ -42,27 +42,9 @@ class CustomStockTransfer extends Module
                 `status` ENUM(
                     \'pending\',
                     \'approved\',
-                    \'prepared\',
-                    \'in_transit\',
                     \'completed\',
                     \'declined\'
                 ) NOT NULL DEFAULT \'pending\',
-
-                -- Admin Approval
-                `approved_by` INT(10) UNSIGNED NULL,
-                `approved_at` DATETIME NULL,
-
-                -- Warehouse Preparation
-                `prepared_by` INT(10) UNSIGNED NULL,
-                `prepared_at` DATETIME NULL,
-
-                -- Shipping
-                `shipped_by` INT(10) UNSIGNED NULL,
-                `shipped_at` DATETIME NULL,
-
-                -- Destination Store Validation
-                `received_by` INT(10) UNSIGNED NULL,
-                `received_at` DATETIME NULL,
 
                 -- Optional Notes
                 `reason` TEXT NULL,

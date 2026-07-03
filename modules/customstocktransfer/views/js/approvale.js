@@ -116,8 +116,8 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // Handle native confirmations for the other workflow stages (Prepare, Ship, Complete)
-        const advanceBtn = e.target.closest('button[name="submitMarkPrepared"], button[name="submitMarkShipped"], button[name="submitMarkCompleted"]');
+        // Handle native confirmations for the other workflow stages (Complete)
+        const advanceBtn = e.target.closest('button[name="submitMarkCompleted"]');
         if (advanceBtn) {
             if (!window.confirm('Are you sure you want to advance this transfer to the next stage?')) {
                 e.preventDefault();

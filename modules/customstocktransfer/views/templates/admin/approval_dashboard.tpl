@@ -11,12 +11,7 @@
         <li role="presentation">
             <a href="#tab-approved" aria-controls="tab-approved" role="tab" data-toggle="tab">Approved</a>
         </li>
-        <li role="presentation">
-            <a href="#tab-prepared" aria-controls="tab-prepared" role="tab" data-toggle="tab">Prepared</a>
-        </li>
-        <li role="presentation">
-            <a href="#tab-in_transit" aria-controls="tab-in_transit" role="tab" data-toggle="tab">In Transit</a>
-        </li>
+
         <li role="presentation">
             <a href="#tab-completed" aria-controls="tab-completed" role="tab" data-toggle="tab">Completed</a>
         </li>
@@ -105,7 +100,7 @@
                                         <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" class="js-pipeline-form" style="display:inline-block; margin:0;">
                                             <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
                                             <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|intval}">
-                                            <button type="submit" name="submitMarkPrepared" value="1" class="btn btn-info">Mark as Prepared</button>
+                                            <button type="submit" name="submitMarkCompleted" value="1" class="btn btn-success">Mark as Completed</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -120,100 +115,7 @@
             {/if}
         </div>
         
-        <!-- PREPARED TAB -->
-        <div role="tabpanel" class="tab-pane" id="tab-prepared">
-            {if isset($grouped_transfers['prepared']) && $grouped_transfers['prepared']|@count > 0}
-                <div class="table-responsive">
-                    <table class="table table-striped cst-table">
-                        <thead>
-                            <tr>
-                                <th>Transfer ID</th>
-                                <th>Source Store</th>
-                                <th>Destination Store</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Barcode</th>
-                                <th class="text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {foreach from=$grouped_transfers['prepared'] item=transfer}
-                                <tr>
-                                    <td>#{$transfer.id_transfer|intval}</td>
-                                    <td>{$transfer.store_from_name|escape:'htmlall':'UTF-8'} (ID: {$transfer.id_store_from|intval})</td>
-                                    <td>{$transfer.store_to_name|escape:'htmlall':'UTF-8'} (ID: {$transfer.id_store_to|intval})</td>
-                                    <td><span class="badge badge-warning">Prepared</span></td>
-                                    <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
-                                    <td>
-                                        <svg class="cst-barcode" jsbarcode-format="CODE128" jsbarcode-value="{$transfer.barcode|escape:'htmlall':'UTF-8'}" jsbarcode-height="40" jsbarcode-displayValue="true"></svg>
-                                    </td>
-                                    <td class="text-right">
-                                        <button type="button" class="btn btn-default js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
-                                            <i class="icon-eye"></i> View Details
-                                        </button>
-                                        <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" class="js-pipeline-form" style="display:inline-block; margin:0;">
-                                            <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
-                                            <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|intval}">
-                                            <button type="submit" name="submitMarkShipped" value="1" class="btn btn-primary" style="background-color: #6f42c1; border-color: #6f42c1;">Mark as Shipped</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            {/foreach}
-                        </tbody>
-                    </table>
-                </div>
-            {else}
-                <div class="alert alert-info" style="margin-top: 15px;">No prepared transfers found.</div>
-            {/if}
-        </div>
 
-        <!-- IN TRANSIT TAB -->
-        <div role="tabpanel" class="tab-pane" id="tab-in_transit">
-            {if isset($grouped_transfers['in_transit']) && $grouped_transfers['in_transit']|@count > 0}
-                <div class="table-responsive">
-                    <table class="table table-striped cst-table">
-                        <thead>
-                            <tr>
-                                <th>Transfer ID</th>
-                                <th>Source Store</th>
-                                <th>Destination Store</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Barcode</th>
-                                <th class="text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {foreach from=$grouped_transfers['in_transit'] item=transfer}
-                                <tr>
-                                    <td>#{$transfer.id_transfer|intval}</td>
-                                    <td>{$transfer.store_from_name|escape:'htmlall':'UTF-8'} (ID: {$transfer.id_store_from|intval})</td>
-                                    <td>{$transfer.store_to_name|escape:'htmlall':'UTF-8'} (ID: {$transfer.id_store_to|intval})</td>
-                                    <td><span class="badge badge-info">In Transit</span></td>
-                                    <td>{$transfer.date_add|escape:'htmlall':'UTF-8'}</td>
-                                    <td>
-                                        <svg class="cst-barcode" jsbarcode-format="CODE128" jsbarcode-value="{$transfer.barcode|escape:'htmlall':'UTF-8'}" jsbarcode-height="40" jsbarcode-displayValue="true"></svg>
-                                    </td>
-                                    <td class="text-right">
-                                        <button type="button" class="btn btn-default js-review-transfer" data-id-transfer="{$transfer.id_transfer|intval}">
-                                            <i class="icon-eye"></i> View Details
-                                        </button>
-                                        <form method="post" action="{$form_action|escape:'htmlall':'UTF-8'}" class="js-pipeline-form" style="display:inline-block; margin:0;">
-                                            <input type="hidden" name="token" value="{$token|escape:'htmlall':'UTF-8'}">
-                                            <input type="hidden" name="id_transfer" value="{$transfer.id_transfer|intval}">
-                                            <button type="submit" name="submitMarkCompleted" value="1" class="btn btn-success">Mark as Completed</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            {/foreach}
-                        </tbody>
-                    </table>
-                </div>
-            {else}
-                <div class="alert alert-info" style="margin-top: 15px;">No transfers in transit found.</div>
-            {/if}
-        </div>
-        
         <!-- COMPLETED TAB -->
         <div role="tabpanel" class="tab-pane" id="tab-completed">
             {if isset($grouped_transfers['completed']) && $grouped_transfers['completed']|@count > 0}

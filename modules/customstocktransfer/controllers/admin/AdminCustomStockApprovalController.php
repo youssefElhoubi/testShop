@@ -44,8 +44,6 @@ class AdminCustomStockApprovalController extends ModuleAdminController
         $grouped_transfers = [
             'pending'    => [],
             'approved'   => [],
-            'prepared'   => [],
-            'in_transit' => [],
             'completed'  => [],
             'declined'   => []
         ];
@@ -120,8 +118,6 @@ class AdminCustomStockApprovalController extends ModuleAdminController
                             }
                             
                             $transfer->status = 'approved';
-                            $transfer->approved_by = (int) $this->context->employee->id;
-                            $transfer->approved_at = date('Y-m-d H:i:s');
                             $transfer->date_upd = date('Y-m-d H:i:s');
                             if ($transfer->update()) {
                                 $this->confirmations[] = $this->trans('Transfer approved successfully and stock updated.', [], 'Admin.Notifications.Success');
@@ -164,50 +160,12 @@ class AdminCustomStockApprovalController extends ModuleAdminController
             } else {
                 $this->errors[] = $this->trans('Invalid transfer or already processed.', [], 'Admin.Notifications.Error');
             }
-        } elseif (Tools::isSubmit('submitMarkPrepared')) {
-            $id_transfer = (int) Tools::getValue('id_transfer');
-            $transfer = new StockTransfer($id_transfer);
-
-            if (Validate::isLoadedObject($transfer) && $transfer->status === 'approved') {
-                $transfer->status = 'prepared';
-                $transfer->prepared_by = (int) $this->context->employee->id;
-                $transfer->prepared_at = date('Y-m-d H:i:s');
-                $transfer->date_upd = date('Y-m-d H:i:s');
-
-                if ($transfer->update()) {
-                    $this->confirmations[] = $this->trans('Transfer marked as prepared.', [], 'Admin.Notifications.Success');
-                } else {
-                    $this->errors[] = $this->trans('Failed to mark transfer as prepared.', [], 'Admin.Notifications.Error');
-                }
-            } else {
-                $this->errors[] = $this->trans('Invalid transfer or it is not in the approved state.', [], 'Admin.Notifications.Error');
-            }
-        } elseif (Tools::isSubmit('submitMarkShipped')) {
-            $id_transfer = (int) Tools::getValue('id_transfer');
-            $transfer = new StockTransfer($id_transfer);
-
-            if (Validate::isLoadedObject($transfer) && $transfer->status === 'prepared') {
-                $transfer->status = 'in_transit';
-                $transfer->shipped_by = (int) $this->context->employee->id;
-                $transfer->shipped_at = date('Y-m-d H:i:s');
-                $transfer->date_upd = date('Y-m-d H:i:s');
-
-                if ($transfer->update()) {
-                    $this->confirmations[] = $this->trans('Transfer marked as shipped (in transit).', [], 'Admin.Notifications.Success');
-                } else {
-                    $this->errors[] = $this->trans('Failed to mark transfer as shipped.', [], 'Admin.Notifications.Error');
-                }
-            } else {
-                $this->errors[] = $this->trans('Invalid transfer or it is not in the prepared state.', [], 'Admin.Notifications.Error');
-            }
         } elseif (Tools::isSubmit('submitMarkCompleted')) {
             $id_transfer = (int) Tools::getValue('id_transfer');
             $transfer = new StockTransfer($id_transfer);
 
-            if (Validate::isLoadedObject($transfer) && $transfer->status === 'in_transit') {
+            if (Validate::isLoadedObject($transfer) && $transfer->status === 'approved') {
                 $transfer->status = 'completed';
-                $transfer->received_by = (int) $this->context->employee->id;
-                $transfer->received_at = date('Y-m-d H:i:s');
                 $transfer->date_upd = date('Y-m-d H:i:s');
 
                 if ($transfer->update()) {
@@ -216,7 +174,7 @@ class AdminCustomStockApprovalController extends ModuleAdminController
                     $this->errors[] = $this->trans('Failed to mark transfer as completed.', [], 'Admin.Notifications.Error');
                 }
             } else {
-                $this->errors[] = $this->trans('Invalid transfer or it is not currently in transit.', [], 'Admin.Notifications.Error');
+                $this->errors[] = $this->trans('Invalid transfer or it is not in the approved state.', [], 'Admin.Notifications.Error');
             }
         }
 
