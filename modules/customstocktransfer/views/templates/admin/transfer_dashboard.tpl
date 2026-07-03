@@ -198,7 +198,7 @@
                         </div>
                     </div>
 
-                    <div class="cst-filter-actions mt-3 text-right">
+                    <div class="cst-filter-actions mt-3 text-right flex-end">
                         <button type="button" class="btn btn-default cst-btn-outline mr-2"
                             onclick="window.location.href='{$form_action|escape:'htmlall':'UTF-8'}';">
                             <i class="icon-eraser"></i> Clear Filters
@@ -270,7 +270,7 @@
                             {/if}
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4 top-24">
                         <button type="submit" name="submitCustomStockTransfer" value="1"
                             class="btn btn-primary cst-btn-primary w-100">
                             <i class="icon-exchange"></i> Submit Bulk Transfer

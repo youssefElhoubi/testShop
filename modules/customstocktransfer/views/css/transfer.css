@@ -824,3 +824,11 @@
 .cst-modal-body {
     margin-bottom: 1.5rem;
 }
+.top-24{
+    top: 25px;
+}
+.flex-end{
+    display: flex;
+    justify-content: end;
+    gap: 3px;
+}
