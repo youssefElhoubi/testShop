@@ -17,6 +17,7 @@ class AdminCustomStockScannerController extends ModuleAdminController
         parent::setMedia($isNewTheme);
 
         $this->addCSS($this->module->getPathUri() . 'views/css/transfer.css');
+        $this->context->controller->addCSS(_MODULE_DIR_ . $this->module->name . '/views/css/scanner.css');
         $this->addJS($this->module->getPathUri() . 'views/js/scanner.js');
     }
 

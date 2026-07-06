@@ -1,0 +1,90 @@
+/* Scanner Dashboard Container */
+.scanner-dashboard-container {
+    margin-top: 3rem;
+}
+
+/* Header & View Cart Button */
+#btn-view-scanner-cart {
+    border-radius: 30px;
+    padding: 10px 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+#scanner-cart-badge {
+    font-size: 1rem;
+}
+
+/* Scanner Input Area */
+.scanner-input-row {
+    margin-top: 10vh;
+}
+
+.scanner-card {
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.scanner-icon {
+    font-size: 4rem;
+}
+
+#dedicated-scanner-input {
+    font-size: 2.5rem;
+    height: 90px;
+    border: 4px solid #e0e0e0;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+#dedicated-scanner-input:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25) !important;
+    outline: none;
+}
+
+.scanner-instruction {
+    font-size: 1.1rem;
+}
+
+/* Cart Modal Styling */
+.scanner-modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.scanner-modal-close-icon {
+    font-size: 1.5rem;
+}
+
+.scanner-table-img-col {
+    width: 120px;
+}
+
+.scanner-table-qty-col {
+    width: 150px;
+}
+
+.scanner-table-action-col {
+    width: 100px;
+}
+
+.scanner-modal-footer {
+    border-radius: 0 0 15px 15px;
+    padding: 1.5rem;
+}
+
+.scanner-btn-close {
+    border-radius: 10px;
+}
+
+#btn-confirm-scanner-transfer {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(40,167,69,0.3);
+}
+
+/* Table Vertical Alignment */
+.table td {
+    vertical-align: middle;
+}
