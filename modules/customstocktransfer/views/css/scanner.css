@@ -204,3 +204,57 @@
     background-color: #2563eb;
     border-color: #2563eb;
 }
+
+/* --- Scanner Input Refined Styling --- */
+
+/* Base State */
+.cst-scanner-input, .scanner-input {
+    width: 100%;
+    font-size: 2rem;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid #ced4da;
+    background-color: #ffffff;
+    color: #495057;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+    outline: none;
+    box-shadow: none;
+}
+
+/* Success State */
+.cst-scanner-input.is-successful, .scanner-input.is-successful {
+    background-color: #e6f4ea !important; /* Light mint green */
+    border-color: #34a853 !important; /* Medium green border */
+    color: #0d5a53 !important; /* Dark teal text */
+}
+
+/* Typography for Label */
+.cst-scanner-label {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    transition: color 0.2s ease-in-out;
+}
+
+.cst-scanner-label.is-successful {
+    color: #0d5a53; /* Dark teal */
+}
+
+/* Typography for Feedback Text */
+.cst-scanner-feedback {
+    font-size: 0.95rem;
+    font-weight: 500;
+    min-height: 1.5rem;
+    text-align: center;
+    color: #6c757d;
+    transition: color 0.2s ease-in-out;
+}
+
+.cst-scanner-feedback.is-successful {
+    color: #0d5a53; /* Dark teal */
+    font-weight: 600;
+}

@@ -128,6 +128,34 @@ document.addEventListener('DOMContentLoaded', function() {
                             localStorage.setItem('cst_transfer_cart', JSON.stringify(window.transferCart));
                             updateBadge();
                             renderCart();
+
+                            // Trigger Visual Success State
+                            scannerInput.classList.add('is-successful');
+                            let feedbackMsg = document.getElementById('scanner-feedback-msg');
+                            let scannerLabel = document.querySelector('label[for="dedicated-scanner-input"]');
+                            
+                            if (feedbackMsg) {
+                                feedbackMsg.textContent = 'Well done! ' + (product.name || 'Product') + ' added.';
+                                feedbackMsg.classList.add('is-successful');
+                            }
+                            if (scannerLabel) {
+                                scannerLabel.classList.add('is-successful');
+                            }
+
+                            // The Reset Timer
+                            setTimeout(() => {
+                                scannerInput.classList.remove('is-successful');
+                                if (feedbackMsg) {
+                                    feedbackMsg.textContent = '';
+                                    feedbackMsg.classList.remove('is-successful');
+                                }
+                                if (scannerLabel) {
+                                    scannerLabel.classList.remove('is-successful');
+                                }
+                                // Ensure input retains focus after visual reset
+                                scannerInput.focus();
+                            }, 1500);
+
                         } else {
                             flashInputError(scannerInput);
                         }
@@ -266,6 +294,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem('cst_transfer_cart', JSON.stringify(window.transferCart));
                 updateBadge();
             }
+        });
+    }
+
+    // 5. Checkout Submission
+    const btnConfirmTransfer = document.getElementById('btn-confirm-scanner-transfer');
+    if (btnConfirmTransfer) {
+        btnConfirmTransfer.addEventListener('click', function() {
+            if (window.transferCart.length === 0) {
+                alert('Cart is empty');
+                return;
+            }
+
+            let originalText = btnConfirmTransfer.innerHTML;
+            btnConfirmTransfer.disabled = true;
+            btnConfirmTransfer.innerHTML = 'Processing...';
+
+            $.ajax({
+                url: window.cstConfig.ajaxUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'SubmitTransfer',
+                    ajax: true,
+                    cartData: JSON.stringify(window.transferCart)
+                },
+                success: function(response) {
+                    if (response && response.success) {
+                        window.transferCart = [];
+                        localStorage.removeItem('cst_transfer_cart');
+                        if (typeof $ !== 'undefined') {
+                            $('#scannerCartModal').modal('hide');
+                        }
+                        updateBadge();
+                        renderCart();
+                        alert(response.message || 'Transfer submitted successfully!');
+                    } else {
+                        alert(response.message || 'An error occurred while submitting the transfer.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Server error: ' + error);
+                },
+                complete: function() {
+                    btnConfirmTransfer.disabled = false;
+                    btnConfirmTransfer.innerHTML = originalText;
+                }
+            });
         });
     }
 });

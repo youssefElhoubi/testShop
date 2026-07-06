@@ -26,10 +26,10 @@
                                 <i class="icon-barcode scanner-icon"></i>
                             </div>
                             <h2 class="mb-4 font-weight-bold text-dark">Ready to Scan</h2>
-                            <div class="form-group mb-4">
-                                <input type="text" id="dedicated-scanner-input"
-                                    class="form-control text-center font-weight-bold scanner-input"
-                                    placeholder="Shoot barcode here..." autofocus autocomplete="off">
+                            <div class="cst-scanner-wrapper form-group mb-4">
+                                <label for="dedicated-scanner-input" class="cst-scanner-label">Scan Barcode</label>
+                                <input type="text" id="dedicated-scanner-input" class="scanner-input" placeholder="Shoot barcode here..." autofocus autocomplete="off">
+                                <div id="scanner-feedback-msg" class="cst-scanner-feedback mt-2"></div>
                             </div>
                             <div class="alert alert-info border-0 shadow-sm scanner-instruction mb-0" role="alert">
                                 <i class="icon-info-circle mr-2"></i> Ensure your scanner is connected and this field is
