@@ -160,12 +160,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (typeof JsBarcode !== 'undefined') {
             // Reminder: Ensure transfer_dashboard.tpl uses <svg class="cst-barcode" jsbarcode-value="{$product.ean13}"></svg>
             JsBarcode(".cst-barcode").init({
-                format: "CODE128", // Force CODE128 to avoid EAN checksum crashes
-                width: 2,          // Make the bars thick enough to scan
-                height: 60,        // Tall enough to be read easily
-                displayValue: true,// Show the numbers below
-                fontSize: 16,      // Readable font size
-                textMargin: 5,     // Space between bars and text
+                format: "CODE128", 
+                width: 2,          
+                height: 60,        
+                displayValue: true,
+                fontSize: 16,      
+                textMargin: 5,     
                 margin: 10
             });
         }
