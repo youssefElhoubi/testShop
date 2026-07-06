@@ -352,8 +352,8 @@
                                         </h3>
 
                                         {if !empty($product.ean13) && $product.ean13 != '0'}
-                                            <div class="mb-2" style="font-size: 0.85rem;">
-                                                <span class="text-muted"><i class="icon-barcode"></i> EAN: {$product.ean13|escape:'htmlall':'UTF-8'}</span>
+                                            <div class="product-barcode-container mt-2 mb-2">
+                                                <svg class="cst-barcode" width="50%" height="50%" jsbarcode-value="{$product.ean13|escape:'htmlall':'UTF-8'}"></svg>
                                             </div>
                                         {/if}
 

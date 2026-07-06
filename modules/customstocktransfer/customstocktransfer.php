@@ -122,7 +122,8 @@ class CustomStockTransfer extends Module
     {
         $tabs = [
             ['class' => 'AdminCustomStockTransfer', 'name' => 'Stock Request'],
-            ['class' => 'AdminCustomStockApproval', 'name' => 'Transfer Approval']
+            ['class' => 'AdminCustomStockApproval', 'name' => 'Transfer Approval'],
+            ['class' => 'AdminCustomStockScanner', 'name' => 'Barcode Scanner']
         ];
         foreach ($tabs as $tabData) {
             if ((int) Tab::getIdFromClassName($tabData['class']) > 0) continue;
@@ -143,7 +144,7 @@ class CustomStockTransfer extends Module
 
     protected function uninstallTab()
     {
-        $tabs = ['AdminCustomStockTransfer', 'AdminCustomStockApproval'];
+        $tabs = ['AdminCustomStockTransfer', 'AdminCustomStockApproval','Barcode Scanner'];
 
         foreach ($tabs as $className) {
             $idTab = (int) Tab::getIdFromClassName($className);
