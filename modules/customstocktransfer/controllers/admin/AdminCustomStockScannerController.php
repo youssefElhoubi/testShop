@@ -38,6 +38,13 @@ class AdminCustomStockScannerController extends ModuleAdminController
             ]));
         }
 
+        if (!Validate::isEan13($barcode)) {
+            die(json_encode([
+                'success' => false,
+                'message' => 'Invalid barcode format.'
+            ]));
+        }
+
         $id_product = 0;
         $id_product_attribute = 0;
 
@@ -71,10 +78,20 @@ class AdminCustomStockScannerController extends ModuleAdminController
 
         $product = new Product($id_product, false, $this->context->language->id);
         
-        if (!Validate::isLoadedObject($product)) {
+        if (!Validate::isLoadedObject($product) || !$product->active) {
             die(json_encode([
                 'success' => false,
-                'message' => 'Invalid product.'
+                'message' => 'Invalid or inactive product.'
+            ]));
+        }
+
+        // Get the current stock quantity immediately to fail fast
+        $stock = StockAvailable::getQuantityAvailableByProduct($id_product, $id_product_attribute);
+
+        if ($stock <= 0) {
+            die(json_encode([
+                'success' => false,
+                'message' => 'Product is out of stock.'
             ]));
         }
 
@@ -117,16 +134,16 @@ class AdminCustomStockScannerController extends ModuleAdminController
             }
         }
 
-        // Get the current stock quantity
-        $stock = StockAvailable::getQuantityAvailableByProduct($id_product, $id_product_attribute);
-
         die(json_encode([
             'success' => true,
-            'id_product' => $id_product,
-            'id_product_attribute' => $id_product_attribute,
-            'name' => $productName,
-            'stock' => $stock,
-            'image_url' => $imageUrl
+            'product' => [
+                'id_product' => $id_product,
+                'id_product_attribute' => $id_product_attribute,
+                'name' => $productName,
+                'stock' => $stock,
+                'image_url' => $imageUrl,
+                'barcode' => $barcode
+            ]
         ]));
     }
 }
