@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateBadge() {
         if (badge) {
-            // Can display total quantity or distinct items. Using unique items (length) for badge.
             let totalQty = 0;
             window.transferCart.forEach(item => {
                 totalQty += parseInt(item.quantity || 1);
@@ -18,10 +17,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize badge on load
     updateBadge();
 
-    // 2. The Scanner Listener
+    // Utility for HTML5 Beep
+    function playErrorBeep() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'square';
+            osc.frequency.value = 150; // Low frequency for error buzz
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.2);
+        } catch (e) {
+            console.warn("AudioContext not supported, skipping beep");
+        }
+    }
+
+    // Utility for Error Flash
+    function flashInputError(inputEl) {
+        inputEl.value = '';
+        inputEl.style.backgroundColor = '#ffcccc';
+        inputEl.style.borderColor = '#dc3545';
+        playErrorBeep();
+        
+        setTimeout(() => {
+            inputEl.style.backgroundColor = '';
+            inputEl.style.borderColor = '';
+            inputEl.focus();
+        }, 400);
+    }
+
+    // 2. The Scanner Listener (Debounced & Validated)
     if (scannerInput) {
         scannerInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
@@ -29,6 +59,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 let barcode = scannerInput.value.trim();
                 
                 if (!barcode) return;
+
+                // EAN-13 Validation: exactly 13 digits
+                if (!/^\d{13}$/.test(barcode)) {
+                    flashInputError(scannerInput);
+                    return;
+                }
+
+                // Debounce/Locking: Lock input to prevent double scan
+                scannerInput.disabled = true;
+
+                // Show loading spinner next to input
+                let spinner = document.createElement('div');
+                spinner.className = 'spinner-border text-success position-absolute';
+                spinner.style.right = '20px';
+                spinner.style.top = '50%';
+                spinner.style.transform = 'translateY(-50%)';
+                spinner.style.width = '2rem';
+                spinner.style.height = '2rem';
+                spinner.id = 'scanner-loading-spinner';
+                
+                let parentGroup = scannerInput.closest('.form-group');
+                if (parentGroup) {
+                    parentGroup.style.position = 'relative';
+                    parentGroup.appendChild(spinner);
+                }
 
                 // Send AJAX request
                 $.ajax({
@@ -43,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     success: function(response) {
                         if (response && response.success && response.product) {
                             let product = response.product;
+                            let maxStock = product.stock !== undefined ? parseInt(product.stock) : Infinity;
                             
                             // Check if product already exists in window.transferCart
                             let existingIndex = window.transferCart.findIndex(item => 
@@ -51,32 +107,44 @@ document.addEventListener('DOMContentLoaded', function() {
                             );
 
                             if (existingIndex > -1) {
-                                // Increment quantity if it exists
-                                window.transferCart[existingIndex].quantity = parseInt(window.transferCart[existingIndex].quantity) + 1;
+                                // Increment quantity if it exists, respecting max stock
+                                let currentQty = parseInt(window.transferCart[existingIndex].quantity);
+                                if (currentQty < maxStock) {
+                                    window.transferCart[existingIndex].quantity = currentQty + 1;
+                                } else {
+                                    alert('Cannot exceed available stock (' + maxStock + ')');
+                                }
                             } else {
-                                // Push the new product object
-                                product.quantity = 1;
-                                window.transferCart.push(product);
+                                // Push the new product object if there is stock
+                                if (maxStock < 1) {
+                                    alert('Cannot scan: Product has zero stock.');
+                                } else {
+                                    product.quantity = 1;
+                                    window.transferCart.push(product);
+                                }
                             }
 
-                            // Save to localStorage
+                            // Save to localStorage and update UI
                             localStorage.setItem('cst_transfer_cart', JSON.stringify(window.transferCart));
-                            
-                            // Update the cart badge
                             updateBadge();
-                            
+                            renderCart();
                         } else {
-                            // Feedback if product is not found
-                            console.error(response.message || 'Product not found.');
+                            flashInputError(scannerInput);
                         }
                     },
                     error: function() {
-                        console.error('Error communicating with the server.');
+                        flashInputError(scannerInput);
                     },
                     complete: function() {
-                        // Instantly clear the input field and keep focus
+                        // Success/Error Reset: Unlock input and clean up
+                        scannerInput.disabled = false;
                         scannerInput.value = '';
                         scannerInput.focus();
+                        
+                        let loadingSpinner = document.getElementById('scanner-loading-spinner');
+                        if (loadingSpinner) {
+                            loadingSpinner.remove();
+                        }
                     }
                 });
             }
@@ -97,7 +165,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.transferCart.forEach((item, index) => {
             let tr = document.createElement('tr');
             
-            // Handle various image properties that PHP might return
             let imageUrl = item.image_url || item.imageUrl || '';
             let imageHtml = imageUrl ? `<img src="${imageUrl}" width="50" class="img-thumbnail border-0 shadow-sm" style="border-radius: 8px;">` : '<div style="width:50px;height:50px;background:#f8f9fa;border-radius:8px;display:flex;align-items:center;justify-content:center;" class="text-muted"><i class="icon-image"></i></div>';
 
@@ -140,7 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Backup listener: also render on Bootstrap modal show event to be safe
     if (typeof $ !== 'undefined') {
         $('#scannerCartModal').on('show.bs.modal', function () {
             renderCart();
@@ -157,33 +223,53 @@ document.addEventListener('DOMContentLoaded', function() {
             if (index === null) return;
             index = parseInt(index);
 
+            let maxStock = window.transferCart[index].stock !== undefined ? parseInt(window.transferCart[index].stock) : Infinity;
+
             if (target.classList.contains('btn-remove')) {
                 window.transferCart.splice(index, 1);
             } else if (target.classList.contains('btn-plus')) {
-                window.transferCart[index].quantity++;
+                if (window.transferCart[index].quantity < maxStock) {
+                    window.transferCart[index].quantity++;
+                } else {
+                    alert('Cannot exceed available stock (' + maxStock + ')');
+                }
             } else if (target.classList.contains('btn-minus')) {
                 if (window.transferCart[index].quantity > 1) {
                     window.transferCart[index].quantity--;
                 }
             }
 
-            // Save state, update UI
             localStorage.setItem('cst_transfer_cart', JSON.stringify(window.transferCart));
             updateBadge();
             renderCart();
         });
 
-        // Handle manual quantity input changes
+        // Handle manual quantity input changes with Stock Limit Validation
         cartContainer.addEventListener('change', function(e) {
             if (e.target.classList.contains('qty-input')) {
                 let index = parseInt(e.target.getAttribute('data-index'));
                 let newQty = parseInt(e.target.value);
+                let maxStock = window.transferCart[index].stock !== undefined ? parseInt(window.transferCart[index].stock) : Infinity;
                 
-                if (!isNaN(newQty) && newQty > 0) {
-                    window.transferCart[index].quantity = newQty;
-                } else {
+                if (isNaN(newQty) || newQty < 1) {
                     // Revert to old valid quantity
                     e.target.value = window.transferCart[index].quantity;
+                    return;
+                }
+
+                if (newQty > maxStock) {
+                    // Revert input to maximum available stock and show warning
+                    window.transferCart[index].quantity = maxStock;
+                    e.target.value = maxStock;
+                    
+                    // Show brief warning using alert or temporary UI change
+                    let originalBg = e.target.style.backgroundColor;
+                    e.target.style.backgroundColor = '#fff3cd'; // Bootstrap warning color
+                    setTimeout(() => e.target.style.backgroundColor = originalBg, 1000);
+                    
+                    alert('Quantity reduced to maximum available stock (' + maxStock + ')');
+                } else {
+                    window.transferCart[index].quantity = newQty;
                 }
                 
                 localStorage.setItem('cst_transfer_cart', JSON.stringify(window.transferCart));
