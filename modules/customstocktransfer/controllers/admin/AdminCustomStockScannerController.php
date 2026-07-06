@@ -18,6 +18,10 @@ class AdminCustomStockScannerController extends ModuleAdminController
 
         $this->addCSS($this->module->getPathUri() . 'views/css/transfer.css');
         $this->context->controller->addCSS(_MODULE_DIR_ . $this->module->name . '/views/css/scanner.css');
+        
+        // Inject SweetAlert2
+        $this->addJS('https://cdn.jsdelivr.net/npm/sweetalert2@11');
+        
         $this->addJS($this->module->getPathUri() . 'views/js/scanner.js');
     }
 

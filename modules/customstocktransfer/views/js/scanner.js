@@ -112,12 +112,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                 if (currentQty < maxStock) {
                                     window.transferCart[existingIndex].quantity = currentQty + 1;
                                 } else {
-                                    alert('Cannot exceed available stock (' + maxStock + ')');
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Stock Limit Reached',
+                                        text: 'Cannot exceed available stock (' + maxStock + ')'
+                                    });
                                 }
                             } else {
                                 // Push the new product object if there is stock
                                 if (maxStock < 1) {
-                                    alert('Cannot scan: Product has zero stock.');
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Out of Stock',
+                                        text: 'Cannot scan: Product has zero stock.'
+                                    });
                                 } else {
                                     product.quantity = 1;
                                     window.transferCart.push(product);
@@ -250,7 +258,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.transferCart[index].quantity < maxStock) {
                     window.transferCart[index].quantity++;
                 } else {
-                    alert('Cannot exceed available stock (' + maxStock + ')');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Stock Limit Reached',
+                        text: 'Cannot exceed available stock (' + maxStock + ')'
+                    });
                 }
             } else if (target.classList.contains('btn-minus')) {
                 if (window.transferCart[index].quantity > 1) {
@@ -286,7 +298,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.target.style.backgroundColor = '#fff3cd'; // Bootstrap warning color
                     setTimeout(() => e.target.style.backgroundColor = originalBg, 1000);
                     
-                    alert('Quantity reduced to maximum available stock (' + maxStock + ')');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Stock Adjusted',
+                        text: 'Quantity reduced to maximum available stock (' + maxStock + ')'
+                    });
                 } else {
                     window.transferCart[index].quantity = newQty;
                 }
@@ -302,7 +318,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnConfirmTransfer) {
         btnConfirmTransfer.addEventListener('click', function() {
             if (window.transferCart.length === 0) {
-                alert('Cart is empty');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Empty Cart',
+                    text: 'Your transfer cart is empty. Scan some items first!',
+                    confirmButtonColor: '#3085d6'
+                });
                 return;
             }
 
@@ -328,13 +349,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         updateBadge();
                         renderCart();
-                        alert(response.message || 'Transfer submitted successfully!');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message || 'Transfer submitted successfully!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                     } else {
-                        alert(response.message || 'An error occurred while submitting the transfer.');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Server Error',
+                            text: 'Something went wrong on the server. Please try again.'
+                        });
                     }
                 },
                 error: function(xhr, status, error) {
-                    alert('Server error: ' + error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Server Error',
+                        text: 'Something went wrong on the server. Please try again.'
+                    });
                 },
                 complete: function() {
                     btnConfirmTransfer.disabled = false;
