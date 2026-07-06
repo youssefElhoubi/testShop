@@ -146,4 +146,34 @@ class AdminCustomStockScannerController extends ModuleAdminController
             ]
         ]));
     }
+
+    public function ajaxProcessSubmitTransfer()
+    {
+        $cartData = Tools::getValue('cartData');
+
+        if (empty($cartData)) {
+            die(json_encode([
+                'success' => false,
+                'message' => 'No cart data received.'
+            ]));
+        }
+
+        $items = json_decode($cartData, true);
+
+        if (!is_array($items) || empty($items)) {
+            die(json_encode([
+                'success' => false,
+                'message' => 'Invalid cart data.'
+            ]));
+        }
+
+        foreach ($items as $item) {
+            // Validation or stock deduction logic will live here later
+        }
+
+        die(json_encode([
+            'success' => true,
+            'message' => 'Stock transfer processed successfully on the server!'
+        ]));
+    }
 }
