@@ -420,6 +420,7 @@
                                                     data-product-id="{$product.id_product|intval}"
                                                     data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
+                                                    data-ean13="{$product.ean13|escape:'htmlall':'UTF-8'}"
                                                     data-max-qty="{$product.total_stock|intval}" title="Add to Transfer Cart">
                                                     <i class="icon-cart-plus"></i>
                                                 </button>
@@ -605,6 +606,7 @@
                                                     class="btn btn-primary cst-btn-primary js-add-to-cart cst-btn-add-cart"
                                                     data-product-attribute-id="{if isset($product.id_product_attribute)}{$product.id_product_attribute|intval}{else}0{/if}"
                                                     data-product-name="{$product.name|escape:'htmlall':'UTF-8'}"
+                                                    data-ean13="{$product.ean13|escape:'htmlall':'UTF-8'}"
                                                     data-max-qty="{$product.total_stock|intval}" title="Add to Transfer Cart">
                                                     <i class="icon-cart-plus"></i>
                                                 </button>

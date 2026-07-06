@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    
+
     // Grab the exact containers
     const gridView = document.getElementById('customstocktransfer-grid-view');
     const tableView = document.getElementById('customstocktransfer-table-view');
@@ -128,8 +130,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         window.transferCart.forEach((item, index) => {
             const tr = document.createElement('tr');
+            
+            let barcodeHtml = '';
+            if (item.ean13 && item.ean13 !== '0') {
+                barcodeHtml = `<div class="mt-2 mb-2">
+                    <svg class="cst-barcode" jsbarcode-format="EAN13" jsbarcode-value="${item.ean13}" jsbarcode-height="30" jsbarcode-width="1.5" jsbarcode-displayValue="true"></svg>
+                </div>`;
+            }
+
             tr.innerHTML = `
-                <td>${item.productName} <br><small class="text-muted">Product ID: ${item.productId}</small></td>
+                <td>
+                    ${item.productName} <br>
+                    <small class="text-muted">Product ID: ${item.productId}</small>
+                    ${barcodeHtml}
+                </td>
                 <td>
                     <div class="d-flex align-items-center" style="display: flex !important; align-items: center !important;">
                         <input type="number" class="form-control cst-input cart-item-qty" 
@@ -142,6 +156,19 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
             container.appendChild(tr);
         });
+
+        if (typeof JsBarcode !== 'undefined') {
+            // Reminder: Ensure transfer_dashboard.tpl uses <svg class="cst-barcode" jsbarcode-value="{$product.ean13}"></svg>
+            JsBarcode(".cst-barcode").init({
+                format: "CODE128", // Force CODE128 to avoid EAN checksum crashes
+                width: 2,          // Make the bars thick enough to scan
+                height: 60,        // Tall enough to be read easily
+                displayValue: true,// Show the numbers below
+                fontSize: 16,      // Readable font size
+                textMargin: 5,     // Space between bars and text
+                margin: 10
+            });
+        }
     }
 
     if (btnOpenCart && cartModal) {
@@ -221,6 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const productId = this.getAttribute('data-product-id');
             const productAttributeId = this.getAttribute('data-product-attribute-id') || 0;
             const productName = this.getAttribute('data-product-name');
+            const ean13 = this.getAttribute('data-ean13') || '';
             const maxQty = this.getAttribute('data-max-qty');            
 
             const parentContainer = this.closest('.d-flex') || this.closest('.d-inline-flex');
@@ -365,6 +393,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const productId = btnAddToCart.getAttribute('data-product-id');
                         const productAttributeId = btnAddToCart.getAttribute('data-product-attribute-id') || 0;
                         const productName = btnAddToCart.getAttribute('data-product-name');
+                        const ean13 = btnAddToCart.getAttribute('data-ean13') || '';
                         const maxQty = btnAddToCart.getAttribute('data-max-qty');
 
                         const qtyInput = container.querySelector('input[name="bulk_quantities[' + productId + ']"]');
@@ -386,6 +415,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 productId: productId,
                                 productAttributeId: productAttributeId,
                                 productName: productName,
+                                ean13: ean13,
                                 maxQty: maxQty,
                                 qty: qty
                             });
@@ -406,7 +436,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- Initialize JsBarcode ---
-    if (typeof JsBarcode !== 'undefined') { JsBarcode(".cst-barcode").init(); }
+    if (typeof JsBarcode !== 'undefined') {
+        // Reminder: Ensure transfer_dashboard.tpl uses <svg class="cst-barcode" jsbarcode-value="{$product.ean13}"></svg>
+        JsBarcode(".cst-barcode").init({
+            format: "CODE128", // Force CODE128 to avoid EAN checksum crashes
+            width: 2,          // Make the bars thick enough to scan
+            height: 60,        // Tall enough to be read easily
+            displayValue: true,// Show the numbers below
+            fontSize: 16,      // Readable font size
+            textMargin: 5,     // Space between bars and text
+            margin: 10
+        });
+    }
 
     // --- Barcode Scanner Logic ---
     const barcodeScanner = document.getElementById('cst-barcode-scanner');
@@ -464,6 +505,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     productId: productId,
                                     productAttributeId: productAttributeId,
                                     productName: productName,
+                                    ean13: scannedValue,
                                     maxQty: maxQty,
                                     qty: 1
                                 });
