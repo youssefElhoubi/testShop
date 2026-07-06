@@ -158,46 +158,37 @@ document.addEventListener('DOMContentLoaded', function() {
         cartContainer.innerHTML = '';
         
         if (window.transferCart.length === 0) {
-            cartContainer.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Your scanner cart is empty. Scan items to add them.</td></tr>';
+            cartContainer.innerHTML = '<div class="text-center text-muted py-4" style="color: #94a3b8 !important;">Your scanner cart is empty. Scan items to add them.</div>';
             return;
         }
 
         window.transferCart.forEach((item, index) => {
-            let tr = document.createElement('tr');
+            let div = document.createElement('div');
+            div.className = 'cst-cart-item';
             
             let imageUrl = item.image_url || item.imageUrl || '';
-            let imageHtml = imageUrl ? `<img src="${imageUrl}" width="50" class="img-thumbnail border-0 shadow-sm" style="border-radius: 8px;">` : '<div style="width:50px;height:50px;background:#f8f9fa;border-radius:8px;display:flex;align-items:center;justify-content:center;" class="text-muted"><i class="icon-image"></i></div>';
+            let imageHtml = imageUrl ? `<img src="${imageUrl}" class="cst-cart-item-img">` : `<div class="cst-cart-item-img d-flex align-items-center justify-content-center text-muted"><i class="icon-image"></i></div>`;
 
             let productName = item.name || item.productName || item.product_name || 'Unknown Product';
             let combinationName = item.combinationName || item.attribute_name || '';
 
-            tr.innerHTML = `
-                <td class="text-center align-middle">
-                    ${imageHtml}
-                </td>
-                <td class="align-middle">
-                    <h6 class="mb-0 text-dark">${productName}</h6>
-                    ${combinationName ? `<small class="text-muted">${combinationName}</small><br>` : ''}
-                    <small class="text-muted">Barcode: ${item.barcode || item.ean13 || item.reference || 'N/A'}</small>
-                </td>
-                <td class="text-center align-middle">
-                    <div class="input-group input-group-sm mx-auto" style="max-width: 120px;">
-                        <div class="input-group-prepend">
-                            <button class="btn btn-outline-secondary btn-minus" data-index="${index}" type="button">-</button>
-                        </div>
-                        <input type="number" class="form-control text-center qty-input" data-index="${index}" value="${item.quantity}" min="1">
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-secondary btn-plus" data-index="${index}" type="button">+</button>
-                        </div>
-                    </div>
-                </td>
-                <td class="text-center align-middle">
-                    <button class="btn btn-outline-danger btn-sm btn-remove" data-index="${index}" title="Remove item">
-                        <i class="icon-trash"></i>
-                    </button>
-                </td>
+            div.innerHTML = `
+                ${imageHtml}
+                <div class="cst-cart-item-info">
+                    <h6 class="cst-cart-item-title">${productName}</h6>
+                    ${combinationName ? `<div class="cst-cart-item-meta">${combinationName}</div>` : ''}
+                    <div class="cst-cart-item-meta">Barcode: ${item.barcode || item.ean13 || item.reference || 'N/A'}</div>
+                </div>
+                <div class="cst-cart-item-qty">
+                    <button class="cst-btn-qty btn-minus" data-index="${index}" type="button"><i class="icon-minus"></i></button>
+                    <input type="number" class="cst-qty-input qty-input" data-index="${index}" value="${item.quantity}" min="1">
+                    <button class="cst-btn-qty btn-plus" data-index="${index}" type="button"><i class="icon-plus"></i></button>
+                </div>
+                <button class="cst-cart-item-remove btn-remove" data-index="${index}" title="Remove item">
+                    <i class="icon-trash"></i>
+                </button>
             `;
-            cartContainer.appendChild(tr);
+            cartContainer.appendChild(div);
         });
     }
 
