@@ -333,14 +333,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 return;
             }
-            const idWarehouseFrom = document.getElementById('id_warehouse_from')?.value;
-            const idWarehouseTo = document.getElementById('id_warehouse_to')?.value;
+            const warehouseFromEl = document.getElementById('id_warehouse_from');
+            const warehouseToEl = document.getElementById('id_warehouse_to');
+            const idWarehouseFrom = warehouseFromEl ? warehouseFromEl.value : "0";
+            const idWarehouseTo = warehouseToEl ? warehouseToEl.value : "0";
 
-            if (!idWarehouseFrom || idWarehouseFrom === '0' || !idWarehouseTo || idWarehouseTo === '0') {
+            if (idWarehouseFrom === "0" || idWarehouseFrom === "" || idWarehouseTo === "0" || idWarehouseTo === "") {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Missing Information',
-                    text: 'Please select both a Source and Destination warehouse.'
+                    title: 'Missing Stores',
+                    text: 'You must select both a Source and Destination warehouse before confirming.'
                 });
                 return;
             }
@@ -349,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Invalid Route',
-                    text: 'The source and destination warehouses cannot be the same.'
+                    text: 'The Source and Destination warehouses cannot be the same.'
                 });
                 return;
             }
