@@ -32,8 +32,7 @@
             return parent::postProcess();
         }
 
-        public function ajaxProcessConfirmCart()
-        {
+        public function ajaxProcessConfirmCart(){
             $sourceStoreId = (int) Tools::getValue('source_shop_id');
             $destStoreId = (int) Tools::getValue('destination_shop_id');
             $cartItems = Tools::getValue('cart_items');

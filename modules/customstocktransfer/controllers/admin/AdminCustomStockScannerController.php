@@ -18,10 +18,10 @@ class AdminCustomStockScannerController extends ModuleAdminController
 
         $this->addCSS($this->module->getPathUri() . 'views/css/transfer.css');
         $this->context->controller->addCSS(_MODULE_DIR_ . $this->module->name . '/views/css/scanner.css');
-        
+
         // Inject SweetAlert2
         $this->addJS('https://cdn.jsdelivr.net/npm/sweetalert2@11');
-        
+
         $this->addJS($this->module->getPathUri() . 'views/js/scanner.js');
     }
 
@@ -102,7 +102,7 @@ class AdminCustomStockScannerController extends ModuleAdminController
         }
 
         $product = new Product($id_product, false, $this->context->language->id);
-        
+
         if (!Validate::isLoadedObject($product) || !$product->active) {
             die(json_encode([
                 'success' => false,
@@ -130,14 +130,14 @@ class AdminCustomStockScannerController extends ModuleAdminController
 
         // Get the Image
         $imageId = false;
-        
+
         // Try attribute image first
         if ($id_product_attribute > 0) {
             $imageId = (int)Db::getInstance()->getValue(
                 'SELECT id_image FROM ' . _DB_PREFIX_ . 'product_attribute_image WHERE id_product_attribute = ' . (int)$id_product_attribute
             );
         }
-        
+
         // Fallback to cover
         if (!$imageId) {
             $cover = Image::getCover($id_product);
@@ -145,7 +145,7 @@ class AdminCustomStockScannerController extends ModuleAdminController
                 $imageId = (int)$cover['id_image'];
             }
         }
-        
+
         $imageUrl = '';
         if ($imageId) {
             $link_rewrite = is_array($product->link_rewrite) ? $product->link_rewrite : '';
@@ -153,7 +153,7 @@ class AdminCustomStockScannerController extends ModuleAdminController
                 $link_rewrite = 'product';
             }
             $imageUrl = $this->context->link->getImageLink($link_rewrite, $imageId, 'small_default');
-            
+
             if (strpos($imageUrl, 'http') !== 0) {
                 $imageUrl = $this->context->link->protocol_content . ltrim($imageUrl, '/');
             }
@@ -174,31 +174,86 @@ class AdminCustomStockScannerController extends ModuleAdminController
 
     public function ajaxProcessSubmitTransfer()
     {
-        $cartData = Tools::getValue('cartData');
+        $sourceStoreId = (int) Tools::getValue('source_shop_id');
+        $destStoreId = (int) Tools::getValue('destination_shop_id');
+        $cartItems = Tools::getValue('cart_items');
 
-        if (empty($cartData)) {
-            die(json_encode([
-                'success' => false,
-                'message' => 'No cart data received.'
-            ]));
+        if (!$sourceStoreId || !$destStoreId) {
+            die(json_encode(['success' => false, 'message' => 'Invalid stores selected.']));
         }
 
-        $items = json_decode($cartData, true);
-
-        if (!is_array($items) || empty($items)) {
-            die(json_encode([
-                'success' => false,
-                'message' => 'Invalid cart data.'
-            ]));
+        if (!is_array($cartItems) || empty($cartItems)) {
+            die(json_encode(['success' => false, 'message' => 'Cart is empty.']));
         }
 
-        foreach ($items as $item) {
-            // Validation or stock deduction logic will live here later
-        }
+        Db::getInstance()->execute('START TRANSACTION');
 
-        die(json_encode([
-            'success' => true,
-            'message' => 'Stock transfer processed successfully on the server!'
-        ]));
+        try {
+            $barcode = 'TRF-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
+
+            $resHeader = Db::getInstance()->insert('transfers', [
+                'id_store_from' => $sourceStoreId,
+                'id_store_to' => $destStoreId,
+                'barcode' => pSQL($barcode),
+                'status' => 'pending',
+                'date_add' => date('Y-m-d H:i:s'),
+                'date_upd' => date('Y-m-d H:i:s'),
+            ]);
+
+            if (!$resHeader) {
+                throw new Exception('Failed to insert transfer header.');
+            }
+
+            $idTransfer = (int) Db::getInstance()->Insert_ID();
+
+            foreach ($cartItems as $item) {
+                $idProduct = (int) $item['productId'];
+                $idProductAttribute = isset($item['productAttributeId']) ? (int) $item['productAttributeId'] : 0;
+                $quantity = (int) $item['qty'];
+
+                if ($quantity <= 0) continue;
+
+                $resDetail = Db::getInstance()->insert('transfer_details', [
+                    'id_transfer' => $idTransfer,
+                    'id_product' => $idProduct,
+                    'id_product_attribute' => $idProductAttribute,
+                    'quantity' => $quantity
+                ]);
+
+                if (!$resDetail) {
+                    throw new Exception('Failed to insert transfer detail for product ' . $idProduct);
+                }
+            }
+
+            Db::getInstance()->execute('COMMIT');
+
+            // Send email notification to admin
+            $adminEmail = Configuration::get('PS_SHOP_EMAIL');
+            if ($adminEmail) {
+                Mail::Send(
+                    (int) $this->context->language->id,
+                    'transfer_request',
+                    $this->trans('New Stock Transfer Request Pending Approval', [], 'Modules.Customstocktransfer.Admin'),
+                    [
+                        '{product_id}'  => 'Multiple Products',
+                        '{quantity}'    => count($cartItems),
+                        '{store_from}'  => $sourceStoreId,
+                        '{store_to}'    => $destStoreId,
+                    ],
+                    $adminEmail,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    _PS_MODULE_DIR_ . $this->module->name . '/mails/'
+                );
+            }
+
+            die(json_encode(['success' => true]));
+        } catch (Exception $e) {
+            Db::getInstance()->execute('ROLLBACK');
+            die(json_encode(['success' => false, 'message' => $e->getMessage()]));
+        }
     }
 }
