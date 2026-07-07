@@ -311,6 +311,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnConfirmTransfer = document.querySelector('.js-confirm-transfer');
     if (btnConfirmTransfer) {
         btnConfirmTransfer.addEventListener('click', function () {
+            console.log(window.cstConfig.ajaxUrl);
+            
             hideModalError();
 
             if (window.transferCart.length === 0) {

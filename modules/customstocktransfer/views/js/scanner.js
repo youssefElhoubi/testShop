@@ -333,6 +333,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 return;
             }
+            const sourceStoreEl = document.getElementById('modal_source_shop_id') || document.querySelector('[name="source_shop_id"]');
+            const destStoreEl = document.getElementById('modal_destination_shop_id') || document.querySelector('[name="destination_shop_id"]');
+            
+            const sourceStoreId = sourceStoreEl ? sourceStoreEl.value : null;
+            const destStoreId = destStoreEl ? destStoreEl.value : null;
+
+            if (!sourceStoreId || !destStoreId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Store Information',
+                    text: 'Please select both a Source Store and a Destination Store.',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            if (sourceStoreId === destStoreId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Selection',
+                    text: 'Source and destination stores cannot be the same.',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
 
             let originalText = btnConfirmTransfer.innerHTML;
             btnConfirmTransfer.disabled = true;
@@ -345,6 +370,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 data: {
                     action: 'SubmitTransfer',
                     ajax: true,
+                    source_shop_id: sourceStoreId,
+                    destination_shop_id: destStoreId,
                     cartData: JSON.stringify(window.transferCart)
                 },
                 success: function (response) {
