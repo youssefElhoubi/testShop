@@ -27,8 +27,29 @@ class AdminCustomStockScannerController extends ModuleAdminController
 
     public function initContent()
     {
-        $this->setTemplate('scanner_dashboard.tpl');
         parent::initContent();
+
+        $shops = $this->getActiveShops();
+
+        $this->context->smarty->assign([
+            'shops' => $shops
+        ]);
+
+        $this->setTemplate('scanner_dashboard.tpl');
+    }
+
+    protected function getActiveShops()
+    {
+        $shops = [];
+
+        foreach (Shop::getShops(true, null, false) as $shop) {
+            $shops[] = [
+                'id_shop' => (int) $shop['id_shop'],
+                'shop_name' => (string) $shop['name'],
+            ];
+        }
+
+        return $shops;
     }
 
     public function ajaxProcessScanBarcode()

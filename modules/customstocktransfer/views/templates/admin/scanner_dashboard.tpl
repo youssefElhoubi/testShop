@@ -26,6 +26,7 @@
                                 <i class="icon-barcode scanner-icon"></i>
                             </div>
                             <h2 class="mb-4 font-weight-bold text-dark">Ready to Scan</h2>
+
                             <div class="cst-scanner-wrapper form-group mb-4">
                                 <label for="dedicated-scanner-input" class="cst-scanner-label">Scan Barcode</label>
                                 <input type="text" id="dedicated-scanner-input" class="scanner-input" placeholder="Shoot barcode here..." autofocus autocomplete="off">
@@ -57,6 +58,31 @@
             <div class="modal-body p-4">
                 <div id="scanner-cart-items-container">
                     <!-- Items will be injected here via JS as .cst-cart-item divs -->
+                </div>
+                
+                <div class="row mt-4 text-left">
+                    <div class="col-md-6">
+                        <label for="id_warehouse_from" class="font-weight-bold text-white">From Store/Warehouse</label>
+                        <select class="form-control" id="id_warehouse_from" name="id_warehouse_from">
+                            <option value="0" disabled selected>-- Select a Store --</option>
+                            {if isset($shops) && $shops}
+                                {foreach from=$shops item=shop}
+                                    <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'html':'UTF-8'}</option>
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_warehouse_to" class="font-weight-bold text-white">To Store/Warehouse</label>
+                        <select class="form-control" id="id_warehouse_to" name="id_warehouse_to">
+                            <option value="0" disabled selected>-- Select a Store --</option>
+                            {if isset($shops) && $shops}
+                                {foreach from=$shops item=shop}
+                                    <option value="{$shop.id_shop|intval}">{$shop.shop_name|escape:'html':'UTF-8'}</option>
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-top-0 px-4 pb-4 pt-2">

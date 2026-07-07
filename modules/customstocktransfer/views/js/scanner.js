@@ -333,28 +333,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 return;
             }
-            const sourceStoreEl = document.getElementById('modal_source_shop_id') || document.querySelector('[name="source_shop_id"]');
-            const destStoreEl = document.getElementById('modal_destination_shop_id') || document.querySelector('[name="destination_shop_id"]');
-            
-            const sourceStoreId = sourceStoreEl ? sourceStoreEl.value : null;
-            const destStoreId = destStoreEl ? destStoreEl.value : null;
+            const idWarehouseFrom = document.getElementById('id_warehouse_from')?.value;
+            const idWarehouseTo = document.getElementById('id_warehouse_to')?.value;
 
-            if (!sourceStoreId || !destStoreId) {
+            if (!idWarehouseFrom || idWarehouseFrom === '0' || !idWarehouseTo || idWarehouseTo === '0') {
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Missing Store Information',
-                    text: 'Please select both a Source Store and a Destination Store.',
-                    confirmButtonColor: '#3085d6'
+                    icon: 'error',
+                    title: 'Missing Information',
+                    text: 'Please select both a Source and Destination warehouse.'
                 });
                 return;
             }
 
-            if (sourceStoreId === destStoreId) {
+            if (idWarehouseFrom === idWarehouseTo) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Invalid Selection',
-                    text: 'Source and destination stores cannot be the same.',
-                    confirmButtonColor: '#3085d6'
+                    title: 'Invalid Route',
+                    text: 'The source and destination warehouses cannot be the same.'
                 });
                 return;
             }
@@ -370,8 +365,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 data: {
                     action: 'SubmitTransfer',
                     ajax: true,
-                    source_shop_id: sourceStoreId,
-                    destination_shop_id: destStoreId,
+                    id_warehouse_from: idWarehouseFrom,
+                    id_warehouse_to: idWarehouseTo,
                     cartData: JSON.stringify(window.transferCart)
                 },
                 success: function (response) {
