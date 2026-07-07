@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     updateBadge();
+    renderCart(); // Initial render for live cart
 
     // Utility for HTML5 Beep
     function playErrorBeep() {
@@ -195,57 +196,74 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 3. Cart Modal Rendering
+    const liveCartWrapper = document.getElementById('live-scanner-cart-container');
+
     function renderCart() {
         if (!cartContainer) return;
 
-        cartContainer.innerHTML = '';
-
         if (window.transferCart.length === 0) {
-            cartContainer.innerHTML = '<div class="text-center text-muted py-4" style="color: #94a3b8 !important;">Your scanner cart is empty. Scan items to add them.</div>';
+            cartContainer.innerHTML = '';
+            if (liveCartWrapper) {
+                liveCartWrapper.classList.add('d-none');
+            }
             return;
         }
 
-        window.transferCart.forEach((item, index) => {
-            let div = document.createElement('div');
-            div.className = 'cst-cart-item';
+        if (liveCartWrapper) {
+            liveCartWrapper.classList.remove('d-none');
+        }
 
+        let tableHtml = `
+            <table class="table scanner-live-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Image</th>
+                        <th>Product Details</th>
+                        <th class="text-center" style="width: 150px;">Quantity</th>
+                        <th class="text-center" style="width: 60px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        window.transferCart.forEach((item, index) => {
             let imageUrl = item.image_url || '';
             let imageHtml = imageUrl ? `<img src="${imageUrl}" class="cst-cart-item-img">` : `<div class="cst-cart-item-img d-flex align-items-center justify-content-center text-muted"><i class="icon-image"></i></div>`;
 
             let productName = item.name || 'Unknown Product';
             let combinationName = item.combinationName || item.attribute_name || '';
 
-            div.innerHTML = `
-                ${imageHtml}
-                <div class="cst-cart-item-info">
-                    <h6 class="cst-cart-item-title">${productName}</h6>
-                    ${combinationName ? `<div class="cst-cart-item-meta">${combinationName}</div>` : ''}
-                    <div class="cst-cart-item-meta">Barcode: ${item.reference || 'N/A'}</div>
-                </div>
-                <div class="cst-cart-item-qty">
-                    <button class="cst-btn-qty btn-minus" data-index="${index}" type="button"><i class="icon-minus"></i></button>
-                    <input type="number" class="cst-qty-input qty-input" data-index="${index}" value="${item.qty}" min="1">
-                    <button class="cst-btn-qty btn-plus" data-index="${index}" type="button"><i class="icon-plus"></i></button>
-                </div>
-                <button class="cst-cart-item-remove btn-remove" data-index="${index}" title="Remove item">
-                    <i class="icon-trash"></i>
-                </button>
+            tableHtml += `
+                <tr>
+                    <td class="align-middle">${imageHtml}</td>
+                    <td class="align-middle">
+                        <div class="cst-cart-item-title">${productName}</div>
+                        ${combinationName ? `<div class="cst-cart-item-meta">${combinationName}</div>` : ''}
+                        <div class="cst-cart-item-meta">Barcode: ${item.reference || 'N/A'}</div>
+                    </td>
+                    <td class="align-middle text-center">
+                        <div class="cst-cart-item-qty justify-content-center">
+                            <button class="cst-btn-qty btn-minus" data-index="${index}" type="button"><i class="icon-minus"></i></button>
+                            <input type="number" class="cst-qty-input qty-input mx-2" data-index="${index}" value="${item.qty}" min="1">
+                            <button class="cst-btn-qty btn-plus" data-index="${index}" type="button"><i class="icon-plus"></i></button>
+                        </div>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button class="cst-cart-item-remove btn-remove" data-index="${index}" title="Remove item">
+                            <i class="icon-trash"></i>
+                        </button>
+                    </td>
+                </tr>
             `;
-            cartContainer.appendChild(div);
         });
+
+        tableHtml += `
+                </tbody>
+            </table>
+        `;
+        cartContainer.innerHTML = tableHtml;
     }
 
-    if (btnViewCart) {
-        btnViewCart.addEventListener('click', function () {
-            renderCart();
-        });
-    }
-
-    if (typeof $ !== 'undefined') {
-        $('#scannerCartModal').on('show.bs.modal', function () {
-            renderCart();
-        });
-    }
 
     // 4. Handle interactions inside the cart modal (Event Delegation)
     if (cartContainer) {
@@ -323,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 5. Checkout Submission
     const btnConfirmTransfer = document.getElementById('btn-confirm-scanner-transfer');
     if (btnConfirmTransfer) {
-        btnConfirmTransfer.addEventListener('click', function () {
+        btnConfirmTransfer.addEventListener('click', function (e) {
             if (window.transferCart.length === 0) {
                 Swal.fire({
                     icon: 'warning',
@@ -375,9 +393,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (response && response.success) {
                         window.transferCart = [];
                         localStorage.removeItem('cst_transfer_cart');
-                        if (typeof $ !== 'undefined') {
-                            $('#scannerCartModal').modal('hide');
-                        }
                         updateBadge();
                         renderCart();
                         Swal.fire({

@@ -18,10 +18,10 @@ class AdminCustomStockScannerController extends ModuleAdminController
 
         $this->addCSS($this->module->getPathUri() . 'views/css/transfer.css');
         $this->context->controller->addCSS(_MODULE_DIR_ . $this->module->name . '/views/css/scanner.css');
-
+        
         // Inject SweetAlert2
         $this->addJS('https://cdn.jsdelivr.net/npm/sweetalert2@11');
-
+        
         $this->addJS($this->module->getPathUri() . 'views/js/scanner.js');
     }
 
@@ -102,7 +102,7 @@ class AdminCustomStockScannerController extends ModuleAdminController
         }
 
         $product = new Product($id_product, false, $this->context->language->id);
-
+        
         if (!Validate::isLoadedObject($product) || !$product->active) {
             die(json_encode([
                 'success' => false,
@@ -130,14 +130,14 @@ class AdminCustomStockScannerController extends ModuleAdminController
 
         // Get the Image
         $imageId = false;
-
+        
         // Try attribute image first
         if ($id_product_attribute > 0) {
             $imageId = (int)Db::getInstance()->getValue(
                 'SELECT id_image FROM ' . _DB_PREFIX_ . 'product_attribute_image WHERE id_product_attribute = ' . (int)$id_product_attribute
             );
         }
-
+        
         // Fallback to cover
         if (!$imageId) {
             $cover = Image::getCover($id_product);
@@ -145,7 +145,7 @@ class AdminCustomStockScannerController extends ModuleAdminController
                 $imageId = (int)$cover['id_image'];
             }
         }
-
+        
         $imageUrl = '';
         if ($imageId) {
             $link_rewrite = is_array($product->link_rewrite) ? $product->link_rewrite : '';
@@ -153,7 +153,7 @@ class AdminCustomStockScannerController extends ModuleAdminController
                 $link_rewrite = 'product';
             }
             $imageUrl = $this->context->link->getImageLink($link_rewrite, $imageId, 'small_default');
-
+            
             if (strpos($imageUrl, 'http') !== 0) {
                 $imageUrl = $this->context->link->protocol_content . ltrim($imageUrl, '/');
             }
@@ -172,14 +172,14 @@ class AdminCustomStockScannerController extends ModuleAdminController
         ]));
     }
 
-    public function ajaxProcessSubmitTransfer()
-    {
-        $sourceStoreId = (int) Tools::getValue('source_shop_id');
-        $destStoreId = (int) Tools::getValue('destination_shop_id');
-        $cartItems = Tools::getValue('cart_items');
+    public function ajaxProcessSubmitTransfer(){
+        $idWarehouseFrom = (int) Tools::getValue('id_warehouse_from');
+        $idWarehouseTo = (int) Tools::getValue('id_warehouse_to');
+        $cartDataRaw = Tools::getValue('cartData');
+        $cartItems = json_decode($cartDataRaw, true);
 
-        if (!$sourceStoreId || !$destStoreId) {
-            die(json_encode(['success' => false, 'message' => 'Invalid stores selected.']));
+        if (!$idWarehouseFrom || !$idWarehouseTo || $idWarehouseFrom === $idWarehouseTo) {
+            die(json_encode(['success' => false, 'message' => 'Invalid source or destination store.']));
         }
 
         if (!is_array($cartItems) || empty($cartItems)) {
@@ -190,10 +190,10 @@ class AdminCustomStockScannerController extends ModuleAdminController
 
         try {
             $barcode = 'TRF-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
-
+            
             $resHeader = Db::getInstance()->insert('transfers', [
-                'id_store_from' => $sourceStoreId,
-                'id_store_to' => $destStoreId,
+                'id_store_from' => $idWarehouseFrom,
+                'id_store_to' => $idWarehouseTo,
                 'barcode' => pSQL($barcode),
                 'status' => 'pending',
                 'date_add' => date('Y-m-d H:i:s'),
@@ -207,8 +207,8 @@ class AdminCustomStockScannerController extends ModuleAdminController
             $idTransfer = (int) Db::getInstance()->Insert_ID();
 
             foreach ($cartItems as $item) {
-                $idProduct = (int) $item['productId'];
-                $idProductAttribute = isset($item['productAttributeId']) ? (int) $item['productAttributeId'] : 0;
+                $idProduct = (int) $item['id_product'];
+                $idProductAttribute = isset($item['id_product_attribute']) ? (int) $item['id_product_attribute'] : 0;
                 $quantity = (int) $item['qty'];
 
                 if ($quantity <= 0) continue;
@@ -226,7 +226,7 @@ class AdminCustomStockScannerController extends ModuleAdminController
             }
 
             Db::getInstance()->execute('COMMIT');
-
+            
             // Send email notification to admin
             $adminEmail = Configuration::get('PS_SHOP_EMAIL');
             if ($adminEmail) {
@@ -237,20 +237,20 @@ class AdminCustomStockScannerController extends ModuleAdminController
                     [
                         '{product_id}'  => 'Multiple Products',
                         '{quantity}'    => count($cartItems),
-                        '{store_from}'  => $sourceStoreId,
-                        '{store_to}'    => $destStoreId,
+                        '{store_from}'  => $idWarehouseFrom,
+                        '{store_to}'    => $idWarehouseTo,
                     ],
                     $adminEmail,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
+                    null, null, null, null, null,
                     _PS_MODULE_DIR_ . $this->module->name . '/mails/'
                 );
             }
 
-            die(json_encode(['success' => true]));
+            die(json_encode([
+                'success' => true,
+                'message' => 'Stock transfer completed and recorded successfully.'
+            ]));
+
         } catch (Exception $e) {
             Db::getInstance()->execute('ROLLBACK');
             die(json_encode(['success' => false, 'message' => $e->getMessage()]));

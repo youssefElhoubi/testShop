@@ -74,10 +74,69 @@
     color: #ffffff;
 }
 
-/* Modal Body Gap Utility */
+/* --- Live Cart Container Limits --- */
+#live-scanner-cart-container {
+    background: linear-gradient(135deg, #1e3a5f, #4a3b69);
+    border: none;
+}
+
+/* Scrollable Feed for Cart Items */
 #scanner-cart-items-container {
     display: flex;
     flex-direction: column;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px; /* Room for scrollbar */
+    border-radius: 0.5rem;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbar for Dark Theme */
+#scanner-cart-items-container::-webkit-scrollbar {
+    width: 6px;
+}
+#scanner-cart-items-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+#scanner-cart-items-container::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+/* --- Live Cart Table Styling --- */
+.scanner-live-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+.scanner-live-table thead th {
+    background-color: rgba(15, 23, 42, 0.6); /* Dark blue/grey semi-transparent */
+    color: #ffffff;
+    font-weight: bold;
+    text-align: left;
+    padding: 1rem 1.5rem;
+    border: none !important;
+}
+
+.scanner-live-table thead th.text-center {
+    text-align: center;
+}
+
+.scanner-live-table tbody tr {
+    border: none !important;
+    transition: background-color 0.2s ease;
+}
+
+.scanner-live-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05); /* Subtle row hover */
+}
+
+.scanner-live-table tbody td {
+    color: #e2e8f0; /* off-white/light grey */
+    padding: 1rem 1.5rem;
+    border: none !important;
+    vertical-align: middle;
 }
 .cst-cart-item {
     margin-bottom: 1rem;
