@@ -1,7 +1,7 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // 1. State Management: Initialize Cart
     window.transferCart = JSON.parse(localStorage.getItem('cst_transfer_cart')) || [];
-    
+
     const badge = document.getElementById('scanner-cart-badge');
     const scannerInput = document.getElementById('dedicated-scanner-input');
     const cartContainer = document.getElementById('scanner-cart-items-container');
@@ -11,12 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (badge) {
             let totalQty = 0;
             window.transferCart.forEach(item => {
-                totalQty += parseInt(item.quantity || 1);
+                totalQty += parseInt(item.qty || 1, 10);
             });
             badge.innerText = totalQty;
         }
     }
-    
+
     updateBadge();
 
     // Utility for HTML5 Beep
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
         inputEl.style.backgroundColor = '#ffcccc';
         inputEl.style.borderColor = '#dc3545';
         playErrorBeep();
-        
+
         setTimeout(() => {
             inputEl.style.backgroundColor = '';
             inputEl.style.borderColor = '';
@@ -53,11 +53,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 2. The Scanner Listener (Debounced & Validated)
     if (scannerInput) {
-        scannerInput.addEventListener('keydown', function(e) {
+        scannerInput.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 let barcode = scannerInput.value.trim();
-                
+
                 if (!barcode) return;
 
                 // EAN-13 Validation: exactly 13 digits
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 spinner.style.width = '2rem';
                 spinner.style.height = '2rem';
                 spinner.id = 'scanner-loading-spinner';
-                
+
                 let parentGroup = scannerInput.closest('.form-group');
                 if (parentGroup) {
                     parentGroup.style.position = 'relative';
@@ -95,22 +95,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         ajax: true,
                         barcode: barcode
                     },
-                    success: function(response) {
+                    success: function (response) {
                         if (response && response.success && response.product) {
                             let product = response.product;
                             let maxStock = product.stock !== undefined ? parseInt(product.stock) : Infinity;
-                            
+
                             // Check if product already exists in window.transferCart
-                            let existingIndex = window.transferCart.findIndex(item => 
-                                item.id_product == product.id_product && 
-                                item.id_product_attribute == product.id_product_attribute
+                            let existingIndex = window.transferCart.findIndex(item =>
+                                parseInt(item.id_product, 10) === parseInt(product.id_product, 10) &&
+                                parseInt(item.id_product_attribute || 0, 10) === parseInt(product.id_product_attribute || 0, 10)
                             );
 
                             if (existingIndex > -1) {
                                 // Increment quantity if it exists, respecting max stock
-                                let currentQty = parseInt(window.transferCart[existingIndex].quantity);
+                                let currentQty = parseInt(window.transferCart[existingIndex].qty, 10);
                                 if (currentQty < maxStock) {
-                                    window.transferCart[existingIndex].quantity = currentQty + 1;
+                                    window.transferCart[existingIndex].qty = currentQty + 1;
                                 } else {
                                     Swal.fire({
                                         icon: 'warning',
@@ -127,8 +127,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                         text: 'Cannot scan: Product has zero stock.'
                                     });
                                 } else {
-                                    product.quantity = 1;
-                                    window.transferCart.push(product);
+                                    window.transferCart.push({
+                                        id_product: parseInt(product.id_product, 10),
+                                        id_product_attribute: parseInt(product.id_product_attribute || 0, 10),
+                                        name: product.name || '',
+                                        reference: product.reference || product.ean13 || product.barcode || '',
+                                        image_url: product.image_url || product.imageUrl || '',
+                                        qty: 1,
+                                        stock: parseInt(product.stock || maxStock, 10)
+                                    });
                                 }
                             }
 
@@ -141,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             scannerInput.classList.add('is-successful');
                             let feedbackMsg = document.getElementById('scanner-feedback-msg');
                             let scannerLabel = document.querySelector('label[for="dedicated-scanner-input"]');
-                            
+
                             if (feedbackMsg) {
                                 feedbackMsg.textContent = 'Well done! ' + (product.name || 'Product') + ' added.';
                                 feedbackMsg.classList.add('is-successful');
@@ -168,15 +175,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             flashInputError(scannerInput);
                         }
                     },
-                    error: function() {
+                    error: function () {
                         flashInputError(scannerInput);
                     },
-                    complete: function() {
+                    complete: function () {
                         // Success/Error Reset: Unlock input and clean up
                         scannerInput.disabled = false;
                         scannerInput.value = '';
                         scannerInput.focus();
-                        
+
                         let loadingSpinner = document.getElementById('scanner-loading-spinner');
                         if (loadingSpinner) {
                             loadingSpinner.remove();
@@ -190,9 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. Cart Modal Rendering
     function renderCart() {
         if (!cartContainer) return;
-        
+
         cartContainer.innerHTML = '';
-        
+
         if (window.transferCart.length === 0) {
             cartContainer.innerHTML = '<div class="text-center text-muted py-4" style="color: #94a3b8 !important;">Your scanner cart is empty. Scan items to add them.</div>';
             return;
@@ -201,11 +208,11 @@ document.addEventListener('DOMContentLoaded', function() {
         window.transferCart.forEach((item, index) => {
             let div = document.createElement('div');
             div.className = 'cst-cart-item';
-            
-            let imageUrl = item.image_url || item.imageUrl || '';
+
+            let imageUrl = item.image_url || '';
             let imageHtml = imageUrl ? `<img src="${imageUrl}" class="cst-cart-item-img">` : `<div class="cst-cart-item-img d-flex align-items-center justify-content-center text-muted"><i class="icon-image"></i></div>`;
 
-            let productName = item.name || item.productName || item.product_name || 'Unknown Product';
+            let productName = item.name || 'Unknown Product';
             let combinationName = item.combinationName || item.attribute_name || '';
 
             div.innerHTML = `
@@ -213,11 +220,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="cst-cart-item-info">
                     <h6 class="cst-cart-item-title">${productName}</h6>
                     ${combinationName ? `<div class="cst-cart-item-meta">${combinationName}</div>` : ''}
-                    <div class="cst-cart-item-meta">Barcode: ${item.barcode || item.ean13 || item.reference || 'N/A'}</div>
+                    <div class="cst-cart-item-meta">Barcode: ${item.reference || 'N/A'}</div>
                 </div>
                 <div class="cst-cart-item-qty">
                     <button class="cst-btn-qty btn-minus" data-index="${index}" type="button"><i class="icon-minus"></i></button>
-                    <input type="number" class="cst-qty-input qty-input" data-index="${index}" value="${item.quantity}" min="1">
+                    <input type="number" class="cst-qty-input qty-input" data-index="${index}" value="${item.qty}" min="1">
                     <button class="cst-btn-qty btn-plus" data-index="${index}" type="button"><i class="icon-plus"></i></button>
                 </div>
                 <button class="cst-cart-item-remove btn-remove" data-index="${index}" title="Remove item">
@@ -229,11 +236,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (btnViewCart) {
-        btnViewCart.addEventListener('click', function() {
+        btnViewCart.addEventListener('click', function () {
             renderCart();
         });
     }
-    
+
     if (typeof $ !== 'undefined') {
         $('#scannerCartModal').on('show.bs.modal', function () {
             renderCart();
@@ -242,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 4. Handle interactions inside the cart modal (Event Delegation)
     if (cartContainer) {
-        cartContainer.addEventListener('click', function(e) {
+        cartContainer.addEventListener('click', function (e) {
             let target = e.target.closest('button');
             if (!target) return;
 
@@ -255,8 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (target.classList.contains('btn-remove')) {
                 window.transferCart.splice(index, 1);
             } else if (target.classList.contains('btn-plus')) {
-                if (window.transferCart[index].quantity < maxStock) {
-                    window.transferCart[index].quantity++;
+                if (window.transferCart[index].qty < maxStock) {
+                    window.transferCart[index].qty++;
                 } else {
                     Swal.fire({
                         icon: 'warning',
@@ -265,8 +272,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             } else if (target.classList.contains('btn-minus')) {
-                if (window.transferCart[index].quantity > 1) {
-                    window.transferCart[index].quantity--;
+                if (window.transferCart[index].qty > 1) {
+                    window.transferCart[index].qty--;
                 }
             }
 
@@ -276,37 +283,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Handle manual quantity input changes with Stock Limit Validation
-        cartContainer.addEventListener('change', function(e) {
+        cartContainer.addEventListener('change', function (e) {
             if (e.target.classList.contains('qty-input')) {
                 let index = parseInt(e.target.getAttribute('data-index'));
                 let newQty = parseInt(e.target.value);
                 let maxStock = window.transferCart[index].stock !== undefined ? parseInt(window.transferCart[index].stock) : Infinity;
-                
+
                 if (isNaN(newQty) || newQty < 1) {
                     // Revert to old valid quantity
-                    e.target.value = window.transferCart[index].quantity;
+                    e.target.value = window.transferCart[index].qty;
                     return;
                 }
 
                 if (newQty > maxStock) {
                     // Revert input to maximum available stock and show warning
-                    window.transferCart[index].quantity = maxStock;
+                    window.transferCart[index].qty = maxStock;
                     e.target.value = maxStock;
-                    
+
                     // Show brief warning using alert or temporary UI change
                     let originalBg = e.target.style.backgroundColor;
                     e.target.style.backgroundColor = '#fff3cd'; // Bootstrap warning color
                     setTimeout(() => e.target.style.backgroundColor = originalBg, 1000);
-                    
+
                     Swal.fire({
                         icon: 'warning',
                         title: 'Stock Adjusted',
                         text: 'Quantity reduced to maximum available stock (' + maxStock + ')'
                     });
                 } else {
-                    window.transferCart[index].quantity = newQty;
+                    window.transferCart[index].qty = newQty;
                 }
-                
+
                 localStorage.setItem('cst_transfer_cart', JSON.stringify(window.transferCart));
                 updateBadge();
             }
@@ -316,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5. Checkout Submission
     const btnConfirmTransfer = document.getElementById('btn-confirm-scanner-transfer');
     if (btnConfirmTransfer) {
-        btnConfirmTransfer.addEventListener('click', function() {
+        btnConfirmTransfer.addEventListener('click', function () {
             if (window.transferCart.length === 0) {
                 Swal.fire({
                     icon: 'warning',
@@ -340,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ajax: true,
                     cartData: JSON.stringify(window.transferCart)
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response && response.success) {
                         window.transferCart = [];
                         localStorage.removeItem('cst_transfer_cart');
@@ -364,18 +371,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Server Error',
                         text: 'Something went wrong on the server. Please try again.'
                     });
                 },
-                complete: function() {
+                complete: function () {
                     btnConfirmTransfer.disabled = false;
                     btnConfirmTransfer.innerHTML = originalText;
                 }
             });
         });
     }
-});
+
+
+    // Cross-Tab/Page Synchronization
+    
+    window.addEventListener('storage', function (e) {
+            if (e.key === 'cst_transfer_cart') {
+                window.transferCart = JSON.parse(e.newValue) || [];
+                if (typeof renderCart === 'function') renderCart();
+                if (typeof updateBadge === 'function') updateBadge();
+            }
+        });
+    });

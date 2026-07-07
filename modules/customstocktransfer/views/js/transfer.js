@@ -132,22 +132,22 @@ document.addEventListener('DOMContentLoaded', function () {
             const tr = document.createElement('tr');
             
             let barcodeHtml = '';
-            if (item.ean13 && item.ean13 !== '0') {
+            if (item.reference && item.reference !== '0') {
                 barcodeHtml = `<div class="mt-2 mb-2">
-                    <svg class="cst-barcode" jsbarcode-format="EAN13" jsbarcode-value="${item.ean13}" jsbarcode-height="30" jsbarcode-width="1.5" jsbarcode-displayValue="true"></svg>
+                    <svg class="cst-barcode" jsbarcode-format="EAN13" jsbarcode-value="${item.reference}" jsbarcode-height="30" jsbarcode-width="1.5" jsbarcode-displayValue="true"></svg>
                 </div>`;
             }
 
             tr.innerHTML = `
                 <td>
-                    ${item.productName} <br>
-                    <small class="text-muted">Product ID: ${item.productId}</small>
+                    ${item.name} <br>
+                    <small class="text-muted">Product ID: ${item.id_product}</small>
                     ${barcodeHtml}
                 </td>
                 <td>
                     <div class="d-flex align-items-center" style="display: flex !important; align-items: center !important;">
                         <input type="number" class="form-control cst-input cart-item-qty" 
-                            data-index="${index}" min="1" max="${item.maxQty}" value="${item.qty}" style="width: 80px;">
+                            data-index="${index}" min="1" max="${item.stock}" value="${item.qty}" style="width: 80px;">
                         <button type="button" class="btn btn-danger btn-sm js-remove-cart-item" data-index="${index}" style="margin-left: 10px;">
                             <i class="icon-trash"></i>
                         </button>
@@ -187,15 +187,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Input Validation & Cart State Logic
-    try {
-        const storedCart = localStorage.getItem('cst_transfer_cart');
-        window.transferCart = storedCart ? JSON.parse(storedCart) : [];
-    } catch (e) {
-        window.transferCart = [];
-    }
+    window.transferCart = JSON.parse(localStorage.getItem('cst_transfer_cart')) || [];
 
     function saveCartState() {
         localStorage.setItem('cst_transfer_cart', JSON.stringify(window.transferCart));
+        if (typeof updateCartBadge === 'function') updateCartBadge();
     }
 
     function updateCartBadge() {
@@ -245,11 +241,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnsAddToCart = document.querySelectorAll('.js-add-to-cart');
     btnsAddToCart.forEach(btn => {
         btn.addEventListener('click', function () {
-            const productId = this.getAttribute('data-product-id');
-            const productAttributeId = this.getAttribute('data-product-attribute-id') || 0;
+            const productId = parseInt(this.getAttribute('data-product-id'), 10);
+            const productAttributeId = parseInt(this.getAttribute('data-product-attribute-id') || 0, 10);
             const productName = this.getAttribute('data-product-name');
             const ean13 = this.getAttribute('data-ean13') || '';
-            const maxQty = this.getAttribute('data-max-qty');            
+            const maxQty = parseInt(this.getAttribute('data-max-qty') || 0, 10);            
+            const imageUrl = this.getAttribute('data-image-url') || '';
 
             const parentContainer = this.closest('.d-flex') || this.closest('.d-inline-flex');
             let qty = 1;
@@ -259,13 +256,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const existingItemIndex = window.transferCart.findIndex(item =>
-                item.productId === productId && item.productAttributeId === productAttributeId
+                item.id_product === productId && item.id_product_attribute === productAttributeId
             );
 
             if (existingItemIndex > -1) {
                 // OVERWRITE logic: Replace existing quantity with the newly submitted quantity
                 let newQty = qty;
-                let maxAllowed = parseInt(maxQty, 10);
+                let maxAllowed = maxQty;
 
                 // Still check against the max available stock limit
                 if (!isNaN(maxAllowed) && newQty > maxAllowed) {
@@ -274,17 +271,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.transferCart[existingItemIndex].qty = newQty;
             } else {
                 window.transferCart.push({
-                    productId: productId,
-                    productAttributeId: productAttributeId,
-                    productName: productName,
-                    maxQty: maxQty,
-                    qty: qty
+                    id_product: productId,
+                    id_product_attribute: productAttributeId,
+                    name: productName,
+                    reference: ean13,
+                    image_url: imageUrl,
+                    qty: qty,
+                    stock: maxQty
                 });
             }
 
             // Sync the updated state to localStorage and update the UI counter
             saveCartState();
-            updateCartBadge();
 
             const originalHtml = this.innerHTML;
             this.innerHTML = '<i class="icon-check"></i>';
@@ -390,34 +388,36 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (container) {
                     const btnAddToCart = container.querySelector('.js-add-to-cart');
                     if (btnAddToCart) {
-                        const productId = btnAddToCart.getAttribute('data-product-id');
-                        const productAttributeId = btnAddToCart.getAttribute('data-product-attribute-id') || 0;
+                        const productId = parseInt(btnAddToCart.getAttribute('data-product-id'), 10);
+                        const productAttributeId = parseInt(btnAddToCart.getAttribute('data-product-attribute-id') || 0, 10);
                         const productName = btnAddToCart.getAttribute('data-product-name');
                         const ean13 = btnAddToCart.getAttribute('data-ean13') || '';
-                        const maxQty = btnAddToCart.getAttribute('data-max-qty');
+                        const maxQty = parseInt(btnAddToCart.getAttribute('data-max-qty') || 0, 10);
+                        const imageUrl = btnAddToCart.getAttribute('data-image-url') || '';
 
                         const qtyInput = container.querySelector('input[name="bulk_quantities[' + productId + ']"]');
                         let qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
 
                         const existingItemIndex = window.transferCart.findIndex(item =>
-                            item.productId === productId && item.productAttributeId === productAttributeId
+                            item.id_product === productId && item.id_product_attribute === productAttributeId
                         );
 
                         if (existingItemIndex > -1) {
                             let newQty = qty;
-                            let maxAllowed = parseInt(maxQty, 10);
+                            let maxAllowed = maxQty;
                             if (!isNaN(maxAllowed) && newQty > maxAllowed) {
                                 newQty = maxAllowed;
                             }
                             window.transferCart[existingItemIndex].qty = newQty;
                         } else {
                             window.transferCart.push({
-                                productId: productId,
-                                productAttributeId: productAttributeId,
-                                productName: productName,
-                                ean13: ean13,
-                                maxQty: maxQty,
-                                qty: qty
+                                id_product: productId,
+                                id_product_attribute: productAttributeId,
+                                name: productName,
+                                reference: ean13,
+                                image_url: imageUrl,
+                                qty: qty,
+                                stock: maxQty
                             });
                         }
 
@@ -427,7 +427,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             saveCartState();
-            updateCartBadge();
             renderCartItems();
             if (cartModal) {
                 cartModal.style.display = 'flex';
@@ -481,18 +480,20 @@ document.addEventListener('DOMContentLoaded', function () {
                         
                         if (response && response.success && response.product) {
                             const p = response.product;
-                            const productId = p.id_product.toString();
-                            const productAttributeId = p.id_product_attribute.toString();
-                            const productName = p.name;
-                            const maxQty = p.max_qty;
+                            const productId = parseInt(p.id_product, 10);
+                            const productAttributeId = parseInt(p.id_product_attribute || 0, 10);
+                            const productName = p.name || '';
+                            const maxQty = parseInt(p.stock || p.max_qty || 0, 10);
+                            const reference = p.reference || p.ean13 || scannedValue || '';
+                            const imageUrl = p.image_url || p.imageUrl || '';
 
                             const existingItemIndex = window.transferCart.findIndex(item =>
-                                item.productId === productId && item.productAttributeId === productAttributeId
+                                item.id_product === productId && item.id_product_attribute === productAttributeId
                             );
 
                             if (existingItemIndex > -1) {
                                 let newQty = window.transferCart[existingItemIndex].qty + 1;
-                                let maxAllowed = parseInt(maxQty, 10);
+                                let maxAllowed = maxQty;
                                 if (!isNaN(maxAllowed) && newQty > maxAllowed) {
                                     newQty = maxAllowed;
                                     showCustomError('Maximum stock reached for ' + productName);
@@ -502,18 +503,18 @@ document.addEventListener('DOMContentLoaded', function () {
                                 window.transferCart[existingItemIndex].qty = newQty;
                             } else {
                                 window.transferCart.push({
-                                    productId: productId,
-                                    productAttributeId: productAttributeId,
-                                    productName: productName,
-                                    ean13: scannedValue,
-                                    maxQty: maxQty,
-                                    qty: 1
+                                    id_product: productId,
+                                    id_product_attribute: productAttributeId,
+                                    name: productName,
+                                    reference: reference,
+                                    image_url: imageUrl,
+                                    qty: 1,
+                                    stock: maxQty
                                 });
                                 showCustomSuccess('Added ' + productName + ' to cart');
                             }
 
                             saveCartState();
-                            updateCartBadge();
                             renderCartItems();
                         } else {
                             showCustomError(response ? response.message : 'Barcode not found.');
@@ -532,5 +533,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // Cross-Tab/Page Synchronization
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'cst_transfer_cart') {
+            window.transferCart = JSON.parse(e.newValue) || [];
+            if (typeof renderCartItems === 'function') renderCartItems();
+            if (typeof updateCartBadge === 'function') updateCartBadge();
+        }
+    });
 
 });
