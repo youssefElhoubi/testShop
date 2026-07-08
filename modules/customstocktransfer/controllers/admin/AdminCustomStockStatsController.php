@@ -64,12 +64,66 @@ class AdminCustomStockStatsController extends ModuleAdminController
             }
         }
 
+        // Fetch Top 5 Transferred Products
+        $idLang = (int) $this->context->language->id;
+        $idShop = (int) $this->context->shop->id;
+        $topProductsQuery = '
+            SELECT td.id_product, SUM(td.quantity) AS total_qty, pl.name 
+            FROM `' . _DB_PREFIX_ . 'transfer_details` td
+            LEFT JOIN `' . _DB_PREFIX_ . 'product_lang` pl ON (td.id_product = pl.id_product AND pl.id_lang = ' . $idLang . ' AND pl.id_shop = ' . $idShop . ')
+            GROUP BY td.id_product 
+            ORDER BY total_qty DESC 
+            LIMIT 5
+        ';
+        $topProductsResults = Db::getInstance()->executeS($topProductsQuery);
+        $topProductsData = [];
+        if ($topProductsResults) {
+            foreach ($topProductsResults as $row) {
+                $topProductsData[] = [
+                    'id_product' => (int) $row['id_product'],
+                    'name' => $row['name'] ? $row['name'] : 'Product ID ' . $row['id_product'],
+                    'total_qty' => (int) $row['total_qty']
+                ];
+            }
+        }
+
+        // Fetch Store Activity (Sent vs Received)
+        $storeActivityData = [];
+        $transfersForStores = Db::getInstance()->executeS('SELECT id_store_from, id_store_to FROM `' . _DB_PREFIX_ . 'transfers`');
+        if ($transfersForStores) {
+            foreach ($transfersForStores as $t) {
+                $from = (int) $t['id_store_from'];
+                $to = (int) $t['id_store_to'];
+                
+                if (!isset($storeActivityData[$from])) {
+                    $storeActivityData[$from] = ['id_shop' => $from, 'name' => 'Store ' . $from, 'sent' => 0, 'received' => 0];
+                }
+                if (!isset($storeActivityData[$to])) {
+                    $storeActivityData[$to] = ['id_shop' => $to, 'name' => 'Store ' . $to, 'sent' => 0, 'received' => 0];
+                }
+                
+                $storeActivityData[$from]['sent']++;
+                $storeActivityData[$to]['received']++;
+            }
+        }
+        
+        foreach (Shop::getShops(true, null, false) as $shop) {
+            $id_shop = (int) $shop['id_shop'];
+            if (isset($storeActivityData[$id_shop])) {
+                $storeActivityData[$id_shop]['name'] = $shop['name'];
+            }
+        }
+        $storeActivityData = array_values($storeActivityData);
+
+
         $this->context->smarty->assign(array(
             'page_title' => 'Transfer Statistics',
             'total_transfer_volume' => $totalTransferVolume,
             'total_items_moved' => $totalItemsMoved,
             'status_breakdown_json' => json_encode($statusBreakdown),
-            'trends_data_json' => json_encode($trendsData)
+            'trends_data_json' => json_encode($trendsData),
+            'top_products_json' => json_encode($topProductsData),
+            'store_activity_json' => json_encode($storeActivityData)
         ));
 
         $this->setTemplate('stats_dashboard.tpl');

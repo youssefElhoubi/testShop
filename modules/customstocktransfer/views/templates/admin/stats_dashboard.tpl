@@ -4,7 +4,11 @@
         <p class="saas-subtitle">Overview of your inventory movements and pending requests.</p>
     </div>
     
-    <div class="saas-dashboard-grid" id="custom-stock-stats-dashboard" data-status-data='{$status_breakdown_json}' data-trends-data='{$trends_data_json}'>
+    <div class="saas-dashboard-grid" id="custom-stock-stats-dashboard" 
+         data-status-data='{$status_breakdown_json}' 
+         data-trends-data='{$trends_data_json}'
+         data-top-products='{$top_products_json}'
+         data-store-activity='{$store_activity_json}'>
         
         <!-- KPI Cards -->
         <div class="saas-card kpi-card">
@@ -40,6 +44,22 @@
             <h3 class="card-title">{l s='Status Breakdown' mod='customstocktransfer'}</h3>
             <div class="canvas-container">
                 <canvas id="transferStatusDoughnut"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Products Horizontal Bar Chart -->
+        <div class="saas-card chart-card top-products-card" style="grid-column: span 6;">
+            <h3 class="card-title">{l s='Most Demanded Products' mod='customstocktransfer'}</h3>
+            <div class="canvas-container">
+                <canvas id="topProductsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Store Activity Clustered Bar Chart -->
+        <div class="saas-card chart-card store-activity-card" style="grid-column: span 6;">
+            <h3 class="card-title">{l s='Store Activity Comparison' mod='customstocktransfer'}</h3>
+            <div class="canvas-container">
+                <canvas id="storeActivityChart"></canvas>
             </div>
         </div>
 
