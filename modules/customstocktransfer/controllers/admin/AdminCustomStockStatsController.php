@@ -16,6 +16,7 @@ class AdminCustomStockStatsController extends ModuleAdminController
     {
         parent::setMedia($isNewTheme);
 
+        $this->context->controller->addJS('https://cdn.jsdelivr.net/npm/chart.js');
         $this->context->controller->addCSS(_MODULE_DIR_ . 'customstocktransfer/views/css/stats.css');
         $this->context->controller->addJS(_MODULE_DIR_ . 'customstocktransfer/views/js/stats.js');
     }
@@ -44,11 +45,31 @@ class AdminCustomStockStatsController extends ModuleAdminController
             }
         }
 
+        // Fetch Trends Data (last 30 days)
+        $trendsQuery = '
+            SELECT DATE(date_add) as transfer_date, COUNT(id_transfer) as count 
+            FROM `' . _DB_PREFIX_ . 'transfers` 
+            WHERE date_add >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            GROUP BY DATE(date_add) 
+            ORDER BY DATE(date_add) ASC
+        ';
+        $trendsResults = Db::getInstance()->executeS($trendsQuery);
+        $trendsData = [];
+        if ($trendsResults) {
+            foreach ($trendsResults as $row) {
+                $trendsData[] = [
+                    'date' => $row['transfer_date'],
+                    'count' => (int) $row['count']
+                ];
+            }
+        }
+
         $this->context->smarty->assign(array(
             'page_title' => 'Transfer Statistics',
             'total_transfer_volume' => $totalTransferVolume,
             'total_items_moved' => $totalItemsMoved,
-            'status_breakdown_json' => json_encode($statusBreakdown)
+            'status_breakdown_json' => json_encode($statusBreakdown),
+            'trends_data_json' => json_encode($trendsData)
         ));
 
         $this->setTemplate('stats_dashboard.tpl');

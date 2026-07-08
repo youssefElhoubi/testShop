@@ -3,7 +3,7 @@
         <i class="icon-bar-chart"></i> {l s='Transfer Statistics' mod='customstocktransfer'}
     </div>
     
-    <div class="panel-body" id="custom-stock-stats-dashboard" data-status-data="{$status_breakdown_json|escape:'html':'UTF-8'}">
+    <div class="panel-body" id="custom-stock-stats-dashboard" data-status-data='{$status_breakdown_json}' data-trends-data='{$trends_data_json}'>
         
         {* KPI Row *}
         <div class="row">
