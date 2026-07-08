@@ -66,8 +66,12 @@
                 $idTransfer = (int) Db::getInstance()->Insert_ID();
 
                 foreach ($cartItems as $item) {
-                    $idProduct = (int) $item['productId'];
-                    $idProductAttribute = isset($item['productAttributeId']) ? (int) $item['productAttributeId'] : 0;
+                    if (!isset($item['id_product']) || empty($item['id_product'])) {
+                        continue; // Or log an error, but don't try to query a missing index
+                    }
+
+                    $idProduct = (int) $item['id_product'];
+                    $idProductAttribute = isset($item['id_product_attribute']) ? (int) $item['id_product_attribute'] : 0;
                     $quantity = (int) $item['qty'];
 
                     if ($quantity <= 0) continue;

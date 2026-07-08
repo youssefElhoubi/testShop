@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    
+
 
     // Grab the exact containers
     const gridView = document.getElementById('customstocktransfer-grid-view');
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         window.transferCart.forEach((item, index) => {
             const tr = document.createElement('tr');
-            
+
             let barcodeHtml = '';
             if (item.reference && item.reference !== '0') {
                 barcodeHtml = `<div class="mt-2 mb-2">
@@ -160,12 +160,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (typeof JsBarcode !== 'undefined') {
             // Reminder: Ensure transfer_dashboard.tpl uses <svg class="cst-barcode" jsbarcode-value="{$product.ean13}"></svg>
             JsBarcode(".cst-barcode").init({
-                format: "CODE128", 
-                width: 2,          
-                height: 60,        
+                format: "CODE128",
+                width: 2,
+                height: 60,
                 displayValue: true,
-                fontSize: 16,      
-                textMargin: 5,     
+                fontSize: 16,
+                textMargin: 5,
                 margin: 10
             });
         }
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const productAttributeId = parseInt(this.getAttribute('data-product-attribute-id') || 0, 10);
             const productName = this.getAttribute('data-product-name');
             const ean13 = this.getAttribute('data-ean13') || '';
-            const maxQty = parseInt(this.getAttribute('data-max-qty') || 0, 10);            
+            const maxQty = parseInt(this.getAttribute('data-max-qty') || 0, 10);
             const imageUrl = this.getAttribute('data-image-url') || '';
 
             const parentContainer = this.closest('.d-flex') || this.closest('.d-inline-flex');
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnConfirmTransfer) {
         btnConfirmTransfer.addEventListener('click', function () {
             console.log(window.cstConfig.ajaxUrl);
-            
+
             hideModalError();
 
             if (window.transferCart.length === 0) {
@@ -364,7 +364,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         showModalError('Error: ' + (response ? response.message : 'Failed to create transfer.'));
                     }
                 },
-                error: function () {
+                error: function (xhr, status, error) {
+                    console.error("Status:", status);
+                    console.error("Error:", error);
+                    console.error("Response:", xhr.responseText);
                     btnConfirmTransfer.innerHTML = originalBtnText;
                     btnConfirmTransfer.disabled = false;
                     showModalError('A server error occurred while processing the transfer.');
@@ -453,16 +456,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Barcode Scanner Logic ---
     const barcodeScanner = document.getElementById('cst-barcode-scanner');
     if (barcodeScanner) {
-        barcodeScanner.addEventListener('keydown', function(e) {
+        barcodeScanner.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.keyCode === 13) {
                 e.preventDefault();
-                
+
                 const scannedValue = this.value.trim();
                 if (!scannedValue) return;
 
                 // Disable input temporarily while scanning
                 this.disabled = true;
-                
+
                 // Get source store selection
                 const sourceStoreElement = document.getElementById('cst-main-source-store');
                 const sourceStoreId = sourceStoreElement ? sourceStoreElement.value : 0;
@@ -479,7 +482,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     success: (response) => {
                         this.disabled = false;
-                        
+
                         if (response && response.success && response.product) {
                             const p = response.product;
                             const productId = parseInt(p.id_product, 10);
@@ -537,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Cross-Tab/Page Synchronization
-    window.addEventListener('storage', function(e) {
+    window.addEventListener('storage', function (e) {
         if (e.key === 'cst_transfer_cart') {
             window.transferCart = JSON.parse(e.newValue) || [];
             if (typeof renderCartItems === 'function') renderCartItems();
