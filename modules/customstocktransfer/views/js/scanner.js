@@ -1,3 +1,4 @@
+jQuery.migrateMute = true;
 document.addEventListener('DOMContentLoaded', function () {
     // 1. State Management: Initialize Cart
     window.transferCart = JSON.parse(localStorage.getItem('cst_transfer_cart')) || [];
@@ -55,36 +56,18 @@ document.addEventListener('DOMContentLoaded', function () {
     // 2. The Scanner Listener (Debounced & Validated)
     if (scannerInput) {
         scannerInput.addEventListener('keydown', function (e) {
+            console.log('Scanner input found');
             if (e.key === 'Enter') {
-                e.preventDefault();
-                let barcode = scannerInput.value.trim();
-
+                e.preventDefault(); // CRITICAL: Stop browser submit/refresh
+                console.log('Enter key pressed');
+                
+                const barcode = scannerInput.value.trim();
                 if (!barcode) return;
 
-                // EAN-13 Validation: exactly 13 digits
-                if (!/^\d{13}$/.test(barcode)) {
-                    flashInputError(scannerInput);
-                    return;
-                }
-
-                // Debounce/Locking: Lock input to prevent double scan
+                // Lock input and show loading state
                 scannerInput.disabled = true;
-
-                // Show loading spinner next to input
-                let spinner = document.createElement('div');
-                spinner.className = 'spinner-border text-success position-absolute';
-                spinner.style.right = '20px';
-                spinner.style.top = '50%';
-                spinner.style.transform = 'translateY(-50%)';
-                spinner.style.width = '2rem';
-                spinner.style.height = '2rem';
-                spinner.id = 'scanner-loading-spinner';
-
-                let parentGroup = scannerInput.closest('.form-group');
-                if (parentGroup) {
-                    parentGroup.style.position = 'relative';
-                    parentGroup.appendChild(spinner);
-                }
+                const originalPlaceholder = scannerInput.placeholder;
+                scannerInput.placeholder = "Searching...";
 
                 // Send AJAX request
                 $.ajax({
@@ -108,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             );
 
                             if (existingIndex > -1) {
-                                // Increment quantity if it exists, respecting max stock
+                                // Increment quantity if it exists
                                 let currentQty = parseInt(window.transferCart[existingIndex].qty, 10);
                                 if (currentQty < maxStock) {
                                     window.transferCart[existingIndex].qty = currentQty + 1;
@@ -120,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     });
                                 }
                             } else {
-                                // Push the new product object if there is stock
+                                // Add the new item
                                 if (maxStock < 1) {
                                     Swal.fire({
                                         icon: 'error',
@@ -143,52 +126,41 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Save to localStorage and update UI
                             localStorage.setItem('cst_transfer_cart', JSON.stringify(window.transferCart));
                             updateBadge();
-                            renderCart();
+                            renderCart(); // Call renderCart immediately
 
                             // Trigger Visual Success State
                             scannerInput.classList.add('is-successful');
                             let feedbackMsg = document.getElementById('scanner-feedback-msg');
-                            let scannerLabel = document.querySelector('label[for="dedicated-scanner-input"]');
-
+                            
                             if (feedbackMsg) {
                                 feedbackMsg.textContent = 'Well done! ' + (product.name || 'Product') + ' added.';
                                 feedbackMsg.classList.add('is-successful');
                             }
-                            if (scannerLabel) {
-                                scannerLabel.classList.add('is-successful');
-                            }
 
-                            // The Reset Timer
+                            // Remove visual state after delay
                             setTimeout(() => {
                                 scannerInput.classList.remove('is-successful');
                                 if (feedbackMsg) {
                                     feedbackMsg.textContent = '';
                                     feedbackMsg.classList.remove('is-successful');
                                 }
-                                if (scannerLabel) {
-                                    scannerLabel.classList.remove('is-successful');
-                                }
-                                // Ensure input retains focus after visual reset
-                                scannerInput.focus();
                             }, 1500);
 
                         } else {
-                            flashInputError(scannerInput);
+                            if (typeof flashInputError === 'function') flashInputError(scannerInput);
                         }
                     },
                     error: function () {
-                        flashInputError(scannerInput);
+                        if (typeof flashInputError === 'function') flashInputError(scannerInput);
                     },
                     complete: function () {
-                        // Success/Error Reset: Unlock input and clean up
+                        // Cleanup/Reset: unlock input and clean up
                         scannerInput.disabled = false;
+                        if (originalPlaceholder !== undefined) {
+                            scannerInput.placeholder = originalPlaceholder;
+                        }
                         scannerInput.value = '';
                         scannerInput.focus();
-
-                        let loadingSpinner = document.getElementById('scanner-loading-spinner');
-                        if (loadingSpinner) {
-                            loadingSpinner.remove();
-                        }
                     }
                 });
             }
@@ -196,22 +168,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 3. Cart Modal Rendering
-    const liveCartWrapper = document.getElementById('live-scanner-cart-container');
+    // const liveCartWrapper = document.getElementById('live-scanner-cart-container');
 
     function renderCart() {
         if (!cartContainer) return;
 
-        if (window.transferCart.length === 0) {
-            cartContainer.innerHTML = '';
-            if (liveCartWrapper) {
-                liveCartWrapper.classList.add('d-none');
-            }
-            return;
-        }
-
-        if (liveCartWrapper) {
-            liveCartWrapper.classList.remove('d-none');
-        }
+        
 
         let tableHtml = `
             <table class="table scanner-live-table mb-0">

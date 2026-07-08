@@ -123,7 +123,8 @@ class CustomStockTransfer extends Module
         $tabs = [
             ['class' => 'AdminCustomStockTransfer', 'name' => 'Stock Request'],
             ['class' => 'AdminCustomStockApproval', 'name' => 'Transfer Approval'],
-            ['class' => 'AdminCustomStockScanner', 'name' => 'Barcode Scanner']
+            ['class' => 'AdminCustomStockScanner', 'name' => 'Barcode Scanner'],
+            ['class' => 'AdminCustomStockStats', 'name' => 'Statistics']
         ];
         foreach ($tabs as $tabData) {
             if ((int) Tab::getIdFromClassName($tabData['class']) > 0) continue;
