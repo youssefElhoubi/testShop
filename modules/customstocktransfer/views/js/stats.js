@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const trendsCanvas = document.getElementById('transferTrendsChart');
 
     // =========================================================================
-    // 1. Status Breakdown Doughnut Chart
+    // 1. Status Breakdown Doughnut Chart (SaaS Aesthetic)
     // =========================================================================
     try {
         if (doughnutCanvas) {
@@ -20,11 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (rawStatusData) {
                 const statusData = JSON.parse(rawStatusData);
                 
+                // Modern SaaS Palette
                 const statusConfig = {
-                    'pending': { label: 'Pending', color: '#f39c12' },     // Vibrant Orange
-                    'approved': { label: 'Approved', color: '#3498db' },   // PrestaShop Blue
-                    'completed': { label: 'Completed', color: '#2ecc71' }, // Success Green
-                    'declined': { label: 'Declined', color: '#e74c3c' }    // Alert Red
+                    'pending': { label: 'Pending', color: '#f59e0b' },     // Amber
+                    'approved': { label: 'Approved', color: '#3b82f6' },   // Blue
+                    'completed': { label: 'Completed', color: '#10b981' }, // Emerald Green
+                    'declined': { label: 'Declined', color: '#ef4444' }    // Soft Red
                 };
 
                 const labels = [];
@@ -39,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         backgroundColors.push(statusConfig[statusKey].color);
                     } else {
                         labels.push(statusKey.charAt(0).toUpperCase() + statusKey.slice(1));
-                        backgroundColors.push('#95a5a6'); 
+                        backgroundColors.push('#cbd5e1'); // Soft slate fallback
                     }
                 });
 
@@ -50,9 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         datasets: [{
                             data: dataValues,
                             backgroundColor: backgroundColors,
-                            borderWidth: 3,
-                            borderColor: '#ffffff',
-                            hoverOffset: 6
+                            borderWidth: 0, // Cut out borders for a seamless modern look
+                            hoverOffset: 8
                         }]
                     },
                     options: {
@@ -62,14 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         cutout: '75%',              // v3+
                         legend: {                   // v2
                             position: 'bottom',
-                            labels: { padding: 20, fontColor: '#3f4254', fontFamily: "'Inter', 'Roboto', 'Open Sans', sans-serif" }
+                            labels: { padding: 25, fontColor: '#64748b', fontFamily: "'Inter', sans-serif" }
                         },
                         plugins: {                  // v3+
                             legend: {
                                 position: 'bottom',
-                                labels: { padding: 20, color: '#3f4254', font: { family: "'Inter', 'Roboto', 'Open Sans', sans-serif", size: 13 } }
+                                labels: { padding: 25, color: '#64748b', font: { family: "'Inter', sans-serif", size: 13, weight: 500 } }
                             },
-                            tooltip: { padding: 12, bodyFont: { size: 14 }, cornerRadius: 8 }
+                            tooltip: { padding: 14, bodyFont: { size: 14, family: "'Inter', sans-serif" }, cornerRadius: 10 }
                         }
                     }
                 });
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // 2. Transfer Trends Line Chart
+    // 2. Transfer Trends Line Chart (SaaS Aesthetic)
     // =========================================================================
     try {
         if (trendsCanvas) {
@@ -89,9 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (rawTrendsData) {
                 const trendsData = JSON.parse(rawTrendsData);
                 
-                // Map the JSON array back into individual label and data arrays
                 const trendLabels = trendsData.map(item => item.date);
                 const trendValues = trendsData.map(item => item.count);
+
+                // Create a soft gradient for the fill under the line
+                const ctx = trendsCanvas.getContext('2d');
+                let gradient = 'rgba(59, 130, 246, 0.1)'; // Fallback
+                if (ctx) {
+                    gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)'); // Stronger blue at top
+                    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');  // Fade to transparent at bottom
+                }
 
                 new Chart(trendsCanvas, {
                     type: 'line',
@@ -100,44 +108,45 @@ document.addEventListener('DOMContentLoaded', () => {
                         datasets: [{
                             label: 'Transfers Initiated',
                             data: trendValues,
-                            borderColor: '#3498db',
-                            backgroundColor: 'rgba(52, 152, 219, 0.12)', // Subtle blue fill
+                            borderColor: '#3b82f6', // SaaS Blue
+                            backgroundColor: gradient,
                             borderWidth: 3,
                             pointBackgroundColor: '#ffffff',
-                            pointBorderColor: '#3498db',
+                            pointBorderColor: '#3b82f6',
                             pointBorderWidth: 2,
-                            pointRadius: 4,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
                             fill: true,
-                            tension: 0.4 // Creates smooth, curved lines instead of sharp angles
+                            tension: 0.4 // Smooth bezier curves
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        legend: { display: false }, // Hide legend for line chart (v2)
+                        legend: { display: false }, // v2
                         plugins: { 
                             legend: { display: false }, // v3+
-                            tooltip: { padding: 12, bodyFont: { size: 14 }, cornerRadius: 8 }
+                            tooltip: { padding: 14, bodyFont: { size: 14, family: "'Inter', sans-serif" }, cornerRadius: 10 }
                         },
                         scales: {
                             // Chart.js v2 configuration
                             yAxes: [{ 
-                                ticks: { beginAtZero: true, precision: 0, fontColor: '#7e8299' },
-                                gridLines: { color: '#f1f3f7', borderDash: [5, 5] }
+                                ticks: { beginAtZero: true, precision: 0, fontColor: '#94a3b8' },
+                                gridLines: { display: false } // Hide grid lines
                             }],
                             xAxes: [{ 
-                                ticks: { fontColor: '#7e8299' },
-                                gridLines: { display: false }
+                                ticks: { fontColor: '#94a3b8' },
+                                gridLines: { display: false } // Hide grid lines
                             }],
                             // Chart.js v3+ configuration
                             y: { 
                                 beginAtZero: true, 
-                                ticks: { precision: 0, color: '#7e8299' },
-                                grid: { color: '#f1f3f7', drawBorder: false }
+                                ticks: { precision: 0, color: '#94a3b8' },
+                                grid: { display: false, drawBorder: false } // Hide grid lines
                             },
                             x: { 
-                                ticks: { color: '#7e8299' },
-                                grid: { display: false, drawBorder: false }
+                                ticks: { color: '#94a3b8' },
+                                grid: { display: false, drawBorder: false } // Hide grid lines
                             }
                         }
                     }

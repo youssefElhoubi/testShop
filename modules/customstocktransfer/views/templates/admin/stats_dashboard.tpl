@@ -1,63 +1,45 @@
-<div class="panel">
-    <div class="panel-heading">
-        <i class="icon-bar-chart"></i> {l s='Transfer Statistics' mod='customstocktransfer'}
+<div class="custom-saas-wrapper">
+    <div class="saas-header">
+        <h2>{l s='Transfer Statistics' mod='customstocktransfer'}</h2>
+        <p class="saas-subtitle">Overview of your inventory movements and pending requests.</p>
     </div>
     
-    <div class="panel-body" id="custom-stock-stats-dashboard" data-status-data='{$status_breakdown_json}' data-trends-data='{$trends_data_json}'>
+    <div class="saas-dashboard-grid" id="custom-stock-stats-dashboard" data-status-data='{$status_breakdown_json}' data-trends-data='{$trends_data_json}'>
         
-        {* KPI Row *}
-        <div class="row">
-            <div class="col-md-6 col-lg-6">
-                <div class="panel kpi-panel">
-                    <div class="panel-heading">
-                        <i class="icon-exchange"></i> {l s='Total Transfers' mod='customstocktransfer'}
-                    </div>
-                    <div class="panel-body text-center">
-                        <h2 class="kpi-value" style="font-size: 3em; margin: 0; padding: 10px 0;">
-                            {$total_transfer_volume|escape:'html':'UTF-8'}
-                        </h2>
-                    </div>
-                </div>
+        <!-- KPI Cards -->
+        <div class="saas-card kpi-card">
+            <div class="kpi-content">
+                <span class="kpi-title">{l s='Total Transfers' mod='customstocktransfer'}</span>
+                <span class="kpi-value">{$total_transfer_volume|escape:'html':'UTF-8'}</span>
             </div>
-            
-            <div class="col-md-6 col-lg-6">
-                <div class="panel kpi-panel">
-                    <div class="panel-heading">
-                        <i class="icon-cubes"></i> {l s='Total Items Moved' mod='customstocktransfer'}
-                    </div>
-                    <div class="panel-body text-center">
-                        <h2 class="kpi-value" style="font-size: 3em; margin: 0; padding: 10px 0;">
-                            {$total_items_moved|escape:'html':'UTF-8'}
-                        </h2>
-                    </div>
-                </div>
+            <div class="kpi-icon">
+                <i class="icon-exchange"></i>
+            </div>
+        </div>
+        
+        <div class="saas-card kpi-card">
+            <div class="kpi-content">
+                <span class="kpi-title">{l s='Total Items Moved' mod='customstocktransfer'}</span>
+                <span class="kpi-value">{$total_items_moved|escape:'html':'UTF-8'}</span>
+            </div>
+            <div class="kpi-icon kpi-icon-items">
+                <i class="icon-cubes"></i>
             </div>
         </div>
 
-        {* Charts Grid Row *}
-        <div class="row" style="margin-top: 20px;">
-            {* Main Trends Chart *}
-            <div class="col-md-8 col-lg-8">
-                <div class="panel">
-                    <div class="panel-heading">
-                        <i class="icon-line-chart"></i> {l s='Transfer Trends' mod='customstocktransfer'}
-                    </div>
-                    <div class="panel-body">
-                        <canvas id="transferTrendsChart" style="width: 100%; height: 350px;"></canvas>
-                    </div>
-                </div>
+        <!-- Main Trend Chart -->
+        <div class="saas-card chart-card trend-chart-card">
+            <h3 class="card-title">{l s='Transfer Volume Trends' mod='customstocktransfer'}</h3>
+            <div class="canvas-container">
+                <canvas id="transferTrendsChart"></canvas>
             </div>
+        </div>
 
-            {* Status Breakdown Doughnut Chart *}
-            <div class="col-md-4 col-lg-4">
-                <div class="panel">
-                    <div class="panel-heading">
-                        <i class="icon-pie-chart"></i> {l s='Status Breakdown' mod='customstocktransfer'}
-                    </div>
-                    <div class="panel-body text-center">
-                        <canvas id="transferStatusDoughnut" style="width: 100%; height: 350px;"></canvas>
-                    </div>
-                </div>
+        <!-- Status Doughnut Chart -->
+        <div class="saas-card chart-card doughnut-chart-card">
+            <h3 class="card-title">{l s='Status Breakdown' mod='customstocktransfer'}</h3>
+            <div class="canvas-container">
+                <canvas id="transferStatusDoughnut"></canvas>
             </div>
         </div>
 
