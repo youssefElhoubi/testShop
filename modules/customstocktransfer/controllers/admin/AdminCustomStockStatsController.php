@@ -24,8 +24,31 @@ class AdminCustomStockStatsController extends ModuleAdminController
     {
         parent::initContent();
 
+        $totalTransferVolume = (int) Db::getInstance()->getValue('SELECT COUNT(id_transfer) FROM `' . _DB_PREFIX_ . 'transfers`');
+        
+        $totalItemsMoved = (int) Db::getInstance()->getValue('SELECT SUM(quantity) FROM `' . _DB_PREFIX_ . 'transfer_details`');
+        
+        $statusBreakdown = array(
+            'pending' => 0,
+            'approved' => 0,
+            'completed' => 0,
+            'declined' => 0
+        );
+        $statusResults = Db::getInstance()->executeS('SELECT status, COUNT(id_transfer) as count FROM `' . _DB_PREFIX_ . 'transfers` GROUP BY status');
+        
+        if ($statusResults) {
+            foreach ($statusResults as $row) {
+                if (isset($statusBreakdown[$row['status']])) {
+                    $statusBreakdown[$row['status']] = (int) $row['count'];
+                }
+            }
+        }
+
         $this->context->smarty->assign(array(
-            'page_title' => 'Transfer Statistics'
+            'page_title' => 'Transfer Statistics',
+            'total_transfer_volume' => $totalTransferVolume,
+            'total_items_moved' => $totalItemsMoved,
+            'status_breakdown_json' => json_encode($statusBreakdown)
         ));
 
         $this->setTemplate('stats_dashboard.tpl');
