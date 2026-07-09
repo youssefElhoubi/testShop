@@ -92,63 +92,109 @@ document.addEventListener('DOMContentLoaded', () => {
                 const trendsData = JSON.parse(rawTrendsData);
                 
                 const trendLabels = trendsData.map(item => item.date);
-                const trendValues = trendsData.map(item => item.count);
+                const transferCountValues = trendsData.map(item => item.transfer_count);
+                const itemCountValues = trendsData.map(item => item.item_count);
 
                 // Create a soft gradient for the fill under the line
                 const ctx = trendsCanvas.getContext('2d');
                 let gradient = 'rgba(59, 130, 246, 0.1)'; // Fallback
                 if (ctx) {
                     gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)'); // Stronger blue at top
-                    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');  // Fade to transparent at bottom
+                    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); // Stronger blue at top
+                    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.1)');  // Fade to transparent at bottom
                 }
 
                 new Chart(trendsCanvas, {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels: trendLabels,
-                        datasets: [{
-                            label: 'Transfers Initiated',
-                            data: trendValues,
-                            borderColor: '#3b82f6', // SaaS Blue
-                            backgroundColor: gradient,
-                            borderWidth: 3,
-                            pointBackgroundColor: '#ffffff',
-                            pointBorderColor: '#3b82f6',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            fill: true,
-                            tension: 0.4 // Smooth bezier curves
-                        }]
+                        datasets: [
+                            {
+                                type: 'line',
+                                label: 'Items Moved',
+                                data: itemCountValues,
+                                borderColor: '#10b981', // SaaS Emerald Green
+                                backgroundColor: 'transparent',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#ffffff',
+                                pointBorderColor: '#10b981',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                fill: false,
+                                tension: 0.4, // Smooth bezier curves
+                                yAxisID: 'y1'
+                            },
+                            {
+                                type: 'bar',
+                                label: 'Transfer Count',
+                                data: transferCountValues,
+                                backgroundColor: gradient,
+                                borderColor: '#3b82f6', // SaaS Blue
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                yAxisID: 'y'
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        legend: { display: false }, // v2
+                        legend: { 
+                            display: true, 
+                            position: 'top',
+                            labels: { padding: 15, fontColor: '#64748b', fontFamily: "'Inter', sans-serif" }
+                        }, // v2
                         plugins: { 
-                            legend: { display: false }, // v3+
+                            legend: { 
+                                display: true, 
+                                position: 'top',
+                                labels: { padding: 15, color: '#64748b', font: { family: "'Inter', sans-serif", size: 13, weight: 500 } }
+                            }, // v3+
                             tooltip: { padding: 14, bodyFont: { size: 14, family: "'Inter', sans-serif" }, cornerRadius: 10 }
                         },
                         scales: {
                             // Chart.js v2 configuration
-                            yAxes: [{ 
-                                ticks: { beginAtZero: true, precision: 0, fontColor: '#94a3b8' },
-                                gridLines: { display: false } // Hide grid lines
-                            }],
+                            yAxes: [
+                                { 
+                                    id: 'y',
+                                    type: 'linear',
+                                    position: 'left',
+                                    ticks: { beginAtZero: true, precision: 0, fontColor: '#94a3b8' },
+                                    gridLines: { display: false } 
+                                },
+                                { 
+                                    id: 'y1',
+                                    type: 'linear',
+                                    position: 'right',
+                                    ticks: { beginAtZero: true, precision: 0, fontColor: '#94a3b8' },
+                                    gridLines: { display: false, drawOnChartArea: false } 
+                                }
+                            ],
                             xAxes: [{ 
                                 ticks: { fontColor: '#94a3b8' },
-                                gridLines: { display: false } // Hide grid lines
+                                gridLines: { display: false } 
                             }],
                             // Chart.js v3+ configuration
                             y: { 
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
                                 beginAtZero: true, 
                                 ticks: { precision: 0, color: '#94a3b8' },
-                                grid: { display: false, drawBorder: false } // Hide grid lines
+                                grid: { display: false, drawBorder: false } 
+                            },
+                            y1: { 
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                beginAtZero: true, 
+                                ticks: { precision: 0, color: '#94a3b8' },
+                                grid: { display: false, drawBorder: false, drawOnChartArea: false } 
                             },
                             x: { 
                                 ticks: { color: '#94a3b8' },
-                                grid: { display: false, drawBorder: false } // Hide grid lines
+                                grid: { display: false, drawBorder: false } 
                             }
                         }
                     }

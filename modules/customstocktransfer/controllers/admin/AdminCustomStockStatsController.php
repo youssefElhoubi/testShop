@@ -47,19 +47,21 @@ class AdminCustomStockStatsController extends ModuleAdminController
 
         // Fetch Trends Data (last 30 days)
         $trendsQuery = '
-            SELECT DATE(date_add) as transfer_date, COUNT(id_transfer) as count 
-            FROM `' . _DB_PREFIX_ . 'transfers` 
-            WHERE date_add >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-            GROUP BY DATE(date_add) 
-            ORDER BY DATE(date_add) ASC
+            SELECT DATE(t.date_add) as date, COUNT(DISTINCT t.id_transfer) as transfer_count, SUM(td.quantity) as item_count 
+            FROM `' . _DB_PREFIX_ . 'transfers` t
+            LEFT JOIN `' . _DB_PREFIX_ . 'transfer_details` td ON (t.id_transfer = td.id_transfer)
+            WHERE t.date_add >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            GROUP BY DATE(t.date_add) 
+            ORDER BY DATE(t.date_add) ASC
         ';
         $trendsResults = Db::getInstance()->executeS($trendsQuery);
         $trendsData = [];
         if ($trendsResults) {
             foreach ($trendsResults as $row) {
                 $trendsData[] = [
-                    'date' => $row['transfer_date'],
-                    'count' => (int) $row['count']
+                    'date' => $row['date'],
+                    'transfer_count' => (int) $row['transfer_count'],
+                    'item_count' => (int) $row['item_count']
                 ];
             }
         }
