@@ -15,9 +15,10 @@
 						<table width="100%" border="0" cellpadding="0" cellspacing="0">
 							<tr>
 								<td align="center">
-									{$custom_barcode}
+									{$custom_barcode nofilter}
 									<br />
-									<span style="font-weight: bold; font-size: 11pt; color: #333333;">{$order->reference}</span>
+									<span
+										style="font-weight: bold; font-size: 11pt; color: #333333;">{$order->reference}</span>
 								</td>
 							</tr>
 						</table>

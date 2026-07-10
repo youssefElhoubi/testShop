@@ -4,17 +4,21 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
 {
     public function getContent()
     {
-        // Generate the barcode HTML using native TCPDFBarcode class
+        // 1. Initialize the native TCPDF barcode generator
         $barcode = new TCPDFBarcode($this->order->reference, 'C128');
-        // getBarcodeHTML(width, height, color)
-        $custom_barcode = $barcode->getBarcodeHTML(1, 15, 'black');
+        
+        // 2. Generate raw PNG image data (bar width: 1, height: 15, color: black)
+        $png_data = $barcode->getBarcodePngData(1, 15, array(0, 0, 0));
+        
+        // 3. Convert to a base64 inline image tag that TCPDF can parse natively
+        $custom_barcode = '<img src="@' . base64_encode($png_data) . '" />';
 
-        // Assign the generated HTML string to a Smarty variable
+            // 4. Assign the image tag to the Smarty template
         $this->smarty->assign(array(
             'custom_barcode' => $custom_barcode
         ));
 
-        // Return parent method to maintain default behavior
+        // 5. Return the core content to maintain default behavior
         return parent::getContent();
     }
 }
