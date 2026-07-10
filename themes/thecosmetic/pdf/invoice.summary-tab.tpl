@@ -12,15 +12,12 @@
 				<tr>
 					<td><span class="summary-label">FACTURE/</span></td>
 					<td>
-						<table border="0" cellpadding="0" cellspacing="0">
+						<table width="100%" border="0" cellpadding="0" cellspacing="0">
 							<tr>
-								<td>
-									<tcpdf method="write1DBarcode" params="'{$title|escape:'html':'UTF-8'}', 'C128', '', '', '', 15, 0.4, '', 'N'" />
-								</td>
-							</tr>
-							<tr>
-								<td class="summary-value">
-									#{$title|escape:'html':'UTF-8'}
+								<td align="center">
+									{$custom_barcode}
+									<br />
+									<span style="font-weight: bold; font-size: 11pt; color: #333333;">{$order->reference}</span>
 								</td>
 							</tr>
 						</table>

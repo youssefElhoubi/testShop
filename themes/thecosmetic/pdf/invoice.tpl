@@ -5,7 +5,7 @@
 		<td colspan="12">
 			<table width="100%" border="0" cellpadding="0" cellspacing="0">
 				<tr>
-					<td class="shop-title center">UNIVERS PARADISCOUNT</td>
+					<td align="center"><h2>UNIVERS PARADISCOUNT</h2></td>
 				</tr>
 			</table>
 		</td>
