@@ -33,7 +33,11 @@
 		{/if}
 	</tr>
 	<tr>
-		<td class="center small white">{$title|escape:'html':'UTF-8'}</td>
+		<td class="center small white">
+			<tcpdf method="write1DBarcode" params="'{$title}', 'C128', '', '', '', 15, 0.4, '', 'N'" />
+			<br />
+			{$title|escape:'html':'UTF-8'}
+		</td>
 		<td class="center small white">{dateFormat date=$order->invoice_date full=0}</td>
 		<td class="center small white">{$order->getUniqReference()}</td>
 		<td class="center small white">{dateFormat date=$order->date_add full=0}</td>

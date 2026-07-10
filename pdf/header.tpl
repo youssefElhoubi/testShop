@@ -26,10 +26,12 @@
 
 <table style="width: 100%">
 <tr>
-	<td style="width: 50%">
-		{if $logo_path}
-			<img src="{$logo_path}" style="width:{$width_logo}px; height:{$height_logo}px;" />
-		{/if}
+	<td style="width: 50%; text-align: center; vertical-align: middle;">
+		<table style="width:100%;">
+			<tr>
+				<td style="text-align:center; font-weight:bold; font-size:16pt;">UNIVERS PARADISCOUNT</td>
+			</tr>
+		</table>
 	</td>
 	<td style="width: 50%; text-align: right;">
 		<table style="width: 100%">

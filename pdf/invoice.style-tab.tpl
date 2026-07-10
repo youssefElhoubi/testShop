@@ -35,158 +35,83 @@
 {assign var=table_padding value="4px"}
 
 <style>
-	table, th, td {
-		margin: 0!important;
-		padding: 0!important;
-		vertical-align: middle;
-		font-size: {$font_size_text};
-		white-space: nowrap;
-	}
+    /* Base table reset suited for TCPDF rendering */
+    table, th, td {
+        margin: 0 !important;
+        padding: 0 !important;
+        vertical-align: middle;
+        font-size: {$font_size_text};
+        white-space: normal;
+        border-collapse: collapse;
+    }
 
-	table.product {
-		border: 1px solid {$color_border};
-		border-collapse: collapse;
-	}
+    /* General table containers */
+    table.product,
+    table#summary-tab,
+    table#total-tab,
+    table#tax-tab,
+    table#payment-tab,
+    table#shipping-tab,
+    table#note-tab {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid {$color_line_odd};
+        font-size: {$font_size_text};
+    }
 
-	table#addresses-tab tr td {
-		font-size: large;
-	}
+    /* Header styles: dark blue/gray background and white text */
+    th.section-title,
+    th.product-header,
+    th.header,
+    th.header-right,
+    th.payment,
+    th.shipping,
+    th.tva {
+        background-color: #1F3A57; /* dark blue-gray */
+        color: #FFFFFF;
+        font-size: {$font_size_header};
+        font-weight: bold;
+        padding: 8px 6px;
+        text-align: left;
+        border: 1px solid #E6E9EE;
+    }
 
-	table#summary-tab {
-		padding: {$table_padding};
-		border: 1pt solid {$color_border};
-	}
-	table#total-tab {
-		padding: {$table_padding};
-		border: 1pt solid {$color_border};
-	}
-	table#note-tab {
-		padding: {$table_padding};
-		border: 1px solid {$color_border};
-	}
-	table#note-tab td.note{
-		word-wrap: break-word;
-	}
-	table#tax-tab {
-		padding: {$table_padding};
-		border: 1pt solid {$color_border};
-	}
-	table#payment-tab,
-	table#shipping-tab {
-		padding: {$table_padding};
-		border: 1px solid {$color_border};
-	}
+    th.header-right { text-align: right; }
 
-	th.product {
-		border-bottom: 1px solid {$color_border};
-	}
+    /* Table cells: padding and light borders for a clean, modern look */
+    td, th {
+        padding: 6px 8px;
+        border: 1px solid #E6E9EE; /* light gray borders */
+        vertical-align: middle;
+    }
 
-	tr.discount th.header {
-		border-top: 1px solid {$color_border};
-	}
+    /* Product rows and separators */
+    tr.product td {
+        border-bottom: 1px solid #F0F2F5;
+        font-size: {$font_size_product};
+        padding: 8px 6px;
+    }
 
-	tr.product td {
-		border-bottom: 1px solid {$color_border_lighter};
-	}
+    tr.color_line_even { background-color: {$color_line_even}; }
+    tr.color_line_odd { background-color: {$color_line_odd}; }
 
-	tr.color_line_even {
-		background-color: {$color_line_even};
-	}
+    tr.separator td { border-top: 1px solid #C8CDD6; }
 
-	tr.color_line_odd {
-		background-color: {$color_line_odd};
-	}
+    /* Address and note blocks */
+    table#addresses-tab tr td { font-size: large; padding: 6px 4px; }
+    table#note-tab td.note { word-wrap: break-word; padding: 10px; }
 
-	tr.customization_data td {
-	}
+    /* Typography helpers */
+    .left { text-align: left; }
+    .right { text-align: right; }
+    .center { text-align: center; }
+    .bold { font-weight: bold; }
+    .white { background-color: #FFFFFF; }
 
-	td.product {
-		vertical-align: middle;
-		font-size: {$font_size_product};
-	}
+    /* Sizes */
+    .big, tr.big td { font-size: 110%; }
+    .small, table.small th, table.small td { font-size: small; padding: 4px 6px; }
 
-	th.header {
-		font-size: {$font_size_header};
-		height: {$height_header};
-		background-color: {$color_header};
-		vertical-align: middle;
-		text-align: center;
-		font-weight: bold;
-	}
+    /* No floats — keep alignment with text-align only (TCPDF PDF-safe) */
 
-	th.header-right {
-		font-size: {$font_size_header};
-		height: {$height_header};
-		background-color: {$color_header};
-		vertical-align: middle;
-		text-align: right;
-		font-weight: bold;
-	}
-
-	th.payment,
-	th.shipping {
-		background-color: {$color_header};
-		vertical-align: middle;
-		font-weight: bold;
-	}
-
-	th.tva {
-		background-color: {$color_header};
-		vertical-align: middle;
-		font-weight: bold;
-	}
-
-	tr.separator td {
-		border-top: 1px solid #000000;
-	}
-
-	.left {
-		text-align: left;
-	}
-
-	.fright {
-		float: right;
-	}
-
-	.right {
-		text-align: right;
-	}
-
-	.center {
-		text-align: center;
-	}
-
-	.bold {
-		font-weight: bold;
-	}
-
-	.border {
-		border: 1px solid black;
-	}
-
-	.no_top_border {
-		border-top:hidden;
-		border-bottom:1px solid black;
-		border-left:1px solid black;
-		border-right:1px solid black;
-	}
-
-	.grey {
-		background-color: {$color_header};
-
-	}
-
-	/* This is used for the border size */
-	.white {
-		background-color: #FFFFFF;
-	}
-
-	.big,
-	tr.big td{
-		font-size: 110%;
-	}
-
-	.small, table.small th, table.small td {
-		font-size:small;
-	}
 </style>

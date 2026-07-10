@@ -8,8 +8,25 @@
 <table width="100%" border="0" cellpadding="0" cellspacing="0" class="summary-table">
 	<tr>
 		<td class="left">
-			<span class="summary-label">FACTURE/</span>
-			<span class="summary-value">#{$title|escape:'html':'UTF-8'}</span>
+			<table border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td><span class="summary-label">FACTURE/</span></td>
+					<td>
+						<table border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td>
+									<tcpdf method="write1DBarcode" params="'{$title|escape:'html':'UTF-8'}', 'C128', '', '', '', 15, 0.4, '', 'N'" />
+								</td>
+							</tr>
+							<tr>
+								<td class="summary-value">
+									#{$title|escape:'html':'UTF-8'}
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
 		</td>
 	</tr>
 	<tr>
@@ -26,7 +43,8 @@
 	</tr>
 	<tr>
 		<td class="left">
-			<span class="summary-label">{$total_quantity|escape:'html':'UTF-8'}/{$product_count|escape:'html':'UTF-8'}</span>
+			<span
+				class="summary-label">{$total_quantity|escape:'html':'UTF-8'}/{$product_count|escape:'html':'UTF-8'}</span>
 			<span class="summary-value">Quantité d'articles / Nombre de produits</span>
 		</td>
 	</tr>
