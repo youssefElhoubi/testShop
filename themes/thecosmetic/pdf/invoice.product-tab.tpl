@@ -27,6 +27,12 @@
 				<td class="right" valign="middle">{displayPrice currency=$order->id_currency price=$order_detail.unit_price_tax_incl}</td>
 				<td class="right" valign="middle">{displayPrice currency=$order->id_currency price=$order_detail.total_price_tax_incl}</td>
 			</tr>
+			<tr>
+				<td width="12%" style="background-color: #f9f9f9;"></td>
+				<td width="88%" colspan="4" class="left" style="background-color: #f9f9f9; font-size: 8pt;">
+					Stock Available: {$order_detail.current_stock_live} | Reserved: {$order_detail.reserved_stock_live}
+				</td>
+			</tr>
 		{/foreach}
 	</tbody>
 </table>
