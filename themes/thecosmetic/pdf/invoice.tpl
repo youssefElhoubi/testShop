@@ -75,20 +75,20 @@
 
 	<tr>
 		<td colspan="12">
-			<table width="100%" border="0" cellpadding="8" cellspacing="0" class="footer-box" style="border-top: 1px solid #dddddd;">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0" class="footer-box">
 				<tr>
-					<td width="50%" class="footer-brand-box" style="text-align: left; vertical-align: top;">
-						<span style="font-size: 10pt; font-weight: bold; color: #2c3e50;">MERCI POUR VOTRE CONFIANCE</span><br />
-						<span style="font-size: 8pt; color: #555555; line-height: 14px;">
+					<td width="50%" class="footer-brand-box">
+						<span class="footer-thanks">MERCI POUR VOTRE CONFIANCE</span><br />
+						<span class="footer-brand-details">
 							<strong>UNIVERS PARADISCOUNT</strong><br />
-							<a href="https://universparadiscount.ma" style="color: #3498db; text-decoration: none;">https://universparadiscount.ma</a><br />
-							FACEBOOK: <strong style="color: #34495e;">UNIVERSPARADISCOUNT</strong><br />
-							INSTAGRAM: <strong style="color: #34495e;">UNIVERSPARADISCOUNT</strong>
+							<a href="https://universparadiscount.ma">https://universparadiscount.ma</a><br />
+							FACEBOOK: <strong>UNIVERSPARADISCOUNT</strong><br />
+							INSTAGRAM: <strong>UNIVERSPARADISCOUNT</strong>
 						</span>
 					</td>
-					<td width="50%" class="footer-legal-box" style="text-align: right; vertical-align: top;">
-						<span style="font-size: 9pt; font-weight: bold; color: #2c3e50;">Société MOUNAW SARL</span><br />
-						<span style="font-size: 8pt; color: #7f8c8d; line-height: 14px;">
+					<td width="50%" class="footer-legal-box">
+						<span class="footer-legal-title">Société MOUNAW SARL</span><br />
+						<span class="footer-legal-details">
 							<strong>IF:</strong> 42752584 &nbsp;|&nbsp; <strong>RC:</strong> 143141 &nbsp;|&nbsp; <strong>ICE:</strong> 002405878000060<br />
 							<strong>Tél:</strong> +212 6 50 66 59 33<br />
 							<strong>Adresse:</strong> M5, Imm N: A1 Angle Rue Alhodal<br />

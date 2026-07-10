@@ -230,4 +230,62 @@
 		line-height: 1.4;
 		color: #444444;
 	}
+
+	/* --- MODERN FOOTER STYLES --- */
+	.footer-box {
+		border: none;
+	}
+
+	.footer-brand-box {
+		background-color: #007bff;
+		color: #ffffff;
+		padding: 12px 15px;
+		text-align: left;
+		vertical-align: top;
+	}
+
+	.footer-brand-box a {
+		color: #ffffff;
+		text-decoration: none;
+	}
+
+	.footer-thanks {
+		font-size: 11pt;
+		font-weight: bold;
+		color: #ffffff;
+	}
+
+	.footer-brand-details {
+		font-size: 8.5pt;
+		color: #ffffff;
+		line-height: 1.4;
+	}
+
+	.footer-brand-details strong {
+		color: #ffffff;
+	}
+
+	.footer-legal-box {
+		background-color: #007bff;
+		color: #ffffff;
+		padding: 12px 15px;
+		text-align: right;
+		vertical-align: top;
+	}
+
+	.footer-legal-title {
+		font-size: 9.5pt;
+		font-weight: bold;
+		color: #ffffff;
+	}
+
+	.footer-legal-details {
+		font-size: 8pt;
+		color: #ffffff;
+		line-height: 1.4;
+	}
+
+	.footer-legal-details strong {
+		color: #ffffff;
+	}
 </style>
