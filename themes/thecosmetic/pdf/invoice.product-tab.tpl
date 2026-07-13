@@ -1,36 +1,25 @@
-{assign var=has_images value=$display_product_images}
-
-<table width="100%" border="0" cellpadding="0" cellspacing="0" class="product-table">
+<table width="100%" border="0" cellpadding="10" cellspacing="0">
 	<thead>
 		<tr>
-			<th width="12%" class="center">IMAGE</th>
-			<th width="54%" class="left">DESCRIPTION</th>
-			<th width="8%" class="center">QTÉ</th>
-			<th width="13%" class="right">PRIX UNITAIRE</th>
-			<th width="13%" class="right">TOTAL ARTICLE</th>
+			<th width="60%" style="border-bottom: 2px solid #000000; text-align: left; font-weight: bold; font-size: 10pt;">DESCRIPTION</th>
+			<th width="20%" style="border-bottom: 2px solid #000000; text-align: right; font-weight: bold; font-size: 10pt;">UNIT PRICE</th>
+			<th width="20%" style="border-bottom: 2px solid #000000; text-align: right; font-weight: bold; font-size: 10pt;">TOTAL</th>
 		</tr>
 	</thead>
 	<tbody>
 		{foreach from=$order_details item=order_detail}
 			<tr>
-				<td class="center" valign="middle">
-					{if $has_images && isset($order_detail.image) && $order_detail.image->id}
-						{$order_detail.image_tag nofilter}
-					{else}
-						&nbsp;
-					{/if}
+				<td width="60%" style="border-bottom: 1px solid #eeeeee; text-align: left; vertical-align: middle;">
+					<span style="font-weight: bold; color: #333333; font-size: 10pt;">{$order_detail.product_name|escape:'html':'UTF-8'}</span><br />
+					<span style="font-size: 8pt; color: #777777;">
+						Stock Available: {StockAvailable::getQuantityAvailableByProduct($order_detail.product_id, $order_detail.product_attribute_id)} | Reserved: 0 | Qty: {$order_detail.product_quantity|escape:'html':'UTF-8'}
+					</span>
 				</td>
-				<td class="left" valign="middle">
-					{$order_detail.product_name|escape:'html':'UTF-8'}
+				<td width="20%" style="border-bottom: 1px solid #eeeeee; text-align: right; vertical-align: middle; color: #333333; font-size: 9.5pt;">
+					{displayPrice currency=$order->id_currency price=$order_detail.unit_price_tax_incl}
 				</td>
-				<td class="center" valign="middle">{$order_detail.product_quantity|escape:'html':'UTF-8'}</td>
-				<td class="right" valign="middle">{displayPrice currency=$order->id_currency price=$order_detail.unit_price_tax_incl}</td>
-				<td class="right" valign="middle">{displayPrice currency=$order->id_currency price=$order_detail.total_price_tax_incl}</td>
-			</tr>
-			<tr>
-				<td width="12%" style="background-color: #f9f9f9;"></td>
-				<td width="88%" colspan="4" class="left" style="background-color: #f9f9f9; font-size: 8pt;">
-					Stock Available: {StockAvailable::getQuantityAvailableByProduct($order_detail.product_id, $order_detail.product_attribute_id)} | Reserved: 0
+				<td width="20%" style="border-bottom: 1px solid #eeeeee; text-align: right; vertical-align: middle; color: #333333; font-size: 9.5pt;">
+					{displayPrice currency=$order->id_currency price=$order_detail.total_price_tax_incl}
 				</td>
 			</tr>
 		{/foreach}
