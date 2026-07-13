@@ -14,8 +14,8 @@
             <table width="100%" border="0" cellpadding="8" cellspacing="0">
                 {if $promo_count}
                 <tr>
-                    <td width="60%" style="text-align: left; color: #555555; border-bottom: 1px solid #eeeeee;">Code promo:</td>
-                    <td width="40%" style="text-align: right; color: #333333; border-bottom: 1px solid #eeeeee;">
+                    <td width="60%" style="text-align: left; color: #555555; border-bottom: 1px solid #E0E0E0;">Code promo:</td>
+                    <td width="40%" style="text-align: right; color: #333333; border-bottom: 1px solid #E0E0E0;">
                         {foreach from=$cart_rules item=cart_rule name=promo_loop}
                             {$cart_rule.name|escape:'html':'UTF-8'}{if !$smarty.foreach.promo_loop.last}<br />{/if}
                         {/foreach}
@@ -23,21 +23,21 @@
                 </tr>
                 {/if}
                 <tr>
-                    <td width="60%" style="text-align: left; color: #555555; border-bottom: 1px solid #eeeeee;">Total produits:</td>
-                    <td width="40%" style="text-align: right; color: #333333; border-bottom: 1px solid #eeeeee;">{displayPrice currency=$order->id_currency price=$footer.products_before_discounts_tax_incl}</td>
+                    <td width="60%" style="text-align: left; color: #555555; border-bottom: 1px solid #E0E0E0;">Total produits:</td>
+                    <td width="40%" style="text-align: right; color: #333333; border-bottom: 1px solid #E0E0E0;">{displayPrice currency=$order->id_currency price=$footer.products_before_discounts_tax_incl}</td>
                 </tr>
                 <tr>
-                    <td width="60%" style="text-align: left; color: #555555; border-bottom: 1px solid #eeeeee;">Dont TVA:</td>
-                    <td width="40%" style="text-align: right; color: #333333; border-bottom: 1px solid #eeeeee;">{displayPrice currency=$order->id_currency price=$footer.total_taxes}</td>
+                    <td width="60%" style="text-align: left; color: #555555; border-bottom: 1px solid #E0E0E0;">Dont TVA:</td>
+                    <td width="40%" style="text-align: right; color: #333333; border-bottom: 1px solid #E0E0E0;">{displayPrice currency=$order->id_currency price=$footer.total_taxes}</td>
                 </tr>
                 <tr>
-                    <td width="60%" style="text-align: left; color: #555555; border-bottom: 1px solid #eeeeee;">Frais d'expédition:</td>
-                    <td width="40%" style="text-align: right; color: #333333; border-bottom: 1px solid #eeeeee;">{displayPrice currency=$order->id_currency price=$footer.shipping_tax_incl}</td>
+                    <td width="60%" style="text-align: left; color: #555555; border-bottom: 1px solid #E0E0E0;">Frais d'expédition:</td>
+                    <td width="40%" style="text-align: right; color: #333333; border-bottom: 1px solid #E0E0E0;">{displayPrice currency=$order->id_currency price=$footer.shipping_tax_incl}</td>
                 </tr>
                 <!-- Balance Due -->
                 <tr>
-                    <td width="60%" style="background-color: #b5d5b6; text-align: left; color: #385b4f; font-weight: bold; font-size: 11pt;">BALANCE DUE (TTC):</td>
-                    <td width="40%" style="background-color: #b5d5b6; text-align: right; color: #385b4f; font-weight: bold; font-size: 11pt;">{displayPrice currency=$order->id_currency price=$footer.total_paid_tax_incl}</td>
+                    <td width="60%" style="background-color: #D8DCFF; text-align: left; color: #AEADF0; font-weight: bold; font-size: 11pt;">BALANCE DUE (TTC):</td>
+                    <td width="40%" style="background-color: #D8DCFF; text-align: right; color: #AEADF0; font-weight: bold; font-size: 11pt;">{displayPrice currency=$order->id_currency price=$footer.total_paid_tax_incl}</td>
                 </tr>
                 {if $remaining_amount > 0}
                 <tr>
