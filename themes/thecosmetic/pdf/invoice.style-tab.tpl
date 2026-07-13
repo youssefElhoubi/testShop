@@ -1,40 +1,102 @@
-{assign var=color_border value="#E0E0E0"}
-{assign var=color_border_light value="#EDEDED"}
-{assign var=color_header value="#1789FC"}
+{assign var=color_border value="#E5E5E5"}
+{assign var=color_header value="#F44336"}
 {assign var=color_header_text value="#FFFFFF"}
-{assign var=color_alt value="#F9F9F9"}
-{assign var=color_balance_bg value="#D8DCFF"}
-{assign var=color_balance_text value="#AEADF0"}
+{assign var=color_text_dark value="#333333"}
+{assign var=color_text_light value="#777777"}
+{assign var=color_bg value="#FFFFFF"}
 
 <style>
-	table {
-		border-collapse: collapse;
-		margin: 0;
-		padding: 0;
-	}
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        width: 100%;
+    }
 
-	td, th {
-		font-family: helvetica, arial, sans-serif;
-		font-size: 9pt;
-		color: #333333;
-		vertical-align: top;
-		white-space: normal;
-		padding: 0;
-	}
+    td,
+    th {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 9pt;
+        color: {$color_text_dark};
+        vertical-align: top;
+        line-height: 1.5;
+    }
 
-	.center {
-		text-align: center;
-	}
+    .title-sales {
+        font-size: 24pt;
+        color: {$color_text_dark};
+    }
 
-	.left {
-		text-align: left;
-	}
+    .title-sales b {
+        font-weight: bold;
+    }
+    
+    .title-sales span {
+        font-weight: normal;
+    }
 
-	.right {
-		text-align: right;
-	}
+    .info-label {
+        font-size: 8pt;
+        color: {$color_text_light};
+        text-transform: uppercase;
+    }
 
-	.bold {
-		font-weight: bold;
-	}
+    .info-value {
+        font-size: 9pt;
+        color: {$color_text_dark};
+        font-weight: bold;
+    }
+
+    .section-title {
+        font-size: 8pt;
+        color: {$color_header};
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+
+    .product-th {
+        background-color: {$color_header};
+        color: {$color_header_text};
+        font-size: 8pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        padding: 8px;
+    }
+
+    .product-td {
+        border-bottom: 1px solid {$color_border};
+        padding: 10px 8px;
+    }
+
+    .product-name {
+        font-size: 9pt;
+        font-weight: bold;
+        color: {$color_text_dark};
+    }
+
+    .product-meta {
+        font-size: 8pt;
+        color: {$color_text_light};
+    }
+
+    .total-label {
+        font-size: 10pt;
+        color: {$color_text_light};
+    }
+
+    .total-value {
+        font-size: 10pt;
+        color: {$color_text_dark};
+    }
+
+    .grand-total-label {
+        font-size: 12pt;
+        font-weight: bold;
+        color: {$color_text_dark};
+    }
+
+    .grand-total-value {
+        font-size: 12pt;
+        font-weight: bold;
+        color: {$color_header};
+    }
 </style>
