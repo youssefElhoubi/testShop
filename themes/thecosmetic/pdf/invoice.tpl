@@ -58,12 +58,45 @@
 
 	<!-- Thick Footer Bar -->
 	<tr>
-		<td colspan="12" style="background-color: #b5d5b6; padding: 30px 20px; text-align: center;">
-			<span style="color: #2c3e50; font-size: 11pt; font-weight: bold;">Société MOUNAW SARL</span><br /><br />
-			<span style="color: #2c3e50; font-size: 9.5pt;">
-				Tél: +212 6 50 66 59 33 &nbsp;|&nbsp;
-				Adresse: M5, Imm N: A1 Angle Rue Alhodal Et Rue Ananas, Hay Riad - Rabat
-			</span>
+		<td colspan="12" style="padding:0;">
+
+			<table width="100%" cellpadding="0" cellspacing="0" border="0">
+				<tr>
+
+					<!-- Red accent -->
+					<td width="8" bgcolor="#F44336">&nbsp;</td>
+
+					<!-- Footer -->
+					<td bgcolor="#F8F8F8" style="padding:18px 25px;">
+
+						<span style="font-size:11pt;font-weight:bold;color:#333333;">
+							Thank you for your order!
+						</span>
+
+						<br /><br />
+
+						<span style="font-size:9pt;color:#555555;font-weight:bold;">
+							Société MOUNAW SARL
+						</span>
+
+						<br />
+
+						<span style="font-size:8.5pt;color:#777777;">
+							M5, Imm N:A1 Angle Rue Alhodal Et Rue Ananas,
+							Hay Riad - Rabat
+						</span>
+
+						<br />
+
+						<span style="font-size:8.5pt;color:#777777;">
+							+212 6 50 66 59 33
+						</span>
+
+					</td>
+
+				</tr>
+			</table>
+
 		</td>
 	</tr>
 </table>
