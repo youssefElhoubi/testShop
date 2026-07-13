@@ -35,9 +35,7 @@
 
         <!-- Right: Logo & Barcode -->
         <td width="50%" align="right" valign="top">
-            {if $logo_path}
-                <img src="{$logo_path}" style="width:{$width_logo}px; height:{$height_logo}px;" />
-            {/if}
+            
             <br /><br /><br />
             {if isset($custom_barcode) && $custom_barcode}
                 {$custom_barcode}
